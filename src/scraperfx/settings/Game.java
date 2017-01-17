@@ -21,7 +21,8 @@ public class Game implements Comparable<Game> {
         LOCKED("lightblue"),
         STRONG("green"),
         BEST_GUESS("lightgreen"),
-        TIE_BREAKER("orange"),
+        TIE_BREAKER("yellow"),
+        LOW_PERCENTAGE("orange"),
         NO_MATCH("red"),
         IGNORE("black");
     

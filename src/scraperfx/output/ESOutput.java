@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -305,7 +307,22 @@ public class ESOutput {
 
                                 writer.append("\t\t<path>./" + g.fileName + "</path>\n");
                                 writer.append("\t\t<filename>" + g.fileName + "</filename>\n");
-                                if(g.metadata != null) {
+                                if(g.metadata == null) {
+                                    String noMatchMetaName = g.fileName;
+                                    if(ScraperFX.getCurrentSettings().substringRegex != null && !"".equals(ScraperFX.getCurrentSettings().substringRegex)) {
+                                        Pattern pattern = Pattern.compile(".*" + ScraperFX.getCurrentSettings().substringRegex + ".*");
+                                        Matcher m = pattern.matcher(noMatchMetaName);
+                                        if(m.matches()) {
+                                            for(int i = 1; i <= m.groupCount(); i++) {
+                                                noMatchMetaName = noMatchMetaName.replaceAll(m.group(i), "");
+                                            }
+                                        }
+                                    }
+                                    noMatchMetaName = noMatchMetaName.replaceAll("(\\(.*\\)|\\[.*\\])", "");
+                                    noMatchMetaName = noMatchMetaName.substring(0, noMatchMetaName.lastIndexOf(".")).trim();
+                                    writer.append("\t\t<name>" + noMatchMetaName + "</name>\n");
+                                }
+                                else {
                                     if(g.metadata.metaName != null)         writer.append("\t\t<name>" + g.metadata.metaName + "</name>\n");
                                     if(g.metadata.metaDesc != null)         writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
                                     if(g.metadata.metaReleaseDate != null) {
@@ -349,10 +366,9 @@ public class ESOutput {
                                 }
 
                                 writer.append("\t</game>\n");
-
-                                updateProgress(++fileCount, games.size());
-                                updateMessage("Completed " + g.fileName + " output to gamelist.xml");
                             }
+                            updateProgress(++fileCount, games.size());
+                            updateMessage("Completed " + g.fileName + " output to gamelist.xml");
                             
                             try {
                                 Thread.sleep(60);

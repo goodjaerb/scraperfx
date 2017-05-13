@@ -489,6 +489,11 @@ public class ScraperFX extends Application {
             gamesListView.refresh();
         });
         
+//        MenuItem downloadImagesItem = new MenuItem("Download Game Images");
+//        downloadImagesItem.setOnAction((e) -> {
+//            writeImageToFile(getCurrentSettings().romsDir + File.separator + "images", currentGame.fileName + "-" + , currentSystemName, currentSystemName)
+//        });
+        
         gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem));
         
         matchedNameClearButton.setOnAction((e) -> {
@@ -828,15 +833,24 @@ public class ScraperFX extends Application {
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0");
                     BufferedImage img = ImageIO.read(connection.getInputStream());
                     
+//                    if(img.getWidth() <= 640) {
+//                        ImageIO.write(img, imageOutputType, outputFile);
+//                    }
+//                    else {
+//                        java.awt.Image scaled = img.getScaledInstance(640, -1, java.awt.Image.SCALE_SMOOTH);
+//                        BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
+//                        scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
+//                        ImageIO.write(scaledBuff, imageOutputType, outputFile);
+//                    }
+                    int width = 640;
                     if(img.getWidth() <= 640) {
-                        ImageIO.write(img, imageOutputType, outputFile);
+                        width = img.getWidth();
                     }
-                    else {
-                        java.awt.Image scaled = img.getScaledInstance(640, -1, java.awt.Image.SCALE_SMOOTH);
-                        BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
-                        scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
-                        ImageIO.write(scaledBuff, imageOutputType, outputFile);
-                    }
+                    
+                    java.awt.Image scaled = img.getScaledInstance(width, -1, java.awt.Image.SCALE_SMOOTH);
+                    BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                    scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
+                    ImageIO.write(scaledBuff, imageOutputType, outputFile);
                     return true;
     //                return SwingFXUtils.toFXImage(img, null);
                 }

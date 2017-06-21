@@ -49,12 +49,7 @@ public class ESOutput {
     public enum ESImageTag {
         IMAGE("image", Image.ImageType.BOX_FRONT, Image.ImageType.SCREENSHOT, Image.ImageType.TITLE, Image.ImageType.DECAL),
         BG_IMAGE("bgImage", Image.ImageType.SCREENSHOT, Image.ImageType.FANART, Image.ImageType.GAME, Image.ImageType.TITLE),
-        //LOGO("logo", Image.ImageType.LOGO, Image.ImageType.DECAL),
-        //BG_LOGO("bgLogo", Image.ImageType.LOGO, Image.ImageType.DECAL),
-        //BOX_FRONT("boxart-front", Image.ImageType.BOX_FRONT, Image.ImageType.TITLE),
-        //BOX_BACK("boxart-back", Image.ImageType.BOX_BACK),
         SCREENSHOT("screenshot", Image.ImageType.SCREENSHOT, null, Image.ImageType.GAME, null),
-        //FANART("fanart", Image.ImageType.FANART)
         ;
         
         private final String tag;
@@ -259,24 +254,6 @@ public class ESOutput {
                 this.outputPathStr = outputPathStr;
                 this.imagesPathStr = imagesPathStr;
             }
-            
-//            private String determineOutputType(String path) {
-//                String imageType = null;
-//                if(arcade) {
-//                    // png files from arcadeitalia are tiny so i'm ok with them here, or if there's a random jpg, which there probably isn't.
-//                    if(path.toLowerCase().endsWith("png")) {
-//                        imageType = "png";
-//                    }
-//                    else {
-//                        imageType = "jpg";
-//                    }
-//                }
-//                else {
-//                    // otherwise the size of png files from gamesdb is pretty bonkers compared to if i just save them as jpg.
-//                    imageType = "jpg";
-//                }
-//                return imageType;
-//            }
 
             @Override
             protected Void call()  {
@@ -333,7 +310,6 @@ public class ESOutput {
                                             writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate.substring(6) + g.metadata.metaReleaseDate.substring(0, 2) + g.metadata.metaReleaseDate.substring(3, 5) + "T000000</releasedate>\n");
                                         }
                                     }
-    //                                if(g.metadata.metaReleaseDate != null)  writer.append("\t\t<releasedate>" + (g.metadata.metaReleaseDate.substring(6) + g.metadata.metaReleaseDate.substring(0, 2) + g.metadata.metaReleaseDate.substring(3, 5) + "T000000") + "</releasedate>\n");
                                     if(g.metadata.metaDeveloper != null)    writer.append("\t\t<developer>" + g.metadata.metaDeveloper + "</developer>\n");
                                     if(g.metadata.metaPublisher != null)    writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
                                     if(g.metadata.metaGenre != null)        writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");

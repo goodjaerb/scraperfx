@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package scraperfx.datasource.impl;
+package scraperfx.datasource.impl.gamesdb;
 
 import org.xmappr.annotation.Attribute;
 import org.xmappr.annotation.RootElement;

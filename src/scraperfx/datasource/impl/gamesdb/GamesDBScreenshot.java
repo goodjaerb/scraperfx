@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package scraperfx.datasource.impl;
+package scraperfx.datasource.impl.gamesdb;
 
 import org.xmappr.annotation.Element;
 import org.xmappr.annotation.RootElement;
@@ -12,13 +12,13 @@ import org.xmappr.annotation.RootElement;
  *
  * @author goodjaerb
  */
-@RootElement(name = "fanart")
-public class GamesDBFanArt {
+@RootElement(name = "screenshot")
+public class GamesDBScreenshot {
     
     @Element(name = "original")
-    public GamesDBFanartData data;
+    public GamesDBScreenshotData data;
     
-    public GamesDBFanArt() {
+    public GamesDBScreenshot() {
         
     }
 }

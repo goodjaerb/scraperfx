@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package scraperfx.datasource.impl;
+package scraperfx.datasource.impl.gamesdb;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.xmappr.annotation.Element;
 import org.xmappr.annotation.RootElement;
+import scraperfx.datasource.impl.GamesDBSource;
 import scraperfx.settings.Image;
 
 /**
@@ -56,7 +57,7 @@ public class GamesDBGame {
         return "id=" + id + ", title=" + title + ", releasedate=" + releaseDate + ", overview=" + overview + ", genre=" + genreList + ", publisher=" + publisher + ", developer=" + developer + ", esrb=" + rating + ", players=" + players;
     }
     
-    protected String convertGenres() {
+    public String convertGenres() {
         if(genreList == null) {
             return null;
         }
@@ -66,21 +67,7 @@ public class GamesDBGame {
         return genre;
     }
     
-//    protected String getEsImage() {
-//        if(images.boxarts != null) {
-//            for(GamesDBBoxArt ba : images.boxarts) {
-//                if("front".equals(ba.side)) {
-//                    return GamesDBSource.IMAGE_BASE_URL + ba.path;
-//                }
-//            }
-//        }
-//        else if(images.screenshots != null) {
-//            return GamesDBSource.IMAGE_BASE_URL + images.screenshots.get(0).data.path;
-//        }
-//        return null;
-//    }
-    
-    protected List<Image> getImages() {
+    public List<Image> getImages() {
         List<Image> imglist = new ArrayList();
         if(images.logo != null) {
             imglist.add(new Image("logo", images.logo.width, images.logo.height, GamesDBSource.IMAGE_BASE_URL + images.logo.path, true));

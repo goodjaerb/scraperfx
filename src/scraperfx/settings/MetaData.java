@@ -29,9 +29,6 @@ public class MetaData {
     @Element(name = "lockDesc")
     public Boolean lockDesc = false;
     
-//    @Element(name = "esimage")
-//    public String esimage;
-    
     @Element(name = "image")
     public List<Image> images;
     
@@ -87,16 +84,9 @@ public class MetaData {
     }
     
     public void selectImage(Image image) {
-        for(Image i : images) {
-            if(i.type.equals(image.type)) {
-                if(i.path.equals(image.path)) {
-                    i.selected = true;
-                }
-                else {
-                    i.selected = false;
-                }
-            }
-        }
+        images.stream().filter((i) -> (i.type.equals(image.type))).forEach((i) -> {
+            i.selected = i.path.equals(image.path);
+        });
     }
     
     public void transferLocksFrom(MetaData other) {

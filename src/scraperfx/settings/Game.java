@@ -26,11 +26,9 @@ public class Game implements Comparable<Game> {
         NO_MATCH("red"),
         IGNORE("black");
     
-//        public final Color color;
         public final String cssBackground;
         
         private MatchStrength(String cssBackground) {
-//            this.color = color;
             this.cssBackground = cssBackground;
         }
     };
@@ -90,10 +88,7 @@ public class Game implements Comparable<Game> {
             return false;
         }
         final Game other = (Game) obj;
-        if(!Objects.equals(this.fileName, other.fileName)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.fileName, other.fileName);
     }
     
     @Override

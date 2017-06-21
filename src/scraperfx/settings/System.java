@@ -37,17 +37,6 @@ public class System implements Comparable<System> {
     
     @Element
     public String ignoreRegex;
-//    @Element
-//    public String imageDir;
-//    
-//    @Element
-//    public String defaultScreenshot;
-//    
-//    @Element
-//    public String defaultBoxArt;
-    
-//    @Element(name = "game")
-//    public List<Game> games;
     
     public System() {
         this("");
@@ -58,11 +47,7 @@ public class System implements Comparable<System> {
         this.scrapeAsArcade = false;
         this.scrapeAs = "";
         this.romsDir = "";
-//        this.imageDir = "";
-//        this.defaultBoxArt = "";
-//        this.defaultScreenshot = "";
         this.unmatchedOnly = false;
-//        this.games = new ArrayList();
     }
     
     public System(System sys) {
@@ -70,21 +55,9 @@ public class System implements Comparable<System> {
         this.scrapeAsArcade = sys.scrapeAsArcade;
         this.scrapeAs = sys.scrapeAs;
         this.romsDir = sys.romsDir;
-//        this.imageDir = sys.imageDir;
-//        this.defaultBoxArt = sys.defaultBoxArt;
-//        this.defaultScreenshot = sys.defaultScreenshot;
         this.unmatchedOnly = sys.unmatchedOnly;
-//        this.games = sys.games;
     }
     
-//    public Game getGame(Game g) {
-//        int index = games.indexOf(g);
-//        if(index == -1) {
-//            return null;
-//        }
-//        return games.get(index);
-//    }
-
     @Override
     public int compareTo(System o) {
         return name.compareTo(o.name);

@@ -5,6 +5,12 @@
  */
 package scraperfx.datasource.impl;
 
+import scraperfx.datasource.impl.gamesdb.GamesDBGame;
+import scraperfx.datasource.impl.gamesdb.GamesDBListGame;
+import scraperfx.datasource.impl.gamesdb.GamesDBGameMetaData;
+import scraperfx.datasource.impl.gamesdb.GamesDBPlatform;
+import scraperfx.datasource.impl.gamesdb.GamesDBGameListData;
+import scraperfx.datasource.impl.gamesdb.GamesDBPlatformList;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,7 +40,7 @@ public class GamesDBSource implements DataSource {
     private static final String API_GET_PLATFORM_GAMES = "GetPlatformGames.php";
     private static final String API_GET_GAME = "GetGame.php";
 
-    protected static final String IMAGE_BASE_URL = "http://thegamesdb.net/banners/";
+    public static final String IMAGE_BASE_URL = "http://thegamesdb.net/banners/";
             
     private static final String PROP_USER_AGENT = "User-Agent";
     private static final String VAL_USER_AGENT = "Mozilla/5.0";
@@ -62,17 +68,11 @@ public class GamesDBSource implements DataSource {
 
                 return new BufferedReader(new InputStreamReader(conn.getInputStream()));
             }
-//            catch(ProtocolException ex) {
-////                Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
-//                System.out.println("Connection error with thegamesdb.net. Retrying...");
-//                retryCount++;
-//            }
             catch(MalformedURLException ex) {
                 Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
                 break;
             }
             catch(IOException ex) {
-//                Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
                 if(++retryCount < 3) {
                     System.out.println("Connection error with thegamesdb.net. Retrying...");
                 }
@@ -197,7 +197,6 @@ public class GamesDBSource implements DataSource {
             data.players            = game.metadata.lockPlayers         ? game.metadata.players             : g.players;
             data.metaGenre          = game.metadata.lockGenre           ? game.metadata.metaGenre           : g.convertGenres();
             data.images             = game.metadata.lockImages          ? game.metadata.images              : g.getImages();
-//            data.esimage = g.getEsImage();
         }
         return data;
     }

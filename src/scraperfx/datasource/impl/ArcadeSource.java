@@ -65,26 +65,20 @@ public class ArcadeSource implements DataSource {
                 p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/decals/" + game.matchedName + ".png)\">");
                 m = p.matcher(result);
                 if(m.find()) {
-//                    System.out.println(m.group(1));
                     data.images.add(new Image("decal", m.group(1), true));
                 }
                 
                 p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/titles/" + game.matchedName + ".png)\">");
                 m = p.matcher(result);
                 if(m.find()) {
-//                    System.out.println(m.group(1));
                     data.images.add(new Image("title", m.group(1), true));
                 }
                 
                 p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/ingames/" + game.matchedName + ".png)\">");
                 m = p.matcher(result);
                 if(m.find()) {
-//                    System.out.println(m.group(1));
                     data.images.add(new Image("game", m.group(1), true));
                 }
-//                data.images.add(new Image("game", "http://adb.arcadeitalia.net/media/mame.current/ingames/" + game.matchedName + ".png"));
-//                data.images.add(new Image("decal", "http://adb.arcadeitalia.net/media/mame.current/decals/" + game.matchedName + ".png"));
-//                data.images.add(new Image("title", "http://adb.arcadeitalia.net/media/mame.current/titles/" + game.matchedName + ".png"));
             }
             
             return data;

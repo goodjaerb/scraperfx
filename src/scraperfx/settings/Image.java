@@ -61,13 +61,6 @@ public class Image {
         this.selected = b;
     }
     
-//    public Image(String type, Integer width, Integer height, String path) {
-//        this.type = type;
-//        this.width = width;
-//        this.height = height;
-//        this.path = path;
-//    }
-    
     public Image(String type, Integer width, Integer height, String path, boolean b) {
         this.type = type;
         this.width = width;
@@ -106,6 +99,4 @@ public class Image {
         }
         return true;
     }
-    
-    
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package scraperfx.datasource.impl;
+package scraperfx.datasource.impl.gamesdb;
 
 import org.xmappr.annotation.Attribute;
 import org.xmappr.annotation.RootElement;
@@ -14,7 +14,7 @@ import org.xmappr.annotation.Text;
  * @author goodjaerb
  */
 @RootElement(name = "original")
-public class GamesDBScreenshotData {
+public class GamesDBFanartData {
     
     @Attribute(name = "width")
     public Integer width;
@@ -25,7 +25,7 @@ public class GamesDBScreenshotData {
     @Text
     public String path;
     
-    public GamesDBScreenshotData() {
+    public GamesDBFanartData() {
         
     }
 }

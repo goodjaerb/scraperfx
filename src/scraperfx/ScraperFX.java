@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -120,14 +119,6 @@ public class ScraperFX extends Application {
     private final Button gameSourceBrowseButton;
     private final TextField filenameRegexField;
     private final TextField ignoreRegexField;
-//    private final TextField imageOuputField;
-//    private final Button imageOutputBrowseButton;
-//    private final TextField defaultScreenshotField;
-//    private final Button defaultScreenshotClearButton;
-//    private final Button defaultScreenshotBrowseButton;
-//    private final TextField defaultBoxArtField;
-//    private final Button defaultBoxArtClearButton;
-//    private final Button defaultBoxArtBrowseButton;
     private final CheckBox unmatchedOnlyCheckBox;
     
     private final Tab gamesTab;
@@ -155,11 +146,6 @@ public class ScraperFX extends Application {
     private final CheckBox lockGenreCheckBox;
     private final TextField playersField;
     private final CheckBox lockPlayersCheckBox;
-    
-//    private final Tab outputTab;
-//    private final ToggleGroup outputSettingsGroup;
-//    private final RadioButton useGlobalSettingsButton;
-//    private final RadioButton useSystemSettingsButton;
     
     private final Button saveButton;
     private final Button scanButton;
@@ -193,22 +179,6 @@ public class ScraperFX extends Application {
         gameSourceBrowseButton = new Button("...");
         filenameRegexField = new TextField();
         ignoreRegexField = new TextField();
-        
-//        imageOuputField = new TextField();
-//        imageOuputField.setEditable(false);
-//        imageOutputBrowseButton = new Button("...");
-//        defaultScreenshotField = new TextField();
-//        defaultScreenshotField.setEditable(false);
-//        defaultScreenshotClearButton = new Button("X");
-//        defaultScreenshotClearButton.setStyle("-fx-font-weight: bold");
-//        defaultScreenshotClearButton.setTextFill(Color.RED);
-//        defaultScreenshotBrowseButton = new Button("...");
-//        defaultBoxArtField = new TextField();
-//        defaultBoxArtField.setEditable(false);
-//        defaultBoxArtClearButton = new Button("X");
-//        defaultBoxArtClearButton.setStyle("-fx-font-weight: bold");
-//        defaultBoxArtClearButton.setTextFill(Color.RED);
-//        defaultBoxArtBrowseButton = new Button("...");
         unmatchedOnlyCheckBox = new CheckBox("Scan Unmatched Files Only");
         
         gamesTab = new Tab("Games");
@@ -242,15 +212,6 @@ public class ScraperFX extends Application {
         lockGenreCheckBox = new CheckBox("Lock");
         lockPlayersCheckBox = new CheckBox("Lock");
         lockImagesCheckBox = new CheckBox("Lock Images");
-        
-        
-//        outputTab = new Tab("Output");
-//        outputSettingsGroup = new ToggleGroup();
-//        useGlobalSettingsButton = new RadioButton("Use Global Settings");
-//        useGlobalSettingsButton.setToggleGroup(outputSettingsGroup);
-//        useGlobalSettingsButton.setSelected(true);
-//        useSystemSettingsButton = new RadioButton("Use System Specific Settings");
-//        useSystemSettingsButton.setToggleGroup(outputSettingsGroup);
         
         saveButton = new Button("Save");
         scanButton = new Button("Scan Now");
@@ -342,31 +303,6 @@ public class ScraperFX extends Application {
             }
         });
         
-//        imageOutputBrowseButton.setOnAction((e) -> {
-//            File dir = Chooser.getDir("Image Output Directory");
-//            if(dir != null) {
-//                imageOuputField.setText(dir.getPath());
-//                getCurrentSettings().imageDir = dir.getPath();
-//            }
-//        });
-        
-//        defaultBoxArtBrowseButton.setOnAction((e) -> {
-//            File f = Chooser.getFile(Chooser.DialogType.OPEN, "Default Box Art");
-//            if(f != null) {
-//                defaultBoxArtField.setText(f.getPath());
-//                getCurrentSettings().defaultBoxArt = f.getPath();
-//            }
-//        });
-//        
-//        defaultScreenshotBrowseButton.setOnAction((e) -> {
-//            File f = Chooser.getFile(Chooser.DialogType.OPEN, "Default Screenshot");
-//            if(f != null) {
-//                defaultScreenshotField.setText(f.getPath());
-//                getCurrentSettings().defaultScreenshot = f.getPath();
-//            }
-//        });
-        
-//        FlowPane scanNewOnlyPane = new FlowPane(unmatchedOnlyCheckBox);
         unmatchedOnlyCheckBox.setPadding(new Insets(7.));
         unmatchedOnlyCheckBox.setOnAction((e) -> {
             getCurrentSettings().unmatchedOnly = unmatchedOnlyCheckBox.isSelected();
@@ -403,20 +339,11 @@ public class ScraperFX extends Application {
             }
         }).start();
         
-//        VBox regexBox = new VBox();
-//        regexBox.setSpacing(7.);
-//        regexBox.setPadding(new Insets(7.));
-//        regexBox.getChildren().addAll(new Label("Filename Removal Regex (Advanced):"), filenameRegexField);
-        
         VBox settingsPane = new VBox();
         settingsPane.getChildren().addAll(
                 box21,
                 selectConsoleBox,
                 createBrowseFieldPane("Game Source Directory:", gameSourceField, gameSourceBrowseButton),
-//                createBrowseFieldPane("Metadata Images Output Directory:", imageOuputField, imageOutputBrowseButton),
-//                createBrowseFieldPane("Default 'No Box Art Image:", defaultBoxArtField, defaultBoxArtClearButton, defaultBoxArtBrowseButton),
-//                createBrowseFieldPane("Default 'No Screenshot' Image:", defaultScreenshotField, defaultScreenshotClearButton, defaultScreenshotBrowseButton),
-//                scanNewOnlyPane
                 createBrowseFieldPane("Regex for Substring Removal (Advanced):", filenameRegexField),
                 createBrowseFieldPane("Regex for Files to Ignore (Advanced):", ignoreRegexField),
                 unmatchedOnlyCheckBox
@@ -435,7 +362,6 @@ public class ScraperFX extends Application {
         gamesListView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends Game> c) -> {
             Game selected = gamesListView.getSelectionModel().getSelectedItem();
             if(selected != null) {
-//                currentGame = getCurrentSettings().getGame(selected);
                 currentGame = getGame(selected);
                 loadCurrentGameFields(currentGame);
             }
@@ -444,11 +370,9 @@ public class ScraperFX extends Application {
         MenuItem lockGamesItem = new MenuItem("Lock Selection");
         lockGamesItem.setOnAction((e) -> {
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
-            for(Game g : selectedGames) {
-//                System.out.println(g);
-//                getCurrentSettings().getGame(g).strength = Game.MatchStrength.LOCKED;
+            selectedGames.stream().forEach((g) -> {
                 getGame(g).strength = Game.MatchStrength.LOCKED;
-            }
+            });
             gamesListView.refresh();
             loadCurrentGameFields(currentGame);
         });
@@ -456,20 +380,14 @@ public class ScraperFX extends Application {
         MenuItem unlockGamesItem = new MenuItem("Unlock Selection");
         unlockGamesItem.setOnAction((e) -> {
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
-            for(Game g : selectedGames) {
-//                if(getCurrentSettings().getGame(g).matchedName == null) {
-//                    getCurrentSettings().getGame(g).strength = Game.MatchStrength.NO_MATCH;
-//                }
-//                else {
-//                    getCurrentSettings().getGame(g).strength = Game.MatchStrength.BEST_GUESS;
-//                }
+            selectedGames.stream().forEach((g) -> {
                 if(getGame(g).matchedName == null) {
                     getGame(g).strength = Game.MatchStrength.NO_MATCH;
                 }
                 else {
                     getGame(g).strength = Game.MatchStrength.BEST_GUESS;
                 }
-            }
+            });
             gamesListView.refresh();
             loadCurrentGameFields(currentGame);
         });
@@ -477,35 +395,20 @@ public class ScraperFX extends Application {
         MenuItem ignoreItem = new MenuItem("Ignore");
         ignoreItem.setOnAction((e) -> {
             clearCurrentGameFields();
-//            int index = getCurrentSettings().games.indexOf(gamesListView.getSelectionModel().getSelectedItem());
-//            getCurrentSettings().games.get(index).matchedName = null;
-//            getCurrentSettings().games.get(index).metadata = null;
-//            getCurrentSettings().games.get(index).strength = Game.MatchStrength.LOCKED;
             currentGame.matchedName = null;
             currentGame.metadata = null;
             currentGame.strength = Game.MatchStrength.IGNORE;
-//            lockMatchedNameCheckBox.setSelected(true);
             loadCurrentGameFields(currentGame);
             gamesListView.refresh();
         });
-        
-//        MenuItem downloadImagesItem = new MenuItem("Download Game Images");
-//        downloadImagesItem.setOnAction((e) -> {
-//            writeImageToFile(getCurrentSettings().romsDir + File.separator + "images", currentGame.fileName + "-" + , currentSystemName, currentSystemName)
-//        });
         
         gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem));
         
         matchedNameClearButton.setOnAction((e) -> {
             clearCurrentGameFields();
-//            int index = getCurrentSettings().games.indexOf(gamesListView.getSelectionModel().getSelectedItem());
-//            getCurrentSettings().games.get(index).matchedName = null;
-//            getCurrentSettings().games.get(index).metadata = null;
-//            getCurrentSettings().games.get(index).strength = Game.MatchStrength.LOCKED;
             currentGame.matchedName = null;
             currentGame.metadata = null;
             currentGame.strength = Game.MatchStrength.LOCKED;
-//            lockMatchedNameCheckBox.setSelected(true);
             loadCurrentGameFields(currentGame);
             gamesListView.refresh();
         });
@@ -542,29 +445,7 @@ public class ScraperFX extends Application {
         lockReleaseDateCheckBox.setOnAction((e) ->  lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, lockReleaseDateCheckBox.isSelected()));
         lockPlayersCheckBox.setOnAction((e) ->      lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, lockPlayersCheckBox.isSelected()));
         lockImagesCheckBox.setOnAction((e) -> {     currentGame.metadata.lockImages = lockImagesCheckBox.isSelected(); });
-//        lockMatchedNameCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) -> {
-//            if(newValue) {
-//                currentGame.strength = Game.MatchStrength.LOCKED;
-//            }
-//            else {
-//                if(currentGame.matchedName == null) {
-//                    currentGame.strength = Game.MatchStrength.NO_MATCH;
-//                }
-//                else {
-//                    currentGame.strength = Game.MatchStrength.BEST_GUESS;
-//                }
-//            }
-//            gamesListView.refresh();
-//        });
-//        lockNameCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) ->         lockMetaField(metaNameField, MetaDataId.NAME, currentGame.metadata, newValue));
-//        lockDescCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) ->         lockMetaField(metaDescArea, MetaDataId.DESC, currentGame.metadata, newValue));
-//        lockDeveloperCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) ->    lockMetaField(metaDeveloperField, MetaDataId.DEVELOPER, currentGame.metadata, newValue));
-//        lockGenreCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) ->        lockMetaField(metaGenreField, MetaDataId.GENRE, currentGame.metadata, newValue));
-//        lockPublisherCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) ->    lockMetaField(metaPublisherField, MetaDataId.PUBLISHER, currentGame.metadata, newValue));
-//        lockRatingCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) ->       lockMetaField(metaRatingField, MetaDataId.RATING, currentGame.metadata, newValue));
-//        lockReleaseDateCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) ->  lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, newValue));
-//        lockPlayersCheckBox.selectedProperty().addListener((ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) ->      lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, newValue));
-
+        
         VBox metaBox = new VBox();
         metaBox.getChildren().addAll(
                 createMetaFieldPane("Matched Game:", matchedNameField, matchedNameClearButton, matchedNameBrowseButton, lockMatchedNameCheckBox),
@@ -624,92 +505,12 @@ public class ScraperFX extends Application {
         });
         
         outputToGamelistButton.setOnAction((e) -> {
-//            Collections.sort(getCurrentSettings().games);
             Collections.sort(getSystemGameData());
             new ESOutput().output(
-//                    getCurrentSettings().games,
                     getSystemGameData(),
                     System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + "gamelists" + File.separator + getCurrentSettings().name,
                     getCurrentSettings().romsDir + File.separator + "images",
                     getCurrentSettings().scrapeAsArcade);
-//            try {
-//                FileSystem fs = FileSystems.getDefault();
-//                Path outputDir = fs.getPath(System.getProperty("user.home"), ".scraperfx", "gamelists", getCurrentSettings().name);
-//                Files.createDirectories(outputDir);
-//                
-//                File outputFile = new File(outputDir.toString() + File.separator + "gamelist.xml");
-//                outputFile.createNewFile();
-//                
-//                try(BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
-//                    writer.append("<gameList>\n");
-//                    
-//                    for(Game g : getCurrentSettings().games) {
-//                        System.out.println("writing for " + g.fileName);
-//                        writer.append("\t<game>\n");
-//                        
-//                        writer.append("\t\t<path>./" + g.fileName + "</path>\n");
-//                        writer.append("\t\t<filename>" + g.fileName + "</filename>\n");
-//                        if(g.metadata.metaName != null)         writer.append("\t\t<name>" + g.metadata.metaName + "</name>\n");
-//                        if(g.metadata.metaDesc != null)         writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
-//                        if(g.metadata.metaReleaseDate != null)  writer.append("\t\t<releasedate>" + (g.metadata.metaReleaseDate.substring(6) + g.metadata.metaReleaseDate.substring(0, 2) + g.metadata.metaReleaseDate.substring(3, 5) + "T000000") + "</releasedate>\n");
-//                        if(g.metadata.metaDeveloper != null)    writer.append("\t\t<developer>" + g.metadata.metaDeveloper + "</developer>\n");
-//                        if(g.metadata.metaPublisher != null)    writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
-//                        if(g.metadata.metaGenre != null)        writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");
-//                        if(g.metadata.players != null)          writer.append("\t\t<players>" + g.metadata.players + "</players>\n");
-//                        
-//                        if(g.metadata.esimage != null && writeImageToFile(fs.getPath(getCurrentSettings().romsDir, "images"), g.fileName + "-image", g.metadata.esimage)) {
-//                            writer.append("\t\t<image>./images/" + g.fileName + "-image.png</image>\n");
-//                        }
-//                        for(scraperfx.settings.Image img : g.metadata.images) {
-//                            if(writeImageToFile(fs.getPath(getCurrentSettings().romsDir, "images"), g.fileName + "-" + img.type, img.path)) {
-//                                writer.append("\t\t<" + img.type + ">./images/" + g.fileName + "-" + img.type + ".png</" + img.type + ">\n");
-//                            }
-//                        }
-//                        
-//                        writer.append("\t</game>\n");
-//                    }
-//                    
-//                    writer.append("</gameList>\n");
-//                    System.out.println("completed gamelist.xml");
-//                }
-//            ESOutput output = new ESOutput();
-//            
-//            for(Game g : gamesListView.getItems()) {
-//                ESGame gameout = new ESGame();
-//                
-//                if(scrapeAsConsoleButton.isSelected()) {
-//                    gameout.desc = g.metadata.metaDesc;
-//                    gameout.developer = g.metadata.metaDeveloper;
-//                    gameout.genre = g.metadata.metaGenre.toString();
-//                    gameout.name = g.metadata.metaName;
-//                    gameout.filename = g.fileName;
-//                    gameout.path = "./" + g.fileName;
-//                    gameout.publisher = g.metadata.metaPublisher;
-//                    gameout.rating = g.metadata.metaRating;
-//                    
-//                    String date = g.metadata.metaReleaseDate;
-//                    gameout.releasedate = date.substring(6) + date.substring(0, 2) + date.substring(3, 5) + "T000000";
-//                    
-//                    try {
-//                        Path p = new File(getCurrentSettings().romsDir + File.separator + "images").toPath();
-//                        Files.createDirectories(p);
-//                        if(writeImageToFile(p, g.fileName + ".png", g.getImageUrlByType("box-front"))) {
-//                            gameout.boxartFront = "./images/" + g.fileName + ".png";
-//                        }
-//                    }
-//                    catch(IOException ex) {
-//                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//
-//                    
-//                }
-//                else {
-//                }                            
-//            }
-//            }
-//            catch(IOException ex) {
-//                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-//            }
         });
         
         deleteSystemButton.setOnAction((e) -> deleteSystemButtonOnActionPerformed() );
@@ -720,7 +521,6 @@ public class ScraperFX extends Application {
         
         tabPane.getTabs().add(settingsTab);
         tabPane.getTabs().add(gamesTab);
-//        tabPane.getTabs().add(outputTab);
         tabPane.getSelectionModel().select(0);
         
         BorderPane rightPane = new BorderPane();
@@ -785,10 +585,6 @@ public class ScraperFX extends Application {
         }
     }
     
-//    private void lockMetaImages() {
-//            data.lockMetaData(MetaData.MetaDataId.IMAGES, true);
-//    }
-    
     private Image getImageFromURL(String url) throws MalformedURLException, IOException {
         int retry = 0;
         while(retry < 3) {
@@ -804,7 +600,6 @@ public class ScraperFX extends Application {
                 break;
             }
             catch(IOException ex) {
-//                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                 if(++retry < 3) {
                     System.out.println("Error retrieving image from " + url + ". Retrying...");
                 }
@@ -821,7 +616,6 @@ public class ScraperFX extends Application {
         Files.createDirectories(path);
                     
         File outputFile = new File(path.toString() + File.separator + imageFileName + "." + imageOutputType);
-//        System.out.println("writing image " + url + " to " + outputFile.getPath());
         if(outputFile.exists()) {
             return true;
         }
@@ -833,15 +627,6 @@ public class ScraperFX extends Application {
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0");
                     BufferedImage img = ImageIO.read(connection.getInputStream());
                     
-//                    if(img.getWidth() <= 640) {
-//                        ImageIO.write(img, imageOutputType, outputFile);
-//                    }
-//                    else {
-//                        java.awt.Image scaled = img.getScaledInstance(640, -1, java.awt.Image.SCALE_SMOOTH);
-//                        BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
-//                        scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
-//                        ImageIO.write(scaledBuff, imageOutputType, outputFile);
-//                    }
                     int width = 640;
                     if(img.getWidth() <= 640) {
                         width = img.getWidth();
@@ -852,24 +637,18 @@ public class ScraperFX extends Application {
                     scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
                     ImageIO.write(scaledBuff, imageOutputType, outputFile);
                     return true;
-    //                return SwingFXUtils.toFXImage(img, null);
                 }
                 catch(MalformedURLException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                     break;
                 }
                 catch(IOException ex) {
-    //                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-    //                if(++retry == 3) {
-    //                    throw ex;
-    //                }
                     if(++retry < 3) {
                         System.out.println("Error retrieving image from " + url + ". Retrying...");
                     }
                 }
             }
         }
-//        return null;
         return false;
     }
     
@@ -877,14 +656,9 @@ public class ScraperFX extends Application {
         return createMetaFieldPane(labelStr, field, null, null, lockCheckBox);
     }
     
-//    private Pane createMetaFieldPane(String labelStr, TextInputControl field, Button clearButton, Button browseButton) {
-//        return createMetaFieldPane(labelStr, field, clearButton, browseButton, null);
-//    }
-    
     private Pane createMetaFieldPane(String labelStr, TextInputControl field, Button clearButton, Button browseButton, CheckBox lockCheckBox) {
         Label label = new Label(labelStr);
         label.setPadding(new Insets(7., 7., 0., 7.));
-//        field.setEditable(false);
         if(field instanceof TextField) {
             field.setPrefWidth(275.);
         }
@@ -980,22 +754,6 @@ public class ScraperFX extends Application {
         return games.get(index);
     }
     
-//    private void removeGame(Game g) {
-//        List<Game> games = getSystemGameData();
-//        if(games != null) {
-//            games.remove(g);
-//        }
-//    }
-//    
-//    private void addGame(Game g) {
-//        List<Game> games = getSystemGameData();
-////        if(games == null) {
-////            gamedata.gamelist.add(new GameList(currentSystemName));
-////            
-////        }
-//        games.add(g);
-//    }
-    
     private void clearCurrentGameFields() {
         matchedNameField.clear();
         metaNameField.clear();
@@ -1061,30 +819,22 @@ public class ScraperFX extends Application {
                     imageTaskList.clear();
 
                     if(g.metadata != null && g.metadata.images != null && !g.metadata.images.isEmpty()) {
-//                        VBox box = new VBox();
-//                        box.setSpacing(7.);
-//                        box.setPadding(new Insets(7.));
                         MetaImageViewBox box = new MetaImageViewBox();
 
-                        for(scraperfx.settings.Image image : g.metadata.images) {
-//                            ImageView view = new ImageView(new Image("scraperfx/images/loading.gif"));
-//                            view.setFitHeight(175.);
-//                            view.setPreserveRatio(true);
-//
-//                            box.getChildren().add(new Label(image.type));
-//                            box.getChildren().add(view);
-                            if(image != null) {
-                                MetaImageView metaImage = new MetaImageView(image);
-                                box.addView(metaImage);
-                            
-                                ImageLoadingTask task = new ImageLoadingTask(metaImage, image);
-                                imageTaskList.add(task);
-
-                                Thread t = new Thread(task);
-                                t.setDaemon(true);
-                                t.start();
-                            }
-                        }
+                        g.metadata.images.stream().filter((image) -> (image != null)).map((image) -> {
+                            MetaImageView metaImage = new MetaImageView(image);
+                            box.addView(metaImage);
+                            ImageLoadingTask task = new ImageLoadingTask(metaImage, image);
+                            return task;
+                        }).map((task) -> {
+                            imageTaskList.add(task);
+                            return task;
+                        }).map((task) -> new Thread(task)).map((t) -> {
+                            t.setDaemon(true);
+                            return t;
+                        }).forEach((t) -> {
+                            t.start();
+                        });
 
                         imagesScroll.setContent(box);
                     }
@@ -1112,15 +862,11 @@ public class ScraperFX extends Application {
         scrapeAsArcadeSetup(getCurrentSettings().scrapeAsArcade);
         consoleSelectComboBox.getSelectionModel().select(getCurrentSettings().scrapeAs);
         gameSourceField.setText(getCurrentSettings().romsDir);
-//        imageOuputField.setText(getCurrentSettings().imageDir);
-//        defaultBoxArtField.setText(getCurrentSettings().defaultBoxArt);
-//        defaultScreenshotField.setText(getCurrentSettings().defaultScreenshot);
         filenameRegexField.setText(getCurrentSettings().substringRegex);
         ignoreRegexField.setText(getCurrentSettings().ignoreRegex);
         unmatchedOnlyCheckBox.setSelected(getCurrentSettings().unmatchedOnly);
         
         gamesListView.getItems().clear();
-//        getCurrentSettings().games.stream().forEach((g) -> {
         if(getSystemGameData(getCurrentSettings().name) != null) {
             getSystemGameData(getCurrentSettings().name).stream().forEach((g) -> {
                 gamesListView.getItems().add(g);
@@ -1150,7 +896,6 @@ public class ScraperFX extends Application {
         gameSourceField.clear();
         filenameRegexField.clear();
         ignoreRegexField.clear();
-//        imageOuputField.clear();
         unmatchedOnlyCheckBox.setSelected(false);
     }
     
@@ -1304,31 +1049,18 @@ public class ScraperFX extends Application {
             setPadding(new Insets(7.));
             
             views = new ArrayList();
-            
-//            addEventFilter(MouseEvent.MOUSE_CLICKED, (e) -> {
-//                System.out.println(e.getTarget());
-//            });
-//            setOnMouseClicked((e) -> {
-//                EventTarget et = e.getTarget();
-//                System.out.println(et);
-//                if(et instanceof MetaImageView) {
-//                    MetaImageView clickedView = (MetaImageView)e.getTarget();
-//                    if(clickedView.getImage() != null) {
-//                    }
-//                }
-//            });
         }
         
         public void selectImage(scraperfx.settings.Image image) {
             currentGame.metadata.selectImage(image);
-            for(MetaImageView view : views) {
+            views.stream().forEach((view) -> {
                 if(view.getImage().selected) {
                     view.setBorder(new Border(new BorderStroke(Color.LIGHTGREEN, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5))));
                 }
                 else {
                     view.setBorder(null);
                 }
-            }
+            });
         }
         
         public void addView(MetaImageView view) {
@@ -1359,10 +1091,6 @@ public class ScraperFX extends Application {
             });
         }
         
-//        public void setImage(scraperfx.settings.Image image) {
-//            this.image = image;
-//        }
-        
         public scraperfx.settings.Image getImage() {
             return image;
         }
@@ -1370,10 +1098,6 @@ public class ScraperFX extends Application {
         public ImageView getView() {
             return view;
         }
-        
-//        public String getType() {
-//            return type;
-//        }
     }
     
     private class ImageLoadingTask extends Task<Void> {
@@ -1390,19 +1114,16 @@ public class ScraperFX extends Application {
         @Override
         protected Void call() {
             try {
-//                System.out.println("loading image " + scraperImage.path);
                 image = getImageFromURL(scraperImage.path);
             }
             catch(IOException ex) {
                 cancel();
-//                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
             }
             return null;
         }
 
         @Override
         protected void succeeded() {
-//            System.out.println("success");
             view.getView().setImage(image);
         }
 
@@ -1433,8 +1154,6 @@ public class ScraperFX extends Application {
                         }
 
                         String filename = p.getFileName().toString();
-//                        Game localGame = new Game(filename);
-//                        Game g = getGame(localGame);
                         Game localGame = getGame(new Game(filename));
                         if(localGame == null) {
                             localGame = new Game(filename);
@@ -1444,9 +1163,7 @@ public class ScraperFX extends Application {
                             if(getCurrentSettings().ignoreRegex != null && !"".equals(getCurrentSettings().ignoreRegex)) {
                                 Pattern ignorePattern = Pattern.compile(".*" + getCurrentSettings().ignoreRegex + ".*");
                                 Matcher ignoreMatcher = ignorePattern.matcher(filename);
-    //                            System.out.println(ignorePattern);
                                 if(ignoreMatcher.matches()) {
-    //                                System.out.println("ignoring " + filename);
                                     localGame.matchedName = null;
                                     localGame.strength = Game.MatchStrength.IGNORE;
                                     ignore = true;
@@ -1455,10 +1172,6 @@ public class ScraperFX extends Application {
 
                             if(!ignore) {
                                 if(unmatchedOnlyCheckBox.isSelected()) {
-        //                            int indexOfGame = getCurrentSettings().games.indexOf(localGame);
-        //                            if(indexOfGame != -1 && getCurrentSettings().games.get(indexOfGame).strength != Game.MatchStrength.NO_MATCH) {
-
-//                                    if(g != null && g.strength != Game.MatchStrength.NO_MATCH) {
                                     if(localGame.matchedName != null) {
                                         // this game is already matched and we only want unmatched games.
                                         updateMessage("Skipping " + filename + ". Already matched. Scanning unmatched only.");
@@ -1492,14 +1205,6 @@ public class ScraperFX extends Application {
                                     }
                                 }
                                 else {
-        //                            int indexOfGame = getCurrentSettings().games.indexOf(localGame);
-        //                            if(indexOfGame != -1 && getCurrentSettings().games.get(indexOfGame).strength == Game.MatchStrength.LOCKED) {
-        //                                localGame = getCurrentSettings().games.get(indexOfGame);
-//                                    Game g = getGame(localGame);
-//                                    if(g != null && g.strength == Game.MatchStrength.LOCKED) {
-//                                        localGame = g;
-//                                    }
-//                                    else {
                                     if(localGame.strength != Game.MatchStrength.LOCKED) {
                                         if(getCurrentSettings().substringRegex != null && !"".equals(getCurrentSettings().substringRegex)) {
                                             Pattern pattern = Pattern.compile(".*" + getCurrentSettings().substringRegex + ".*");
@@ -1507,21 +1212,15 @@ public class ScraperFX extends Application {
                                             if(m.matches()) {
                                                 for(int i = 1; i <= m.groupCount(); i++) {
                                                     noExtName = noExtName.replaceAll(m.group(i), "");
-        //                                          noExtName = noExtName.replaceAll(getCurrentSettings().regex, "");
                                                 }
                                             }
                                         }
-        //                                noExtName = noExtName.replaceAll("'", "");
                                         noExtName = noExtName.replaceAll(" - ", " ");
                                         noExtName = noExtName.replaceAll("\\(.*\\)", "");
                                         noExtName = noExtName.replaceAll("\\[.*\\]", "");
                                         noExtName = noExtName.replaceAll(" and ", " ");
                                         noExtName = noExtName.replaceAll("\\p{Punct}", "");
-        //                                noExtName = noExtName.replaceAll(":", "");
-        //                                noExtName = noExtName.replaceAll("-", "");
-        //                                noExtName = noExtName.replaceAll("\\.", "");
                                         noExtName = noExtName.trim();
-        //                                System.out.println("file: " + noExtName);
 
                                         boolean hundredpercentmatch = false;
                                         List<String> hitNames = new ArrayList();
@@ -1537,10 +1236,6 @@ public class ScraperFX extends Application {
                                             lowerCaseName = lowerCaseName.replaceAll("\\[.*\\]", "");
                                             lowerCaseName = lowerCaseName.replaceAll(" and ", " ");
                                             lowerCaseName = lowerCaseName.replaceAll("\\p{Punct}", "");
-        //                                    lowerCaseName = lowerCaseName.replaceAll(":", "");
-        //                                    lowerCaseName = lowerCaseName.replaceAll(" - ", " ");
-        //                                    lowerCaseName = lowerCaseName.replaceAll("-", "");
-        //                                    lowerCaseName = lowerCaseName.replaceAll("\\.", "");
                                             lowerCaseName = lowerCaseName.trim();
 
                                             if(noExtName.equals(lowerCaseName)) {
@@ -1552,44 +1247,44 @@ public class ScraperFX extends Application {
                                             }
                                             else {
                                                 //find based on parts from both local filename and database names.
-                                                String[] localParts = noExtName.split("\\s");//"[\\s\\p{Punct}]");
-                                                String[] split = lowerCaseName.split("\\s");//"[\\s\\p{Punct}]");
+                                                String[] localParts = noExtName.split("\\s");
+                                                String[] split = lowerCaseName.split("\\s");
 
                                                 int hits = 0;
                                                 int hitLength = 0;
-                                                for(int i = 0; i < split.length; i++) {
-                                                    if(!"".equals(split[i])) {
+                                                for(String split1 : split) {
+                                                    if(!"".equals(split1)) {
                                                         for(int q = 0; q < localParts.length; q++) {
                                                             if(!"".equals(localParts[q])) {
-                                                                if(isNumeral(split[i])) {// 1-15, either digits or roman.
-                                                                    if(localParts[q].equals(asDigit(split[i])) ||
-                                                                            localParts[q].equals(asRoman(split[i]))) {
+                                                                if(isNumeral(split1)) {
+                                                                    // 1-15, either digits or roman.
+                                                                    if(localParts[q].equals(asDigit(split1)) || localParts[q].equals(asRoman(split1))) {
                                                                         hits++;
-                                                                        hitLength += split[i].length();
+                                                                        hitLength += split1.length();
                                                                         hitPartIsNumber = true;//needed later if this is the only part hit.
                                                                         localParts[q] = "";//piece matched, clear it out to prevent rematching.
                                                                         break;
                                                                     }
                                                                 }
                                                                 else {
-                                                                    if(isInteger(localParts[q]) || isInteger(split[i])) {
+                                                                    if(isInteger(localParts[q]) || isInteger(split1)) {
                                                                         // i don't want to do contains on numbers because weird things can happen
                                                                         // where a filename with a 000 in it (for whatever reason) will match
                                                                         // any game with say a 2000 in the title (happens a lot).
-                                                                        if(localParts[q].equals(split[i])) {
+                                                                        if(localParts[q].equals(split1)) {
                                                                             hits++;
-                                                                            hitLength += split[i].length();
+                                                                            hitLength += split1.length();
                                                                             localParts[q] = "";//piece matched, clear it out to prevent rematching.
                                                                             break;
                                                                         }
                                                                     }
-                                                                    else if(localParts[q].contains(split[i])) {
+                                                                    else if(localParts[q].contains(split1)) {
                                                                         hits++;
-                                                                        hitLength += split[i].length();
-                                                                        localParts[q] = localParts[q].replace(split[i], "");//piece matched, clear it out to prevent rematching.
+                                                                        hitLength += split1.length();
+                                                                        localParts[q] = localParts[q].replace(split1, ""); //piece matched, clear it out to prevent rematching.
                                                                         break;
                                                                     }
-                                                                    else if(split[i].contains(localParts[q])) {
+                                                                    else if(split1.contains(localParts[q])) {
                                                                         hits++;
                                                                         hitLength += localParts[q].length();
                                                                         localParts[q] = "";
@@ -1606,7 +1301,6 @@ public class ScraperFX extends Application {
                                                     }
                                                     hitNames.add(gameName);
                                                     hitPercents.add((double)hitLength / (double)noExtName.replaceAll("\\s", "").length());
-        //                                            System.out.println(lowerCaseName + " " + (double)hitLength / (double)noExtName.replaceAll("\\s", "").length());
                                                     remoteHitPercents.add((double)hitLength / (double)lowerCaseName.length());
                                                 }
                                             }
@@ -1680,12 +1374,8 @@ public class ScraperFX extends Application {
 
                         updateProgress(++fileCount, totalFiles);
 
-//                        getCurrentSettings().games.remove(localGame);
-//                        getCurrentSettings().games.add(localGame);
                         getSystemGameData().remove(localGame);
                         getSystemGameData().add(localGame);
-//                        removeGame(localGame);
-//                        addGame(localGame);
                         
                         Game g = new Game(localGame);
                         Platform.runLater(() -> {

@@ -77,7 +77,7 @@
             <zipgroupfileset dir="dist/lib" includes="*.jar"/>
 
             <manifest>
-                <attribute name="Main-Class" value="scraperfx.ScraperFX"/>
+                <attribute name="Main-Class" value="com.goodjaerb.scraperfx.ScraperFX"/>
 
                 <attribute name="Implementation-Title" value="${project.name}" />
                 <!--

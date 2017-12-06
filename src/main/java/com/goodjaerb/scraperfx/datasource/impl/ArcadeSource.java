@@ -45,6 +45,7 @@ public class ArcadeSource implements DataSource {
             MetaData data = new MetaData();
             
             conn = (HttpURLConnection)new URL("http://adb.arcadeitalia.net/dettaglio_mame.php?game_name=" + game.matchedName).openConnection();
+            
             reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             
             String result = "";
@@ -53,7 +54,7 @@ public class ArcadeSource implements DataSource {
                 result += line;
             }
 
-            Pattern p = Pattern.compile("<title>Arcade Database - (.*) - .*</title>");
+            Pattern p = Pattern.compile("<title>(.*) - .*</title>");
             Matcher m = p.matcher(result);
             if(!m.find()) {
                 return null;
@@ -62,19 +63,19 @@ public class ArcadeSource implements DataSource {
                 data.metaName = m.group(1).replace("&amp;", "&").replace("&#039;", "'");
                 data.images = new ArrayList();
                 
-                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/decals/" + game.matchedName + ".png)\">");
+                p = Pattern.compile("src_full=\"http://adb.arcadeitalia.net/media/mame.current/decals/" + game.matchedName + ".png\">");
                 m = p.matcher(result);
                 if(m.find()) {
                     data.images.add(new Image("decal", m.group(1), true));
                 }
                 
-                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/titles/" + game.matchedName + ".png)\">");
+                p = Pattern.compile("src_full=\"http://adb.arcadeitalia.net/media/mame.current/titles/" + game.matchedName + ".png\">");
                 m = p.matcher(result);
                 if(m.find()) {
                     data.images.add(new Image("title", m.group(1), true));
                 }
                 
-                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/ingames/" + game.matchedName + ".png)\">");
+                p = Pattern.compile("src_full=\"http://adb.arcadeitalia.net/media/mame.current/ingames/" + game.matchedName + ".png\">");
                 m = p.matcher(result);
                 if(m.find()) {
                     data.images.add(new Image("game", m.group(1), true));

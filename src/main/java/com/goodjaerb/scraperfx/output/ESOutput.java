@@ -322,7 +322,7 @@ public class ESOutput {
                                                 String secondary = secondaryMetaDataTypes.get(i).getSelectionModel().getSelectedItem();
                                                 String primaryPath = g.metadata.getSelectedImagePath(primary);
                                                 String secondaryPath = g.metadata.getSelectedImagePath(secondary);
-
+                                                
                                                 String primaryImageType = null;
                                                 String secondaryImageType = null;
                                                 if(primaryPath != null) primaryImageType = primaryPath.substring(primaryPath.lastIndexOf(".") + 1);//determineOutputType(primaryPath);
@@ -335,6 +335,24 @@ public class ESOutput {
                                                 if(!secondary.equals("") && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-" + secondary, secondaryImageType, secondaryPath)) {
                                                     writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-" + secondary + "." + secondaryImageType + "</" + esTags.get(i) + ">\n");
                                                     continue;
+                                                }
+                                                
+                                                //hardcode flyer/marquee as last resorts because i can't be bothered to update the gui.
+                                                String flyerPath = g.metadata.getSelectedImagePath("flyer");
+                                                String marqueePath = g.metadata.getSelectedImagePath("marquee");
+                                                if(esTags.get(i) == "image") {
+                                                    String flyerImageType = flyerPath.substring(flyerPath.lastIndexOf(".") + 1);
+                                                    if(flyerPath != null && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-flyer", flyerImageType, flyerPath)) {
+                                                        writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-flyer" + "." + flyerImageType + "</" + esTags.get(i) + ">\n");
+                                                        continue;
+                                                    }
+                                                }
+                                                if(esTags.get(i) == "bgImage") {
+                                                    String marqueeImageType = marqueePath.substring(marqueePath.lastIndexOf(".") + 1);
+                                                    if(marqueePath != null && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-marquee", marqueeImageType, marqueePath)) {
+                                                        writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-marquee" + "." + marqueeImageType + "</" + esTags.get(i) + ">\n");
+                                                        continue;
+                                                    }
                                                 }
                                             }
                                         }

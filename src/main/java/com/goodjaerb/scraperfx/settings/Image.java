@@ -17,7 +17,7 @@ import org.xmappr.annotation.RootElement;
 public class Image {
     public enum ImageType {
         LOGO("logo", false), BOX_FRONT("box-front", false), BOX_BACK("box-back", false), SCREENSHOT("screenshot", false), FANART("fanart", false),
-        GAME("game", true), DECAL("decal", true), TITLE("title", true);
+        GAME("game", true), DECAL("decal", true), TITLE("title", true), FLYER("flyer", true), MARQUEE("marquee", true);
         
         private final String name;
         private final boolean arcadeImage;

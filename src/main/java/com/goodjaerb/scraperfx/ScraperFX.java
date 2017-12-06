@@ -1079,7 +1079,7 @@ public class ScraperFX extends Application {
         public MetaImageView(com.goodjaerb.scraperfx.settings.Image image) {
             super();
             this.image = image;
-            view = new ImageView("scraperfx/images/loading.gif");
+            view = new ImageView("images/loading.gif");
             view.setFitHeight(175.);
             view.setPreserveRatio(true);
 

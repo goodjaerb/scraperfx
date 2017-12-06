@@ -63,22 +63,34 @@ public class ArcadeSource implements DataSource {
                 data.metaName = m.group(1).replace("&amp;", "&").replace("&#039;", "'");
                 data.images = new ArrayList();
                 
-                p = Pattern.compile("src_full=\"http://adb.arcadeitalia.net/media/mame.current/decals/" + game.matchedName + ".png\">");
+                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/decals/" + game.matchedName + "\\.png).*\"></img>");
                 m = p.matcher(result);
                 if(m.find()) {
                     data.images.add(new Image("decal", m.group(1), true));
                 }
                 
-                p = Pattern.compile("src_full=\"http://adb.arcadeitalia.net/media/mame.current/titles/" + game.matchedName + ".png\">");
+                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/titles/" + game.matchedName + "\\.png).*\"></img>");
                 m = p.matcher(result);
                 if(m.find()) {
                     data.images.add(new Image("title", m.group(1), true));
                 }
                 
-                p = Pattern.compile("src_full=\"http://adb.arcadeitalia.net/media/mame.current/ingames/" + game.matchedName + ".png\">");
+                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/ingames/" + game.matchedName + "\\.png).*\"></img>");
                 m = p.matcher(result);
                 if(m.find()) {
                     data.images.add(new Image("game", m.group(1), true));
+                }
+                
+                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/marquees/" + game.matchedName + "\\.png).*\"></img>");
+                m = p.matcher(result);
+                if(m.find()) {
+                    data.images.add(new Image("marquee", m.group(1), true));
+                }
+                
+                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/flyers/" + game.matchedName + "\\.png).*\"></img>");
+                m = p.matcher(result);
+                if(m.find()) {
+                    data.images.add(new Image("flyer", m.group(1), true));
                 }
             }
             

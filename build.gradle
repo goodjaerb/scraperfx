@@ -1,0 +1,24 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'application'
+mainClassName = "com.goodjaerb.scraperfx.ScraperFX"
+
+jar {
+    baseName = 'scraperfx'
+    version = '0.0.1'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+     mavenCentral()
+}
+
+dependencies {
+    compile files('libs/xmappr.jar')
+}

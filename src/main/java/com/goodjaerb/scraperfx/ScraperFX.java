@@ -277,7 +277,9 @@ public class ScraperFX extends Application {
         });
         
         consoleSelectComboBox.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends String> obs, String oldValue, String newValue) -> {
-            getCurrentSettings().scrapeAs = consoleSelectComboBox.getSelectionModel().getSelectedItem();
+            if(getCurrentSettings() != null) {
+                getCurrentSettings().scrapeAs = consoleSelectComboBox.getSelectionModel().getSelectedItem();
+            }
         });
         
         
@@ -326,8 +328,9 @@ public class ScraperFX extends Application {
                 Platform.runLater(() -> {
                     consoleSelectComboBox.getItems().clear();
                     consoleSelectComboBox.getItems().addAll(consoles);
-                    if(!getCurrentSettings().scrapeAsArcade) {
-                        consoleSelectComboBox.getSelectionModel().select(getCurrentSettings().scrapeAs);
+                    com.goodjaerb.scraperfx.settings.System currentSystem = getCurrentSettings();
+                    if(currentSystem != null && !currentSystem.scrapeAsArcade) {
+                        consoleSelectComboBox.getSelectionModel().select(currentSystem.scrapeAs);
                     }
                     else {
                         consoleSelectComboBox.getSelectionModel().select(0);

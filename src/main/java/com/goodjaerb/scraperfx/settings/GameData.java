@@ -21,7 +21,7 @@ public class GameData {
     public List<GameList> gamelist;
     
     public GameData() {
-        gamelist = new ArrayList();
+        gamelist = new ArrayList<>();
     }
     
     public List<Game> getSystemData(String systemName) {

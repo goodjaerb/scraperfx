@@ -23,7 +23,7 @@ public class SystemSettings {
     public Collection<System> systems;
     
     public SystemSettings() {
-        systems = new TreeSet();
+        systems = new TreeSet<>();
     }
     
     public void renameSystem(String oldName, String newName) {

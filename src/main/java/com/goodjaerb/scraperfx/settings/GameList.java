@@ -25,7 +25,7 @@ public class GameList {
     public List<Game> games;
     
     public GameList() {
-        games = new ArrayList();
+        games = new ArrayList<>();
     }
     
     public GameList(String system) {

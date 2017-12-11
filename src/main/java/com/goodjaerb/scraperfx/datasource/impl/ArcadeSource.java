@@ -61,7 +61,7 @@ public class ArcadeSource implements DataSource {
             }
             else {
                 data.metaName = m.group(1).replace("&amp;", "&").replace("&#039;", "'");
-                data.images = new ArrayList();
+                data.images = new ArrayList<>();
                 
                 p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/decals/" + game.matchedName + "\\.png).*\"></img>");
                 m = p.matcher(result);

@@ -68,7 +68,7 @@ public class GamesDBGame {
     }
     
     public List<Image> getImages() {
-        List<Image> imglist = new ArrayList();
+        List<Image> imglist = new ArrayList<>();
         if(images.logo != null) {
             imglist.add(new Image("logo", images.logo.width, images.logo.height, GamesDBSource.IMAGE_BASE_URL + images.logo.path, true));
         }

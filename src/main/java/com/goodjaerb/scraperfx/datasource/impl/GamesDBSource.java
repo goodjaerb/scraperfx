@@ -102,7 +102,7 @@ public class GamesDBSource implements DataSource {
                 GamesDBGameListData data = (GamesDBGameListData)xm.fromXML(xmlReader);
 
                 if(cachedGameListMap == null) {
-                    cachedGameListMap = new HashMap();
+                    cachedGameListMap = new HashMap<>();
                 }
                 cachedGameListMap.put(systemId, data.games);
             }
@@ -117,7 +117,7 @@ public class GamesDBSource implements DataSource {
                 GamesDBGameMetaData data = (GamesDBGameMetaData)xm.fromXML(xmlReader);
 
                 if(cachedGameMap == null) {
-                    cachedGameMap = new HashMap();
+                    cachedGameMap = new HashMap<>();
                 }
                 cachedGameMap.put(gameId, data);
             }
@@ -128,7 +128,7 @@ public class GamesDBSource implements DataSource {
     public List<String> getSystemNames() {
         populatePlatformList();
         
-        List<String> result = new ArrayList();
+        List<String> result = new ArrayList<>();
         cachedPlatformList.stream().forEach((p) -> {
             result.add(p.name);
         });
@@ -154,7 +154,7 @@ public class GamesDBSource implements DataSource {
     private List<String> getSystemGameNames(Integer systemId) {
         populateGameList(systemId);
         
-        List<String> result = new ArrayList();
+        List<String> result = new ArrayList<>();
         cachedGameListMap.get(systemId).stream().forEach((g) -> {
             result.add(g.gameTitle);
         });

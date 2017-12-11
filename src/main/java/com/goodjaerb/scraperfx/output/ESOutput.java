@@ -133,10 +133,10 @@ public class ESOutput {
             tagsBox.setPadding(new Insets(7.));
             tagsBox.getChildren().add(new Label("EmulationStation Image Tags"));
             
-            esTags = new ArrayList();
-            enableTagCheckBoxes = new ArrayList();
-            primaryMetaDataTypes = new ArrayList();
-            secondaryMetaDataTypes = new ArrayList();
+            esTags = new ArrayList<>();
+            enableTagCheckBoxes = new ArrayList<>();
+            primaryMetaDataTypes = new ArrayList<>();
+            secondaryMetaDataTypes = new ArrayList<>();
             
             for(ESImageTag tag : ESImageTag.values()) {
                 esTags.add(tag.getTag());
@@ -145,8 +145,8 @@ public class ESOutput {
                 
                 CheckBox enableTagCheckBox = new CheckBox();
                 enableTagCheckBox.setSelected(true);
-                ComboBox<String> primaryTypeBox = new ComboBox();
-                ComboBox<String> secondaryTypeBox = new ComboBox();
+                ComboBox<String> primaryTypeBox = new ComboBox<>();
+                ComboBox<String> secondaryTypeBox = new ComboBox<>();
                 
                 enableTagCheckBoxes.add(enableTagCheckBox);
                 primaryMetaDataTypes.add(primaryTypeBox);

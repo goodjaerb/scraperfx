@@ -161,7 +161,7 @@ public class ScraperFX extends Application {
     private Game currentGame;
     
     public ScraperFX() {
-        systemList = new ListView();
+        systemList = new ListView<>();
         
         tabPane = new TabPane();
         
@@ -184,7 +184,7 @@ public class ScraperFX extends Application {
         gamesTab = new Tab("Games");
         gamesPane = new BorderPane();
         imagesScroll = new ScrollPane();
-        gamesListView = new ListView();
+        gamesListView = new ListView<>();
         gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
         matchedNameField = new TextField();
         matchedNameField.setEditable(false);
@@ -220,7 +220,7 @@ public class ScraperFX extends Application {
         
         isScanning = new AtomicBoolean(false);
         
-        imageTaskList = new ArrayList();
+        imageTaskList = new ArrayList<>();
     }
     
     @Override
@@ -1051,7 +1051,7 @@ public class ScraperFX extends Application {
             setSpacing(7.);
             setPadding(new Insets(7.));
             
-            views = new ArrayList();
+            views = new ArrayList<>();
         }
         
         public void selectImage(com.goodjaerb.scraperfx.settings.Image image) {
@@ -1226,9 +1226,9 @@ public class ScraperFX extends Application {
                                         noExtName = noExtName.trim();
 
                                         boolean hundredpercentmatch = false;
-                                        List<String> hitNames = new ArrayList();
-                                        List<Double> hitPercents = new ArrayList();
-                                        List<Double> remoteHitPercents = new ArrayList();
+                                        List<String> hitNames = new ArrayList<>();
+                                        List<Double> hitPercents = new ArrayList<>();
+                                        List<Double> remoteHitPercents = new ArrayList<>();
                                         int mostPartsHit = 0;
                                         boolean hitPartIsNumber = false;
 
@@ -1319,7 +1319,7 @@ public class ScraperFX extends Application {
                                             else {
                                                 int index = -1;
                                                 double highest = -1;
-                                                List<String> tieNames = new ArrayList();
+                                                List<String> tieNames = new ArrayList<>();
 
                                                 for(int i = 0; i < hitPercents.size(); i++) {
                                                     if(hitPercents.get(i) > highest) {
@@ -1438,7 +1438,7 @@ public class ScraperFX extends Application {
         
             working = new AtomicBoolean(false);
             
-            selectGameBox = new ComboBox();
+            selectGameBox = new ComboBox<>();
             selectGameBox.getItems().add("Loading Games List...");
             selectGameBox.getSelectionModel().select(0);
             

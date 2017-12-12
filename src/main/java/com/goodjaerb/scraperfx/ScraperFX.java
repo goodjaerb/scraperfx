@@ -96,6 +96,8 @@ import com.goodjaerb.scraperfx.settings.GameList;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
+import javafx.scene.control.ButtonBar;
+import javafx.stage.WindowEvent;
 
 /**
  *
@@ -496,15 +498,7 @@ public class ScraperFX extends Application {
         });
         
         saveButton.setOnAction((e) -> {
-            try {
-                writeSettings();
-                writeGameData();
-            }
-            catch(IOException ex) {
-                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-                
-                new Alert(Alert.AlertType.ERROR, "Error saving settings.", ButtonType.OK).showAndWait();
-            }
+            saveAll();
         });
         
         outputToGamelistButton.setOnAction((e) -> {
@@ -546,6 +540,17 @@ public class ScraperFX extends Application {
             Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        primaryStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, (event) -> {
+            ButtonType saveThenQuitButton = new ButtonType("Save & Quit");
+            ButtonType justQuitButton = new ButtonType("Just Quit, Thanks.");
+            Alert closingAlert = new Alert(Alert.AlertType.CONFIRMATION, "ScraperFX is about to close. If you have made any new scans or settings changes you may want to save. Save now?", saveThenQuitButton, justQuitButton);
+            Optional<ButtonType> result = closingAlert.showAndWait();
+
+            if(result.isPresent() && result.get() == saveThenQuitButton) {
+                saveAll();
+            }
+        });
+        
         primaryStage.setTitle("ScraperFX");
         primaryStage.setScene(rootScene);
         primaryStage.show();
@@ -574,6 +579,18 @@ public class ScraperFX extends Application {
     
     public static Stage getPrimaryStage() {
         return mainStage;
+    }
+    
+    private void saveAll() {
+        try {
+            writeSettings();
+            writeGameData();
+        }
+        catch(IOException ex) {
+            Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+
+            new Alert(Alert.AlertType.ERROR, "Error saving settings.", ButtonType.OK).showAndWait();
+        }
     }
     
     private void lockMetaField(TextInputControl textControl, MetaDataId id, MetaData data, Boolean lock) {

@@ -110,6 +110,7 @@ public class ESOutput {
         private final List<CheckBox> enableTagCheckBoxes;
         private final List<ComboBox<String>> primaryMetaDataTypes;
         private final List<ComboBox<String>> secondaryMetaDataTypes;
+        private final CheckBox skipUnmatchedCheckBox;
         
         private final Button startButton;
         private final Button cancelButton;
@@ -122,6 +123,7 @@ public class ESOutput {
             super();
             this.arcade = arcade;
             
+            skipUnmatchedCheckBox = new CheckBox("Skip Unmatched Files");
             messageArea = new TextArea("Press START to begin.\n");
             messageArea.setEditable(false);
             progressBar = new ProgressBar();
@@ -191,6 +193,7 @@ public class ESOutput {
             buttonBox.setSpacing(7.);
             buttonBox.getChildren().addAll(progressBar, startButton, cancelButton);
             
+            tagsBox.getChildren().add(skipUnmatchedCheckBox);
             tagsBox.getChildren().add(messageArea);
             tagsBox.getChildren().add(buttonBox);
             
@@ -279,7 +282,8 @@ public class ESOutput {
                             if(isCancelled()) {
                                 break;
                             }
-                            if(g.strength != Game.MatchStrength.IGNORE) {
+                            
+                            if(g.strength != Game.MatchStrength.IGNORE && (!skipUnmatchedCheckBox.isSelected() || g.strength != Game.MatchStrength.NO_MATCH)) {
                                 writer.append("\t<game>\n");
 
                                 writer.append("\t\t<path>./" + g.fileName + "</path>\n");
@@ -340,16 +344,16 @@ public class ESOutput {
                                                 //hardcode flyer/marquee as last resorts because i can't be bothered to update the gui.
                                                 String flyerPath = g.metadata.getSelectedImagePath("flyer");
                                                 String marqueePath = g.metadata.getSelectedImagePath("marquee");
-                                                if(esTags.get(i) == "image") {
+                                                if(flyerPath != null && "image".equals(esTags.get(i))) {
                                                     String flyerImageType = flyerPath.substring(flyerPath.lastIndexOf(".") + 1);
-                                                    if(flyerPath != null && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-flyer", flyerImageType, flyerPath)) {
+                                                    if(ScraperFX.writeImageToFile(imagesPath, g.fileName + "-flyer", flyerImageType, flyerPath)) {
                                                         writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-flyer" + "." + flyerImageType + "</" + esTags.get(i) + ">\n");
                                                         continue;
                                                     }
                                                 }
-                                                if(esTags.get(i) == "bgImage") {
+                                                if(marqueePath != null && "bgImage".equals(esTags.get(i))) {
                                                     String marqueeImageType = marqueePath.substring(marqueePath.lastIndexOf(".") + 1);
-                                                    if(marqueePath != null && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-marquee", marqueeImageType, marqueePath)) {
+                                                    if(ScraperFX.writeImageToFile(imagesPath, g.fileName + "-marquee", marqueeImageType, marqueePath)) {
                                                         writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-marquee" + "." + marqueeImageType + "</" + esTags.get(i) + ">\n");
                                                         continue;
                                                     }

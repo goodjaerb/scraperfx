@@ -372,7 +372,7 @@ public class ScraperFX extends Application {
             }
         });
         
-        MenuItem lockGamesItem = new MenuItem("Lock Selection");
+        MenuItem lockGamesItem = new MenuItem("Lock");
         lockGamesItem.setOnAction((e) -> {
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.stream().forEach((g) -> {
@@ -382,7 +382,7 @@ public class ScraperFX extends Application {
             loadCurrentGameFields(currentGame);
         });
         
-        MenuItem unlockGamesItem = new MenuItem("Unlock Selection");
+        MenuItem unlockGamesItem = new MenuItem("Unlock");
         unlockGamesItem.setOnAction((e) -> {
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.stream().forEach((g) -> {
@@ -399,11 +399,15 @@ public class ScraperFX extends Application {
         
         MenuItem ignoreItem = new MenuItem("Ignore");
         ignoreItem.setOnAction((e) -> {
-            clearCurrentGameFields();
-            currentGame.matchedName = null;
-            currentGame.metadata = null;
-            currentGame.strength = Game.MatchStrength.IGNORE;
-            loadCurrentGameFields(currentGame);
+//            clearCurrentGameFields();
+//            currentGame.matchedName = null;
+//            currentGame.metadata = null;
+            ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            selectedGames.stream().forEach((g) -> {
+                g.strength = Game.MatchStrength.IGNORE;
+            });
+//            currentGame.strength = Game.MatchStrength.IGNORE;
+//            loadCurrentGameFields(currentGame);
             gamesListView.refresh();
         });
         

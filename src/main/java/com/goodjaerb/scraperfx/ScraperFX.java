@@ -404,6 +404,8 @@ public class ScraperFX extends Application {
 //            currentGame.metadata = null;
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.stream().forEach((g) -> {
+                g.matchedName = null;
+                g.metadata = null;
                 g.strength = Game.MatchStrength.IGNORE;
             });
 //            currentGame.strength = Game.MatchStrength.IGNORE;
@@ -1218,7 +1220,7 @@ public class ScraperFX extends Application {
                                         // i thought it was a bug. turns out the scan process is very fast,
                                         // it's downloading the data that is slow.
                                         try {
-                                            Thread.sleep(100);
+                                            Thread.sleep(5);
                                         }
                                         catch(InterruptedException interrupted) {
                                             if(isCancelled()) {
@@ -1426,7 +1428,7 @@ public class ScraperFX extends Application {
                         // i thought it was a bug. turns out the scan process is very fast,
                         // it's downloading the data that is slow.
                         try {
-                            Thread.sleep(60);
+                            Thread.sleep(5);
                         }
                         catch(InterruptedException interrupted) {
                             if(isCancelled()) {

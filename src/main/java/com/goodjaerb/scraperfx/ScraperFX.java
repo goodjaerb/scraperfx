@@ -411,7 +411,21 @@ public class ScraperFX extends Application {
             gamesListView.refresh();
         });
         
-        gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem));
+        MenuItem unignoreItem = new MenuItem("Unignore");
+        unignoreItem.setOnAction((e) -> {
+//            clearCurrentGameFields();
+//            currentGame.matchedName = null;
+//            currentGame.metadata = null;
+            ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            selectedGames.stream().forEach((g) -> {
+                g.strength = Game.MatchStrength.NO_MATCH;
+            });
+//            currentGame.strength = Game.MatchStrength.IGNORE;
+//            loadCurrentGameFields(currentGame);
+            gamesListView.refresh();
+        });
+        
+        gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem, unignoreItem));
         
         matchedNameClearButton.setOnAction((e) -> {
             clearCurrentGameFields();

@@ -364,18 +364,18 @@ public class ESOutput {
                                 }
 
                                 writer.append("\t</game>\n");
+                                updateMessage("Completed " + g.fileName + " output to gamelist.xml");
                             }
                             updateProgress(++fileCount, games.size());
-                            updateMessage("Completed " + g.fileName + " output to gamelist.xml");
                             
-                            try {
-                                Thread.sleep(60);
-                            }
-                            catch(InterruptedException interrupted) {
-                                if(isCancelled()) {
-                                    break;
-                                }
-                            }
+//                            try {
+//                                Thread.sleep(60);
+//                            }
+//                            catch(InterruptedException interrupted) {
+//                                if(isCancelled()) {
+//                                    break;
+//                                }
+//                            }
                         }
 
                         writer.append("</gameList>\n");

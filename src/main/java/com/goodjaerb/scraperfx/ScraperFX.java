@@ -1424,17 +1424,17 @@ public class ScraperFX extends Application {
                             gamesListView.getSelectionModel().selectLast();//temporary?
                         });
 
-                        // without sleeping, subsequent scans with cached data went so fast
-                        // i thought it was a bug. turns out the scan process is very fast,
-                        // it's downloading the data that is slow.
-                        try {
-                            Thread.sleep(5);
-                        }
-                        catch(InterruptedException interrupted) {
-                            if(isCancelled()) {
-                                break;
-                            }
-                        }
+//                        // without sleeping, subsequent scans with cached data went so fast
+//                        // i thought it was a bug. turns out the scan process is very fast,
+//                        // it's downloading the data that is slow.
+//                        try {
+//                            Thread.sleep(5);
+//                        }
+//                        catch(InterruptedException interrupted) {
+//                            if(isCancelled()) {
+//                                break;
+//                            }
+//                        }
                     }
                     isScanning.set(false);
                 }

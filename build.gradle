@@ -25,5 +25,6 @@ repositories {
 }
 
 dependencies {
-    compile files('libs/xmappr.jar')
+    compile files('libs/xmappr.jar');
+    compile("com.google.code.gson:gson:2.8.5");
 }

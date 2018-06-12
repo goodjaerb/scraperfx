@@ -74,10 +74,19 @@ public class MetaData {
     public MetaData() {
     }
     
-    public String getSelectedImagePath(String type) {
+    public String getSelectedImageUrl(String type) {
         for(Image image : images) {
             if(type.equals(image.type) && image.selected) {
-                return image.path;
+                return image.url;
+            }
+        }
+        return null;
+    }
+    
+    public String getSelectedImageType(String type) {
+        for(Image image : images) {
+            if(type.equals(image.type) && image.selected) {
+                return image.targetImageType;
             }
         }
         return null;
@@ -85,7 +94,7 @@ public class MetaData {
     
     public void selectImage(Image image) {
         images.stream().filter((i) -> (i.type.equals(image.type))).forEach((i) -> {
-            i.selected = i.path.equals(image.path);
+            i.selected = i.url.equals(image.url);
         });
     }
     

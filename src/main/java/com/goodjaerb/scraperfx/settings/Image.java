@@ -17,7 +17,7 @@ import org.xmappr.annotation.RootElement;
 public class Image {
     public enum ImageType {
         LOGO("logo", false), BOX_FRONT("box-front", false), BOX_BACK("box-back", false), SCREENSHOT("screenshot", false), FANART("fanart", false),
-        GAME("game", true), DECAL("decal", true), TITLE("title", true), FLYER("flyer", true), MARQUEE("marquee", true);
+        GAME("game", true), /*DECAL("decal", true),*/ TITLE("title", true), FLYER("flyer", true), MARQUEE("marquee", true);
         
         private final String name;
         private final boolean arcadeImage;
@@ -45,8 +45,14 @@ public class Image {
     @Attribute(name = "height")
     public Integer height;
     
-    @Attribute(name = "path")
-    public String path;
+//    @Attribute(name = "path")
+//    public String path;
+    
+    @Attribute(name = "url")
+    public String url;
+    
+    @Attribute(name = "target-imagetype")
+    public String targetImageType;
     
     @Attribute(name = "selected")
     public Boolean selected;
@@ -55,48 +61,55 @@ public class Image {
         selected = false;
     }
     
-    public Image(String type, String path, boolean b) {
+    public Image(String type, String url, String targetImageType, boolean b) {
         this.type = type;
-        this.path = path;
+        this.url = url;
+        this.targetImageType = targetImageType;
+//        this.path = path;
         this.selected = b;
     }
     
-    public Image(String type, Integer width, Integer height, String path, boolean b) {
+    public Image(String type, Integer width, Integer height, String url, boolean b) {
         this.type = type;
         this.width = width;
         this.height = height;
-        this.path = path;
+        this.url = url;
+//        this.path = path;
         this.selected = b;
     }
-    
+
     @Override
     public String toString() {
-        return "(type=" + type + ", width=" + width + ", height=" + height + ", path=" + path + ")";
+        return "Image{" + "type=" + type + ", width=" + width + ", height=" + height + ", url=" + url + ", targetImageType=" + targetImageType + ", selected=" + selected + '}';
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 97 * hash + Objects.hashCode(this.type);
-        hash = 97 * hash + Objects.hashCode(this.path);
+        hash = 11 * hash + Objects.hashCode(this.type);
+        hash = 11 * hash + Objects.hashCode(this.url);
         return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
             return false;
         }
-        if(getClass() != obj.getClass()) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
         final Image other = (Image) obj;
-        if(!Objects.equals(this.type, other.type)) {
+        if (!Objects.equals(this.type, other.type)) {
             return false;
         }
-        if(!Objects.equals(this.path, other.path)) {
+        if (!Objects.equals(this.url, other.url)) {
             return false;
         }
         return true;
     }
+    
 }

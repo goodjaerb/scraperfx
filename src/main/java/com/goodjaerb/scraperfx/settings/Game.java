@@ -65,7 +65,7 @@ public class Game implements Comparable<Game> {
         if(metadata != null && metadata.images != null) {
             for(Image img : metadata.images) {
                 if(img.type.equals(type)) {
-                    return img.path;
+                    return img.url;
                 }
             }
         }

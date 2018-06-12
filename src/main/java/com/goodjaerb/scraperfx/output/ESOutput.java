@@ -47,7 +47,7 @@ import com.goodjaerb.scraperfx.settings.Image;
 public class ESOutput {
     
     public enum ESImageTag {
-        IMAGE("image", Image.ImageType.BOX_FRONT, Image.ImageType.SCREENSHOT, Image.ImageType.TITLE, Image.ImageType.DECAL),
+        IMAGE("image", Image.ImageType.BOX_FRONT, Image.ImageType.SCREENSHOT, Image.ImageType.TITLE, Image.ImageType.GAME),
         BG_IMAGE("bgImage", Image.ImageType.SCREENSHOT, Image.ImageType.FANART, Image.ImageType.GAME, Image.ImageType.TITLE),
         SCREENSHOT("screenshot", Image.ImageType.SCREENSHOT, null, Image.ImageType.GAME, null),
         ;
@@ -117,11 +117,11 @@ public class ESOutput {
         private final ProgressBar progressBar;
         private final TextArea messageArea;
         
-        private final boolean arcade;
+//        private final boolean arcade;
         
         public OutputDialog(List<Game> games, String outputPathStr, String imagesPathStr, boolean arcade) {
             super();
-            this.arcade = arcade;
+//            this.arcade = arcade;
             
             skipUnmatchedCheckBox = new CheckBox("Skip Unmatched Files");
             messageArea = new TextArea("Press START to begin.\n");
@@ -324,13 +324,13 @@ public class ESOutput {
                                             if(enableTagCheckBoxes.get(i).isSelected()) {
                                                 String primary = primaryMetaDataTypes.get(i).getSelectionModel().getSelectedItem();
                                                 String secondary = secondaryMetaDataTypes.get(i).getSelectionModel().getSelectedItem();
-                                                String primaryPath = g.metadata.getSelectedImagePath(primary);
-                                                String secondaryPath = g.metadata.getSelectedImagePath(secondary);
+                                                String primaryPath = g.metadata.getSelectedImageUrl(primary);
+                                                String secondaryPath = g.metadata.getSelectedImageUrl(secondary);
                                                 
-                                                String primaryImageType = null;
-                                                String secondaryImageType = null;
-                                                if(primaryPath != null) primaryImageType = primaryPath.substring(primaryPath.lastIndexOf(".") + 1);//determineOutputType(primaryPath);
-                                                if(secondaryPath != null) secondaryImageType = secondaryPath.substring(secondaryPath.lastIndexOf(".") + 1);//determineOutputType(secondaryPath);
+                                                String primaryImageType = g.metadata.getSelectedImageType(primary);
+                                                String secondaryImageType = g.metadata.getSelectedImageType(secondary);
+                                                if(primaryImageType == null && primaryPath != null) primaryImageType = primaryPath.substring(primaryPath.lastIndexOf(".") + 1);//determineOutputType(primaryPath);
+                                                if(secondaryImageType == null && secondaryPath != null) secondaryImageType = secondaryPath.substring(secondaryPath.lastIndexOf(".") + 1);//determineOutputType(secondaryPath);
 
                                                 if(!primary.equals("") && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-" + primary, primaryImageType, primaryPath)) {
                                                     writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-" + primary + "." + primaryImageType + "</" + esTags.get(i) + ">\n");
@@ -342,17 +342,18 @@ public class ESOutput {
                                                 }
                                                 
                                                 //hardcode flyer/marquee as last resorts because i can't be bothered to update the gui.
-                                                String flyerPath = g.metadata.getSelectedImagePath("flyer");
-                                                String marqueePath = g.metadata.getSelectedImagePath("marquee");
+                                                //for the life of me i don't know why i do this??
+                                                String flyerPath = g.metadata.getSelectedImageUrl("flyer");
+                                                String marqueePath = g.metadata.getSelectedImageUrl("marquee");
                                                 if(flyerPath != null && "image".equals(esTags.get(i))) {
-                                                    String flyerImageType = flyerPath.substring(flyerPath.lastIndexOf(".") + 1);
+                                                    String flyerImageType = "png";//flyerPath.substring(flyerPath.lastIndexOf(".") + 1);
                                                     if(ScraperFX.writeImageToFile(imagesPath, g.fileName + "-flyer", flyerImageType, flyerPath)) {
                                                         writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-flyer" + "." + flyerImageType + "</" + esTags.get(i) + ">\n");
                                                         continue;
                                                     }
                                                 }
                                                 if(marqueePath != null && "bgImage".equals(esTags.get(i))) {
-                                                    String marqueeImageType = marqueePath.substring(marqueePath.lastIndexOf(".") + 1);
+                                                    String marqueeImageType = "png";//marqueePath.substring(marqueePath.lastIndexOf(".") + 1);
                                                     if(ScraperFX.writeImageToFile(imagesPath, g.fileName + "-marquee", marqueeImageType, marqueePath)) {
                                                         writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-marquee" + "." + marqueeImageType + "</" + esTags.get(i) + ">\n");
                                                         continue;
@@ -368,14 +369,15 @@ public class ESOutput {
                             }
                             updateProgress(++fileCount, games.size());
                             
-//                            try {
-//                                Thread.sleep(60);
-//                            }
-//                            catch(InterruptedException interrupted) {
-//                                if(isCancelled()) {
-//                                    break;
-//                                }
-//                            }
+                            try {
+                                //if this isn't here then i only get one update to the message box.
+                                Thread.sleep(1);
+                            }
+                            catch(InterruptedException interrupted) {
+                                if(isCancelled()) {
+                                    break;
+                                }
+                            }
                         }
 
                         writer.append("</gameList>\n");

@@ -96,7 +96,6 @@ import com.goodjaerb.scraperfx.settings.GameList;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
-import javafx.scene.control.ButtonBar;
 import javafx.stage.WindowEvent;
 
 /**
@@ -526,7 +525,8 @@ public class ScraperFX extends Application {
             new ESOutput().output(
                     getSystemGameData(),
                     System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + "gamelists" + File.separator + getCurrentSettings().name,
-                    getCurrentSettings().romsDir + File.separator + "images",
+//                    getCurrentSettings().romsDir + File.separator + "images",
+                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + "images" + File.separator + getCurrentSettings().name,
                     getCurrentSettings().scrapeAsArcade);
         });
         
@@ -1154,10 +1154,10 @@ public class ScraperFX extends Application {
         @Override
         protected Void call() {
             try {
-                image = getImageFromURL(scraperImage.path);
+                image = getImageFromURL(scraperImage.url);
             }
             catch(IOException ex) {
-                cancel();
+//                cancel();
             }
             return null;
         }
@@ -1216,17 +1216,17 @@ public class ScraperFX extends Application {
                                         // this game is already matched and we only want unmatched games.
                                         updateMessage("Skipping " + filename + ". Already matched. Scanning unmatched only.");
                                         updateProgress(++fileCount, totalFiles);
-                                        // without sleeping, subsequent scans with cached data went so fast
-                                        // i thought it was a bug. turns out the scan process is very fast,
-                                        // it's downloading the data that is slow.
-                                        try {
-                                            Thread.sleep(5);
-                                        }
-                                        catch(InterruptedException interrupted) {
-                                            if(isCancelled()) {
-                                                break;
-                                            }
-                                        }
+//                                        // without sleeping, subsequent scans with cached data went so fast
+//                                        // i thought it was a bug. turns out the scan process is very fast,
+//                                        // it's downloading the data that is slow.
+//                                        try {
+//                                            Thread.sleep(4);
+//                                        }
+//                                        catch(InterruptedException interrupted) {
+//                                            if(isCancelled()) {
+//                                                break;
+//                                            }
+//                                        }
                                         continue;
                                     }
                                 }
@@ -1234,7 +1234,7 @@ public class ScraperFX extends Application {
                                 String noExtName = filename.substring(0, filename.lastIndexOf(".")).toLowerCase();
                                 if(scrapeTypeGroup.getSelectedToggle() == scrapeAsArcadeButton) {
                                     localGame.matchedName = noExtName;
-                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.ARCADE).getMetaData(null, localGame);
+                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.ARCADE_ITALIA).getMetaData(null, localGame);
                                     if(localGame.metadata == null) {
                                         localGame.matchedName = null;
                                         updateMessage("Could not match " + filename + " to a game.");
@@ -1428,7 +1428,8 @@ public class ScraperFX extends Application {
 //                        // i thought it was a bug. turns out the scan process is very fast,
 //                        // it's downloading the data that is slow.
 //                        try {
-//                            Thread.sleep(5);
+//                            //if this isn't here then i only get one update to the message box.
+//                            Thread.sleep(4);
 //                        }
 //                        catch(InterruptedException interrupted) {
 //                            if(isCancelled()) {

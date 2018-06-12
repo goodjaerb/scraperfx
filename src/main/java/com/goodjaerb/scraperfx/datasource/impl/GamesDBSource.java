@@ -85,11 +85,15 @@ public class GamesDBSource implements DataSource {
     private void populatePlatformList() {
         synchronized(this) {
             if(cachedPlatformList == null) {
-                Xmappr xm = new Xmappr(GamesDBPlatformList.class);
-                Reader xmlReader = getXML(API_GET_PLATFORMS_LIST);
-                GamesDBPlatformList data = (GamesDBPlatformList)xm.fromXML(xmlReader);
+                try(Reader xmlReader = getXML(API_GET_PLATFORMS_LIST)) {
+                    Xmappr xm = new Xmappr(GamesDBPlatformList.class);
+                    GamesDBPlatformList data = (GamesDBPlatformList)xm.fromXML(xmlReader);
 
-                cachedPlatformList = data.platforms.list;
+                    cachedPlatformList = data.platforms.list;
+                }
+                catch (IOException ex) {
+                    Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }
@@ -97,14 +101,18 @@ public class GamesDBSource implements DataSource {
     private void populateGameList(Integer systemId) {
         synchronized(this) {
             if(cachedGameListMap == null || cachedGameListMap.get(systemId) == null) {
-                Xmappr xm = new Xmappr(GamesDBGameListData.class);
-                Reader xmlReader = getXML(API_GET_PLATFORM_GAMES, "platform", systemId.toString());
-                GamesDBGameListData data = (GamesDBGameListData)xm.fromXML(xmlReader);
+                try(Reader xmlReader = getXML(API_GET_PLATFORM_GAMES, "platform", systemId.toString())) {
+                    Xmappr xm = new Xmappr(GamesDBGameListData.class);
+                    GamesDBGameListData data = (GamesDBGameListData)xm.fromXML(xmlReader);
 
-                if(cachedGameListMap == null) {
-                    cachedGameListMap = new HashMap<>();
+                    if(cachedGameListMap == null) {
+                        cachedGameListMap = new HashMap<>();
+                    }
+                    cachedGameListMap.put(systemId, data.games);
                 }
-                cachedGameListMap.put(systemId, data.games);
+                catch (IOException ex) {
+                    Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }
@@ -112,14 +120,19 @@ public class GamesDBSource implements DataSource {
     private void populateGameMetaData(Integer gameId) {
         synchronized(this) {
             if(cachedGameMap == null || cachedGameMap.get(gameId) == null) {
-                Xmappr xm = new Xmappr(GamesDBGameMetaData.class);
-                Reader xmlReader = getXML(API_GET_GAME, "id", gameId.toString());
-                GamesDBGameMetaData data = (GamesDBGameMetaData)xm.fromXML(xmlReader);
+                try(Reader xmlReader = getXML(API_GET_GAME, "id", gameId.toString())) {
+                    Xmappr xm = new Xmappr(GamesDBGameMetaData.class);
 
-                if(cachedGameMap == null) {
-                    cachedGameMap = new HashMap<>();
+                    GamesDBGameMetaData data = (GamesDBGameMetaData)xm.fromXML(xmlReader);
+
+                    if(cachedGameMap == null) {
+                        cachedGameMap = new HashMap<>();
+                    }
+                    cachedGameMap.put(gameId, data);
                 }
-                cachedGameMap.put(gameId, data);
+                catch (IOException ex) {
+                    Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }

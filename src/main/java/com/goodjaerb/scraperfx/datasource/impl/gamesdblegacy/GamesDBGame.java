@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
+package com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.xmappr.annotation.Element;
 import org.xmappr.annotation.RootElement;
-import com.goodjaerb.scraperfx.datasource.impl.GamesDBSource;
+import com.goodjaerb.scraperfx.datasource.impl.GamesDbLegacySource;
 import com.goodjaerb.scraperfx.settings.Image;
 
 /**
@@ -70,25 +70,25 @@ public class GamesDBGame {
     public List<Image> getImages() {
         List<Image> imglist = new ArrayList<>();
         if(images.logo != null) {
-            imglist.add(new Image("logo", images.logo.width, images.logo.height, GamesDBSource.IMAGE_BASE_URL + images.logo.path, true));
+            imglist.add(new Image("logo", images.logo.width, images.logo.height, GamesDbLegacySource.IMAGE_BASE_URL + images.logo.path, true));
         }
         if(images.boxarts != null) {
             images.boxarts.stream().forEach((boxart) -> {
-                imglist.add(new Image("box-" + boxart.side, boxart.width, boxart.height, GamesDBSource.IMAGE_BASE_URL + boxart.path, true));
+                imglist.add(new Image("box-" + boxart.side, boxart.width, boxart.height, GamesDbLegacySource.IMAGE_BASE_URL + boxart.path, true));
             });
         }
         if(images.fanarts != null) {
             int i = 0;
             for(GamesDBFanArt fanart : images.fanarts) {
                 i++;
-                imglist.add(new Image("fanart", fanart.data.width, fanart.data.height, GamesDBSource.IMAGE_BASE_URL + fanart.data.path, (i == 1)));
+                imglist.add(new Image("fanart", fanart.data.width, fanart.data.height, GamesDbLegacySource.IMAGE_BASE_URL + fanart.data.path, (i == 1)));
             }
         }
         if(images.screenshots != null) {
             int i = 0;
             for(GamesDBScreenshot screenshot : images.screenshots) {
                 i++;
-                imglist.add(new Image("screenshot", screenshot.data.width, screenshot.data.height, GamesDBSource.IMAGE_BASE_URL + screenshot.data.path, (i == 1)));
+                imglist.add(new Image("screenshot", screenshot.data.width, screenshot.data.height, GamesDbLegacySource.IMAGE_BASE_URL + screenshot.data.path, (i == 1)));
             }
         }
         return imglist;

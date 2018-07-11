@@ -5,12 +5,12 @@
  */
 package com.goodjaerb.scraperfx.datasource.impl;
 
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDBGame;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDBListGame;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDBGameMetaData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDBPlatform;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDBGameListData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDBPlatformList;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGame;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBListGame;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGameMetaData;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBPlatform;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGameListData;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBPlatformList;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,14 +33,14 @@ import com.goodjaerb.scraperfx.settings.MetaData;
  *
  * @author goodjaerb
  */
-public class GamesDBSource implements DataSource {
+public class GamesDbLegacySource implements DataSource {
 
-    private static final String API_BASE_URL = "http://thegamesdb.net/api/";
+    private static final String API_BASE_URL = "http://legacy.thegamesdb.net/api/";
     private static final String API_GET_PLATFORMS_LIST = "GetPlatformsList.php";
     private static final String API_GET_PLATFORM_GAMES = "GetPlatformGames.php";
     private static final String API_GET_GAME = "GetGame.php";
 
-    public static final String IMAGE_BASE_URL = "http://thegamesdb.net/banners/";
+    public static final String IMAGE_BASE_URL = "http://legacy.thegamesdb.net/banners/";
             
     private static final String PROP_USER_AGENT = "User-Agent";
     private static final String VAL_USER_AGENT = "Mozilla/5.0";
@@ -69,7 +69,7 @@ public class GamesDBSource implements DataSource {
                 return new BufferedReader(new InputStreamReader(conn.getInputStream()));
             }
             catch(MalformedURLException ex) {
-                Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(GamesDbLegacySource.class.getName()).log(Level.SEVERE, null, ex);
                 break;
             }
             catch(IOException ex) {
@@ -92,7 +92,7 @@ public class GamesDBSource implements DataSource {
                     cachedPlatformList = data.platforms.list;
                 }
                 catch (IOException ex) {
-                    Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GamesDbLegacySource.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -111,7 +111,7 @@ public class GamesDBSource implements DataSource {
                     cachedGameListMap.put(systemId, data.games);
                 }
                 catch (IOException ex) {
-                    Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GamesDbLegacySource.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -131,7 +131,7 @@ public class GamesDBSource implements DataSource {
                     cachedGameMap.put(gameId, data);
                 }
                 catch (IOException ex) {
-                    Logger.getLogger(GamesDBSource.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GamesDbLegacySource.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }

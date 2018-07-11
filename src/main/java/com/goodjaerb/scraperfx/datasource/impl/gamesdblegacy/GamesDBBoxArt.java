@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
+package com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy;
 
 import org.xmappr.annotation.Attribute;
 import org.xmappr.annotation.RootElement;
@@ -13,8 +13,11 @@ import org.xmappr.annotation.Text;
  *
  * @author goodjaerb
  */
-@RootElement(name = "original")
-public class GamesDBFanartData {
+@RootElement(name = "boxart")
+public class GamesDBBoxArt {
+    
+    @Attribute(name = "side")
+    public String side;
     
     @Attribute(name = "width")
     public Integer width;
@@ -25,7 +28,7 @@ public class GamesDBFanartData {
     @Text
     public String path;
     
-    public GamesDBFanartData() {
+    public GamesDBBoxArt() {
         
     }
 }

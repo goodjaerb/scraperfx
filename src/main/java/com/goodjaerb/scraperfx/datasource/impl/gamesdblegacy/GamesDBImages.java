@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
+package com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy;
 
 import java.util.List;
 import org.xmappr.annotation.Element;

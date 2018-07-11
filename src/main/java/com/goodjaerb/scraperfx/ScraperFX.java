@@ -325,7 +325,7 @@ public class ScraperFX extends Application {
         
         new Thread(() -> {
             try {
-                List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB).getSystemNames();
+                List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemNames();
                 Platform.runLater(() -> {
                     consoleSelectComboBox.getItems().clear();
                     consoleSelectComboBox.getItems().addAll(consoles);
@@ -1269,7 +1269,7 @@ public class ScraperFX extends Application {
                                         int mostPartsHit = 0;
                                         boolean hitPartIsNumber = false;
 
-                                        List<String> allSysGames = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB).getSystemGameNames(getCurrentSettings().scrapeAs);
+                                        List<String> allSysGames = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
                                         for(String gameName : allSysGames) {
                                             String lowerCaseName = gameName.toLowerCase().replaceAll(" - ", " ");//gameName.toLowerCase().replaceAll("'", "");
                                             lowerCaseName = lowerCaseName.replaceAll("\\(.*\\)", "");
@@ -1401,7 +1401,7 @@ public class ScraperFX extends Application {
                                     }
                                     else {
                                         //matched a game, get the rest of the data.
-                                        localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB).getMetaData(getCurrentSettings().scrapeAs, localGame);
+                                        localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
                                         if(localGame.metadata == null) {
                                             //error occurred while getting metadata.
                                             updateMessage("Error connecting to thegamesdb.net. Please try again.");
@@ -1553,7 +1553,7 @@ public class ScraperFX extends Application {
             new Thread(() -> {
                 try {
                     currentGame.matchedName = gameName;
-                    currentGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB).getMetaData(systemName, currentGame);
+                    currentGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
                     currentGame.strength = Game.MatchStrength.LOCKED;
                 }
                 catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
@@ -1579,7 +1579,7 @@ public class ScraperFX extends Application {
         private void onShown() {
             new Thread(() -> {
                 try {
-                    List<String> gameList = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB).getSystemGameNames(systemName);
+                    List<String> gameList = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
                     Collections.sort(gameList);
                     
                     Platform.runLater(() -> {

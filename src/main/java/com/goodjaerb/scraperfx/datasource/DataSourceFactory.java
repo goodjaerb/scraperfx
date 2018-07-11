@@ -11,8 +11,8 @@ package com.goodjaerb.scraperfx.datasource;
  */
 public class DataSourceFactory {
     public enum SourceAgent {
-        THEGAMESDB("com.goodjaerb.scraperfx.datasource.impl.GamesDBSource"),
-        ARCADE("com.goodjaerb.scraperfx.datasource.impl.ArcadeSource"),
+        THEGAMESDB_LEGACY("com.goodjaerb.scraperfx.datasource.impl.GamesDbLegacySource"),
+//        ARCADE("com.goodjaerb.scraperfx.datasource.impl.ArcadeSource"),
         ARCADE_ITALIA("com.goodjaerb.scraperfx.datasource.impl.ArcadeItaliaSource");
         
         private final String className;

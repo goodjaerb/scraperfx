@@ -99,8 +99,8 @@ public class ESOutput {
         
     }
     
-    public void output(List<Game> games, String outputPathStr, String imagesPathStr, boolean arcade) {
-        OutputDialog d = new OutputDialog(games, outputPathStr, imagesPathStr, arcade);
+    public void output(List<Game> games, String outputPathStr, String imagesPathStr, String videoPathStr, boolean arcade) {
+        OutputDialog d = new OutputDialog(games, outputPathStr, imagesPathStr, videoPathStr, arcade);
         d.showAndWait();
     }
    
@@ -111,6 +111,7 @@ public class ESOutput {
         private final List<ComboBox<String>> primaryMetaDataTypes;
         private final List<ComboBox<String>> secondaryMetaDataTypes;
         private final CheckBox skipUnmatchedCheckBox;
+        private final CheckBox downloadVideosCheckBox;
         
         private final Button startButton;
         private final Button cancelButton;
@@ -119,11 +120,12 @@ public class ESOutput {
         
 //        private final boolean arcade;
         
-        public OutputDialog(List<Game> games, String outputPathStr, String imagesPathStr, boolean arcade) {
+        public OutputDialog(List<Game> games, String outputPathStr, String imagesPathStr, String videoPathStr, boolean arcade) {
             super();
 //            this.arcade = arcade;
             
             skipUnmatchedCheckBox = new CheckBox("Skip Unmatched Files");
+            downloadVideosCheckBox = new CheckBox("Download Videos");
             messageArea = new TextArea("Press START to begin.\n");
             messageArea.setEditable(false);
             progressBar = new ProgressBar();
@@ -194,10 +196,11 @@ public class ESOutput {
             buttonBox.getChildren().addAll(progressBar, startButton, cancelButton);
             
             tagsBox.getChildren().add(skipUnmatchedCheckBox);
+            tagsBox.getChildren().add(downloadVideosCheckBox);
             tagsBox.getChildren().add(messageArea);
             tagsBox.getChildren().add(buttonBox);
             
-            OutputTask task = new OutputTask(games, outputPathStr, imagesPathStr);//, arcade);
+            OutputTask task = new OutputTask(games, outputPathStr, imagesPathStr, videoPathStr);//, arcade);
 
             task.messageProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
                 messageArea.appendText(newValue + "\n");
@@ -251,11 +254,13 @@ public class ESOutput {
             private final List<Game> games;
             private final String outputPathStr;
             private final String imagesPathStr;
+            private final String videoPathStr;
 
-            public OutputTask(List<Game> games, String outputPathStr, String imagesPathStr) {
+            public OutputTask(List<Game> games, String outputPathStr, String imagesPathStr, String videoPathStr) {
                 this.games = games;
                 this.outputPathStr = outputPathStr;
                 this.imagesPathStr = imagesPathStr;
+                this.videoPathStr = videoPathStr;
             }
 
             @Override
@@ -264,6 +269,7 @@ public class ESOutput {
                 try {
                     FileSystem fs = FileSystems.getDefault();
                     Path imagesPath = fs.getPath(imagesPathStr);
+                    Path videoPath = fs.getPath(videoPathStr);
                     Path outputPath = fs.getPath(outputPathStr, "gamelist.xml");
                     Files.createDirectories(outputPath.getParent());
                     try {
@@ -318,6 +324,12 @@ public class ESOutput {
                                     if(g.metadata.metaPublisher != null)    writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
                                     if(g.metadata.metaGenre != null)        writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");
                                     if(g.metadata.players != null)          writer.append("\t\t<players>" + g.metadata.players + "</players>\n");
+                                    
+                                    if(g.metadata.videodownload != null && downloadVideosCheckBox.isSelected()) {
+                                        if(ScraperFX.saveVideo(videoPath, g.fileName + "_video.mp4", g.metadata.videodownload)) {
+                                            writer.append("\t\t<video>./videos/" + g.fileName + "_video.mp4</video>\n");
+                                        }
+                                    }
 
                                     if(g.metadata.images != null && !g.metadata.images.isEmpty()) {
                                         for(int i = 0; i < esTags.size(); i++) {

@@ -35,6 +35,12 @@ public class MetaData {
     @Element(name = "lockImages")
     public Boolean lockImages = false;
     
+    @Element(name = "youtubeurl")
+    public String youtubeembed;
+    
+    @Element(name = "videodownload")
+    public String videodownload;
+    
     @Element(name = "rating")
     public String metaRating;
     

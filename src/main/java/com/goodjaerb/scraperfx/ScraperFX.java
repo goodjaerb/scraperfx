@@ -97,6 +97,7 @@ import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import javafx.stage.WindowEvent;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -526,7 +527,8 @@ public class ScraperFX extends Application {
                     getSystemGameData(),
                     System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + "gamelists" + File.separator + getCurrentSettings().name,
 //                    getCurrentSettings().romsDir + File.separator + "images",
-                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + "images" + File.separator + getCurrentSettings().name,
+                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + getCurrentSettings().name + File.separator + "images",
+                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + getCurrentSettings().name + File.separator + "videos",
                     getCurrentSettings().scrapeAsArcade);
         });
         
@@ -648,6 +650,34 @@ public class ScraperFX extends Application {
         return null;
     }
     
+    public static boolean saveVideo(Path path, String filename, String url) throws IOException {
+        if(url == null) {
+            return false;
+        }
+        
+        Files.createDirectories(path);
+        
+        File outputFile = new File(path.toString() + File.separator + filename);
+        if(outputFile.exists()) {
+            return true;
+        }
+        else {
+            int retry = 0;
+            while(retry < 3) {
+                try {
+                    FileUtils.copyURLToFile(new URL(url), outputFile, 10000, 10000);
+                    return true;
+                }
+                catch(IOException ex) {
+                    if(++retry < 3) {
+                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, "Error retrieving video from " + url + ". Retrying...");
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     public static boolean writeImageToFile(Path path, String imageFileName, String imageOutputType, String url) throws MalformedURLException, IOException {
         if(url == null) {
             return false;
@@ -684,7 +714,7 @@ public class ScraperFX extends Application {
                 }
                 catch(IOException ex) {
                     if(++retry < 3) {
-                        System.out.println("Error retrieving image from " + url + ". Retrying...");
+                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, "Error retrieving image from " + url + ". Retrying...");
                     }
                 }
             }

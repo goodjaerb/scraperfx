@@ -28,4 +28,5 @@ dependencies {
     compile files('libs/xmappr.jar');
     compile("com.google.code.gson:gson:2.8.5");
     compile("commons-io:commons-io:2.6");
+    compile("org.ini4j:ini4j:0.5.4")
 }

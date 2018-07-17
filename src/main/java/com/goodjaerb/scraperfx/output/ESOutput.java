@@ -99,8 +99,8 @@ public class ESOutput {
         
     }
     
-    public void output(List<Game> games, String outputPathStr, String imagesPathStr, String videoPathStr, boolean arcade) {
-        OutputDialog d = new OutputDialog(games, outputPathStr, imagesPathStr, videoPathStr, arcade);
+    public void output(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade) {
+        OutputDialog d = new OutputDialog(games, outputPath, imagesPath, videoPath, arcade);
         d.showAndWait();
     }
    
@@ -120,7 +120,7 @@ public class ESOutput {
         
 //        private final boolean arcade;
         
-        public OutputDialog(List<Game> games, String outputPathStr, String imagesPathStr, String videoPathStr, boolean arcade) {
+        public OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade) {
             super();
 //            this.arcade = arcade;
             
@@ -200,7 +200,7 @@ public class ESOutput {
             tagsBox.getChildren().add(messageArea);
             tagsBox.getChildren().add(buttonBox);
             
-            OutputTask task = new OutputTask(games, outputPathStr, imagesPathStr, videoPathStr);//, arcade);
+            OutputTask task = new OutputTask(games, outputPath, imagesPath, videoPath);//, arcade);
 
             task.messageProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
                 messageArea.appendText(newValue + "\n");
@@ -252,25 +252,25 @@ public class ESOutput {
         
         private class OutputTask extends Task<Void> {
             private final List<Game> games;
-            private final String outputPathStr;
-            private final String imagesPathStr;
-            private final String videoPathStr;
+            private final Path outputPath;
+            private final Path imagesPath;
+            private final Path videoPath;
 
-            public OutputTask(List<Game> games, String outputPathStr, String imagesPathStr, String videoPathStr) {
+            public OutputTask(List<Game> games, Path outputPath, Path imagesPath, Path videoPath) {
                 this.games = games;
-                this.outputPathStr = outputPathStr;
-                this.imagesPathStr = imagesPathStr;
-                this.videoPathStr = videoPathStr;
+                this.outputPath = outputPath.resolve("gamelist.xml");
+                this.imagesPath = imagesPath;
+                this.videoPath = videoPath;
             }
 
             @Override
             protected Void call()  {
                 AtomicBoolean isScanning = new AtomicBoolean(true);
                 try {
-                    FileSystem fs = FileSystems.getDefault();
-                    Path imagesPath = fs.getPath(imagesPathStr);
-                    Path videoPath = fs.getPath(videoPathStr);
-                    Path outputPath = fs.getPath(outputPathStr, "gamelist.xml");
+//                    FileSystem fs = FileSystems.getDefault();
+//                    Path imagesPath = fs.getPath(imagesPathStr);
+//                    Path videoPath = fs.getPath(videoPathStr);
+//                    Path outputPath = fs.getPath(outputPathStr, "gamelist.xml");
                     Files.createDirectories(outputPath.getParent());
                     try {
                         Files.createFile(outputPath);
@@ -279,8 +279,8 @@ public class ESOutput {
                         // good!
                     }
 
-                    File outputFile = outputPath.toFile();
-                    try(BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
+//                    File outputFile = outputPath.toFile();
+                    try(final BufferedWriter writer = Files.newBufferedWriter(outputPath)) {//new BufferedWriter(new FileWriter(outputFile))) {
                         writer.append("<gameList>\n");
 
                         int fileCount = 0;

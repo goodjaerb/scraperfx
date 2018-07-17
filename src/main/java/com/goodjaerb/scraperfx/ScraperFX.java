@@ -98,12 +98,23 @@ import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import javafx.stage.WindowEvent;
 import org.apache.commons.io.FileUtils;
+import org.ini4j.Ini;
 
 /**
  *
  * @author goodjaerb
  */
 public class ScraperFX extends Application {
+    private static final Path SETTINGS_DIR = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx");
+    private static final String GAMEDATA_CONF = "gamedata.conf";
+    private static final String SCRAPERFX_CONF = "scraperfx.conf";
+    private static final String GAMELISTS_DIR = "gamelists";
+    private static final String IMAGES_DIR = "images";
+    private static final String VIDEOS_DIR = "videos";
+    
+    private static final String KEYS_FILENAME = "keys.ini";
+    private static final Ini KEYS_INI = new Ini();
+    
     private static Stage mainStage;
     private static SystemSettings settings;
     private static String currentSystemName;
@@ -525,10 +536,13 @@ public class ScraperFX extends Application {
             Collections.sort(getSystemGameData());
             new ESOutput().output(
                     getSystemGameData(),
-                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + "gamelists" + File.separator + getCurrentSettings().name,
-//                    getCurrentSettings().romsDir + File.separator + "images",
-                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + getCurrentSettings().name + File.separator + "images",
-                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + getCurrentSettings().name + File.separator + "videos",
+                    SETTINGS_DIR.resolve(GAMELISTS_DIR).resolve(getCurrentSettings().name),
+//                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + "gamelists" + File.separator + getCurrentSettings().name,
+                    SETTINGS_DIR.resolve(getCurrentSettings().name).resolve(IMAGES_DIR),
+////                    getCurrentSettings().romsDir + File.separator + "images",
+//                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + getCurrentSettings().name + File.separator + "images",
+                    SETTINGS_DIR.resolve(getCurrentSettings().name).resolve(VIDEOS_DIR),
+//                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + getCurrentSettings().name + File.separator + "videos",
                     getCurrentSettings().scrapeAsArcade);
         });
         
@@ -557,6 +571,7 @@ public class ScraperFX extends Application {
         try {
             readGameData();
             readSettings();
+            KEYS_INI.load(SETTINGS_DIR.resolve(KEYS_FILENAME).toFile());
         }
         catch(IOException ex) {
             Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
@@ -670,7 +685,7 @@ public class ScraperFX extends Application {
                 }
                 catch(IOException ex) {
                     if(++retry < 3) {
-                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, "Error retrieving video from " + url + ". Retrying...");
+                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, "Error retrieving video from {0}. Retrying...", url);
                     }
                 }
             }
@@ -714,7 +729,7 @@ public class ScraperFX extends Application {
                 }
                 catch(IOException ex) {
                     if(++retry < 3) {
-                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, "Error retrieving image from " + url + ". Retrying...");
+                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, "Error retrieving image from {0}. Retrying...", url);
                     }
                 }
             }
@@ -1015,16 +1030,17 @@ public class ScraperFX extends Application {
     }
     
     private void readSettings() throws IOException {
-        Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "scraperfx.conf");
-        if(Files.exists(settingsPath)) {
-            Xmappr xm = new Xmappr(SystemSettings.class);
+//        Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "scraperfx.conf");
+        final Path scraperfxConfPath = SETTINGS_DIR.resolve(SCRAPERFX_CONF);
+        if(Files.exists(scraperfxConfPath)) {
+            final Xmappr xm = new Xmappr(SystemSettings.class);
             
-            final BufferedInputStream in = new BufferedInputStream(new FileInputStream(settingsPath.toFile()));
+            final BufferedInputStream in = new BufferedInputStream(new FileInputStream(scraperfxConfPath.toFile()));
             final CharsetDecoder charsetDecoder = StandardCharsets.UTF_8.newDecoder();
             charsetDecoder.onMalformedInput(CodingErrorAction.REPLACE);
             charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
             
-            try(BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
+            try(final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
                 settings = (SystemSettings)xm.fromXML(reader);
                 loadSystemList(null);
             }
@@ -1038,16 +1054,17 @@ public class ScraperFX extends Application {
     }
     
     private void readGameData() throws IOException {
-        Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "gamedata.conf");
-        if(Files.exists(settingsPath)) {
-            Xmappr xm = new Xmappr(GameData.class);
+//        Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "gamedata.conf");
+        final Path gamedataConfPath = SETTINGS_DIR.resolve(GAMEDATA_CONF);
+        if(Files.exists(gamedataConfPath)) {
+            final Xmappr xm = new Xmappr(GameData.class);
             
-            final BufferedInputStream in = new BufferedInputStream(new FileInputStream(settingsPath.toFile()));
+            final BufferedInputStream in = new BufferedInputStream(new FileInputStream(gamedataConfPath.toFile()));
             final CharsetDecoder charsetDecoder = StandardCharsets.UTF_8.newDecoder();
             charsetDecoder.onMalformedInput(CodingErrorAction.REPLACE);
             charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
             
-            try(BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
+            try(final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
                 gamedata = (GameData)xm.fromXML(reader);
             }
             catch(IOException ex) {
@@ -1139,7 +1156,7 @@ public class ScraperFX extends Application {
         }
     }
     
-    private class MetaImageView extends VBox {
+    private final class MetaImageView extends VBox {
         private final ImageView view;
         private final com.goodjaerb.scraperfx.settings.Image image;
         
@@ -1722,37 +1739,37 @@ public class ScraperFX extends Application {
             OPEN;
         };
 
-        private static final FileChooser fileChooser = new FileChooser();
-        private static final DirectoryChooser dirChooser = new DirectoryChooser();
+        private static final FileChooser FILE_CHOOSER = new FileChooser();
+        private static final DirectoryChooser DIR_CHOOSER = new DirectoryChooser();
 
         public static File getFile(DialogType type, String title, String... fileExts) {
-            fileChooser.setTitle(title);
-            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-            fileChooser.getExtensionFilters().clear();
+            FILE_CHOOSER.setTitle(title);
+            FILE_CHOOSER.setInitialDirectory(new File(System.getProperty("user.home")));
+            FILE_CHOOSER.getExtensionFilters().clear();
 
             if(fileExts != null && fileExts.length % 2 == 0) {
                 for(int i = 0; i < fileExts.length; i += 2) {
-                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileExts[i], fileExts[i + 1]));
+                    FILE_CHOOSER.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileExts[i], fileExts[i + 1]));
                 }
             }
 
             File f = null;
             switch(type) {
                 case SAVE:
-                    f = fileChooser.showSaveDialog(mainStage);
+                    f = FILE_CHOOSER.showSaveDialog(mainStage);
                     break;
                 case OPEN:
-                    f = fileChooser.showOpenDialog(mainStage);
+                    f = FILE_CHOOSER.showOpenDialog(mainStage);
                     break;
             }
             return f;
         }
 
         public static File getDir(String title) {
-            dirChooser.setTitle(title);
-            dirChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+            DIR_CHOOSER.setTitle(title);
+            DIR_CHOOSER.setInitialDirectory(new File(System.getProperty("user.home")));
 
-            File f = dirChooser.showDialog(mainStage);
+            File f = DIR_CHOOSER.showDialog(mainStage);
             return f;
         }
     }

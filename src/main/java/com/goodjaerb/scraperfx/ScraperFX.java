@@ -593,6 +593,10 @@ public class ScraperFX extends Application {
         primaryStage.show();
     }
     
+    public static String getKeysValue(String name) {
+        return KEYS_INI.get("Keys", name);
+    }
+    
     private final String[] numbers = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" };
     private final String[] romans = { "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv" };
     
@@ -1449,6 +1453,16 @@ public class ScraperFX extends Application {
                                     else {
                                         //matched a game, get the rest of the data.
                                         localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
+                                        
+                                        final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
+                                        if(videoLinks != null) {
+                                            localGame.metadata.videodownload = videoLinks[0];
+                                            localGame.metadata.videoembed = videoLinks[1];
+                                        }
+                                        
+                                        System.out.println(localGame.metadata);
+//                                        localGame.metadata.videodownload = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoDownload(getCurrentSettings().scrapeAs, localGame);
+//                                        localGame.metadata.videoembed = 
                                         if(localGame.metadata == null) {
                                             //error occurred while getting metadata.
                                             updateMessage("Error connecting to thegamesdb.net. Please try again.");

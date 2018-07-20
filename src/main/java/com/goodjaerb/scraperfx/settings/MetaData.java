@@ -36,7 +36,7 @@ public class MetaData {
     public Boolean lockImages = false;
     
     @Element(name = "youtubeurl")
-    public String youtubeembed;
+    public String videoembed;
     
     @Element(name = "videodownload")
     public String videodownload;
@@ -177,10 +177,15 @@ public class MetaData {
         }
     }
     
+//    @Override
+//    public String toString() {
+//        return "MetaData(name=" + metaName + ", description=" + metaDesc + 
+//                ", images(" + images + "), rating=" + metaRating + ", releaseData=" + metaReleaseDate + ", developer=" + metaDeveloper + ", publisher= " +
+//                metaPublisher + ", genre=" + metaGenre + ", players=" + players + ")";
+//    }
+
     @Override
     public String toString() {
-        return "MetaData(name=" + metaName + ", description=" + metaDesc + 
-                ", images(" + images + "), rating=" + metaRating + ", releaseData=" + metaReleaseDate + ", developer=" + metaDeveloper + ", publisher= " +
-                metaPublisher + ", genre=" + metaGenre + ", players=" + players + ")";
+        return "MetaData{" + "metaName=" + metaName + ", lockName=" + lockName + ", metaDesc=" + metaDesc + ", lockDesc=" + lockDesc + ", images=" + images + ", lockImages=" + lockImages + ", videoembed=" + videoembed + ", videodownload=" + videodownload + ", metaRating=" + metaRating + ", lockRating=" + lockRating + ", metaReleaseDate=" + metaReleaseDate + ", lockReleasedate=" + lockReleasedate + ", metaDeveloper=" + metaDeveloper + ", lockDeveloper=" + lockDeveloper + ", metaPublisher=" + metaPublisher + ", lockPublisher=" + lockPublisher + ", metaGenre=" + metaGenre + ", lockGenre=" + lockGenre + ", players=" + players + ", lockPlayers=" + lockPlayers + '}';
     }
 }

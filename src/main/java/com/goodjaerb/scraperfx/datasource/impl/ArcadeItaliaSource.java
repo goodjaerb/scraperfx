@@ -72,7 +72,7 @@ public class ArcadeItaliaSource implements DataSource {
     }
      
     public String getJson(String gameName) {
-        HttpURLConnection conn = null;
+        HttpURLConnection conn;
         int retryCount = 0;
         while(retryCount < 3) {
             try {

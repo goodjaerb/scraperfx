@@ -127,6 +127,7 @@ public class ScraperFX extends Application {
     private final ToggleGroup scrapeTypeGroup;
     private final RadioButton scrapeAsConsoleButton;
     private final RadioButton scrapeAsArcadeButton;
+    private final ComboBox<DataSourceFactory.SourceAgent> arcadeScraperBox;
     private final ComboBox<String> consoleSelectComboBox;
     private final TextField gameSourceField;
     private final Button gameSourceBrowseButton;
@@ -185,6 +186,7 @@ public class ScraperFX extends Application {
         scrapeAsConsoleButton.setSelected(true);
         scrapeAsArcadeButton = new RadioButton("Arcade");
         scrapeAsArcadeButton.setToggleGroup(scrapeTypeGroup);
+        arcadeScraperBox = new ComboBox<>();
         consoleSelectComboBox = new ComboBox<>();
         consoleSelectComboBox.setEditable(false);
         gameSourceField = new TextField();
@@ -289,12 +291,13 @@ public class ScraperFX extends Application {
             scrapeAsArcadeSetup(scrapeAsArcadeButton.isSelected());
         });
         
+        arcadeScraperBox.getItems().addAll(SourceAgent.MAMEDB, SourceAgent.ARCADE_ITALIA);
+        
         consoleSelectComboBox.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends String> obs, String oldValue, String newValue) -> {
             if(getCurrentSettings() != null) {
                 getCurrentSettings().scrapeAs = consoleSelectComboBox.getSelectionModel().getSelectedItem();
             }
         });
-        
         
         gameSourceBrowseButton.setOnAction((e) -> {
             File dir = Chooser.getDir("Game Source Directory");
@@ -327,7 +330,7 @@ public class ScraperFX extends Application {
         box21.setSpacing(7.);
         box21.setPadding(new Insets(7.));
         
-        box21.getChildren().addAll(new Label("Scrap as:"), scrapeAsConsoleButton, scrapeAsArcadeButton);
+        box21.getChildren().addAll(new Label("Scrap as:"), scrapeAsConsoleButton, scrapeAsArcadeButton, arcadeScraperBox);
         
         HBox selectConsoleBox = new HBox();
         selectConsoleBox.setSpacing(7.);
@@ -938,12 +941,14 @@ public class ScraperFX extends Application {
             scrapeAsArcadeButton.setSelected(true);
             consoleSelectComboBox.setDisable(true);
             matchedNameBrowseButton.setDisable(true);
+            arcadeScraperBox.setDisable(false);
         }
         else {
             getCurrentSettings().scrapeAsArcade = false;
             scrapeAsConsoleButton.setSelected(true);
             consoleSelectComboBox.setDisable(false);
             matchedNameBrowseButton.setDisable(false);
+            arcadeScraperBox.setDisable(true);
         }
     }
     
@@ -1285,7 +1290,9 @@ public class ScraperFX extends Application {
                                 String noExtName = filename.substring(0, filename.lastIndexOf(".")).toLowerCase();
                                 if(scrapeTypeGroup.getSelectedToggle() == scrapeAsArcadeButton) {
                                     localGame.matchedName = noExtName;
-                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.ARCADE_ITALIA).getMetaData(null, localGame);
+                                    localGame.metadata = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
+//                                    System.out.println(localGame.metadata.images);
+//                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.ARCADE_ITALIA).getMetaData(null, localGame);
                                     if(localGame.metadata == null) {
                                         localGame.matchedName = null;
                                         updateMessage("Could not match " + filename + " to a game.");
@@ -1460,7 +1467,7 @@ public class ScraperFX extends Application {
                                             localGame.metadata.videoembed = videoLinks[1];
                                         }
                                         
-                                        System.out.println(localGame.metadata);
+//                                        System.out.println(localGame.metadata);
 //                                        localGame.metadata.videodownload = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoDownload(getCurrentSettings().scrapeAs, localGame);
 //                                        localGame.metadata.videoembed = 
                                         if(localGame.metadata == null) {

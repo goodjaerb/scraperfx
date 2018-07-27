@@ -35,7 +35,7 @@ public class ScreenScraperSource implements DataSource {
     private static final String VAL_USER_AGENT = "Mozilla/5.0";
     
     private Reader getGameXML(String systemName, String gameName) {
-        HttpURLConnection conn = null;
+        HttpURLConnection conn;
         int retryCount = 0;
         while(retryCount < 3) {
             try {

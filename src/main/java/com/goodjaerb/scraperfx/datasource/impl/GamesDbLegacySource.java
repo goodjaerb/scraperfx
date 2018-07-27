@@ -50,7 +50,7 @@ public class GamesDbLegacySource implements DataSource {
     private Map<Integer, GamesDBGameMetaData> cachedGameMap;
     
     private Reader getXML(String api, String... params) {
-        HttpURLConnection conn = null;
+        HttpURLConnection conn;
         int retryCount = 0;
         while(retryCount < 3) {
             try {

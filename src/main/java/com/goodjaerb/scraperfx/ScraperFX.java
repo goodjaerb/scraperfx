@@ -1480,6 +1480,7 @@ public class ScraperFX extends Application {
                                         localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
                                         
                                         if(localGame.metadata != null) {
+                                            System.out.println("Success! Checking for video links...");
                                             final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
                                             if(videoLinks != null) {
                                                 localGame.metadata.videodownload = videoLinks[0];

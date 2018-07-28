@@ -61,6 +61,8 @@ public class GamesDbLegacySource implements DataSource {
                 for(int i = 0; i < params.length; i+=2) {
                     url += params[i] + "=" + params[i + 1];
                 }
+                
+                System.out.println("Connecting to '" + url + "'.");
 
                 conn = (HttpURLConnection)new URL(url).openConnection();
                 conn.setRequestMethod("GET");

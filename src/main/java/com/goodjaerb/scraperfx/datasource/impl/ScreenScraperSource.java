@@ -47,10 +47,11 @@ public class ScreenScraperSource implements DataSource {
 //                    url += params[i] + "=" + params[i + 1];
 //                }
 
+//                System.out.println("Using '" + gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("$", "%24").replaceAll("!", "%21") + "' as game name in url.");
                 url = url.replaceAll("#DEVID", ScraperFX.getKeysValue("ScreenScraper.ID"));
                 url = url.replaceAll("#DEVPASS", ScraperFX.getKeysValue("ScreenScraper.KEY"));
                 url = url.replaceAll("#SYSTEMID", Integer.toString(ScreenScraperSystemIdMap.getSystemId(systemName)));
-                url = url.replaceAll("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26"));
+                url = url.replaceAll("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("\\$", "%24").replaceAll("!", "%21"));
 //                url = url.replaceAll(" ", "%20");
                 
                 System.out.println("Connecting to '" + url + "'.");
@@ -70,12 +71,16 @@ public class ScreenScraperSource implements DataSource {
                     System.out.println("Connection error with screenscraper.fr. Retrying...");
                 }
             }
+            catch(Exception ex) {
+                Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         return null;
     }
     
     @Override
     public String[] getVideoLinks(String systemName, Game game) {
+        System.out.println("Getting video links for '" + game.matchedName + "'.");
         try(Reader xmlReader = getGameXML(systemName, game.matchedName)) {
             if(xmlReader != null) {
                 Xmappr xm = new Xmappr(ScreenScraperXmlGameData.class);

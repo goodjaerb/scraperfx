@@ -95,6 +95,10 @@ public class ESOutput {
         }
     }
     
+    public static final String GAMELISTS_DIR = "gamelists";
+    public static final String IMAGES_DIR = "images";
+    public static final String VIDEOS_DIR = "videos";
+    
     public ESOutput() {
         
     }

@@ -96,6 +96,7 @@ import com.goodjaerb.scraperfx.settings.GameList;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
+import java.nio.file.Paths;
 import javafx.stage.WindowEvent;
 import org.apache.commons.io.FileUtils;
 import org.ini4j.Ini;
@@ -108,9 +109,6 @@ public class ScraperFX extends Application {
     private static final Path SETTINGS_DIR = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx");
     private static final String GAMEDATA_CONF = "gamedata.conf";
     private static final String SCRAPERFX_CONF = "scraperfx.conf";
-    private static final String GAMELISTS_DIR = "gamelists";
-    private static final String IMAGES_DIR = "images";
-    private static final String VIDEOS_DIR = "videos";
     
     private static final String KEYS_FILENAME = "keys.ini";
     private static final Ini KEYS_INI = new Ini();
@@ -134,6 +132,9 @@ public class ScraperFX extends Application {
     private final TextField filenameRegexField;
     private final TextField ignoreRegexField;
     private final CheckBox unmatchedOnlyCheckBox;
+    private final ToggleGroup outputMediaGroup;
+    private final RadioButton outputMediaToUserDirButton;
+    private final RadioButton outputMediaToRomsDirButton;
     
     private final Tab gamesTab;
     private final BorderPane gamesPane;
@@ -195,6 +196,12 @@ public class ScraperFX extends Application {
         filenameRegexField = new TextField();
         ignoreRegexField = new TextField();
         unmatchedOnlyCheckBox = new CheckBox("Scan Unmatched Files Only");
+        outputMediaGroup = new ToggleGroup();
+        outputMediaToUserDirButton = new RadioButton("Output media to User Dir");
+        outputMediaToUserDirButton.setToggleGroup(outputMediaGroup);
+        outputMediaToUserDirButton.setSelected(true);
+        outputMediaToRomsDirButton = new RadioButton("Output media to Roms Dir");
+        outputMediaToRomsDirButton.setToggleGroup(outputMediaGroup);
         
         gamesTab = new Tab("Games");
         gamesPane = new BorderPane();
@@ -292,6 +299,7 @@ public class ScraperFX extends Application {
         });
         
         arcadeScraperBox.getItems().addAll(SourceAgent.MAMEDB, SourceAgent.ARCADE_ITALIA);
+        arcadeScraperBox.getSelectionModel().select(SourceAgent.MAMEDB);
         
         consoleSelectComboBox.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends String> obs, String oldValue, String newValue) -> {
             if(getCurrentSettings() != null) {
@@ -365,7 +373,9 @@ public class ScraperFX extends Application {
                 createBrowseFieldPane("Game Source Directory:", gameSourceField, gameSourceBrowseButton),
                 createBrowseFieldPane("Regex for Substring Removal (Advanced):", filenameRegexField),
                 createBrowseFieldPane("Regex for Files to Ignore (Advanced):", ignoreRegexField),
-                unmatchedOnlyCheckBox
+                unmatchedOnlyCheckBox,
+                outputMediaToUserDirButton,
+                outputMediaToRomsDirButton
         );
         
         settingsTab.setContent(settingsPane);
@@ -400,11 +410,12 @@ public class ScraperFX extends Application {
         unlockGamesItem.setOnAction((e) -> {
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.stream().forEach((g) -> {
-                if(getGame(g).matchedName == null) {
-                    getGame(g).strength = Game.MatchStrength.NO_MATCH;
+                final Game realGame = getGame(g);
+                if(realGame.matchedName == null) {
+                    realGame.strength = Game.MatchStrength.NO_MATCH;
                 }
                 else {
-                    getGame(g).strength = Game.MatchStrength.BEST_GUESS;
+                    realGame.strength = Game.MatchStrength.BEST_GUESS;
                 }
             });
             gamesListView.refresh();
@@ -418,9 +429,10 @@ public class ScraperFX extends Application {
 //            currentGame.metadata = null;
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.stream().forEach((g) -> {
-                g.matchedName = null;
-                g.metadata = null;
-                g.strength = Game.MatchStrength.IGNORE;
+                final Game realGame = getGame(g);
+                realGame.matchedName = null;
+                realGame.metadata = null;
+                realGame.strength = Game.MatchStrength.IGNORE;
             });
 //            currentGame.strength = Game.MatchStrength.IGNORE;
 //            loadCurrentGameFields(currentGame);
@@ -434,7 +446,7 @@ public class ScraperFX extends Application {
 //            currentGame.metadata = null;
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.stream().forEach((g) -> {
-                g.strength = Game.MatchStrength.NO_MATCH;
+                getGame(g).strength = Game.MatchStrength.NO_MATCH;
             });
 //            currentGame.strength = Game.MatchStrength.IGNORE;
 //            loadCurrentGameFields(currentGame);
@@ -537,16 +549,22 @@ public class ScraperFX extends Application {
         
         outputToGamelistButton.setOnAction((e) -> {
             Collections.sort(getSystemGameData());
-            new ESOutput().output(
-                    getSystemGameData(),
-                    SETTINGS_DIR.resolve(GAMELISTS_DIR).resolve(getCurrentSettings().name),
-//                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + "gamelists" + File.separator + getCurrentSettings().name,
-                    SETTINGS_DIR.resolve(getCurrentSettings().name).resolve(IMAGES_DIR),
-////                    getCurrentSettings().romsDir + File.separator + "images",
-//                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + getCurrentSettings().name + File.separator + "images",
-                    SETTINGS_DIR.resolve(getCurrentSettings().name).resolve(VIDEOS_DIR),
-//                    System.getProperty("user.home") + File.separator + ".scraperfx" + File.separator + getCurrentSettings().name + File.separator + "videos",
-                    getCurrentSettings().scrapeAsArcade);
+            if(outputMediaToUserDirButton.isSelected()) {
+                new ESOutput().output(
+                        getSystemGameData(),
+                        SETTINGS_DIR.resolve(ESOutput.GAMELISTS_DIR).resolve(getCurrentSettings().name),
+                        SETTINGS_DIR.resolve(getCurrentSettings().name).resolve(ESOutput.IMAGES_DIR),
+                        SETTINGS_DIR.resolve(getCurrentSettings().name).resolve(ESOutput.VIDEOS_DIR),
+                        getCurrentSettings().scrapeAsArcade);
+            }
+            else {
+                new ESOutput().output(
+                        getSystemGameData(),
+                        SETTINGS_DIR.resolve(ESOutput.GAMELISTS_DIR).resolve(getCurrentSettings().name),
+                        Paths.get(getCurrentSettings().romsDir, ESOutput.IMAGES_DIR),
+                        Paths.get(getCurrentSettings().romsDir, ESOutput.VIDEOS_DIR),
+                        getCurrentSettings().scrapeAsArcade);
+            }
         });
         
         deleteSystemButton.setOnAction((e) -> deleteSystemButtonOnActionPerformed() );
@@ -1744,7 +1762,7 @@ public class ScraperFX extends Application {
             
             setText(item == null ? "" : item.toString());
             if(item != null) {
-                Game realGame = getGame(item);
+                final Game realGame = getGame(item);
                 setStyle("-fx-control-inner-background: " + realGame.strength.cssBackground + ";");
                 if(realGame.strength == Game.MatchStrength.LOCKED && (realGame.matchedName == null || "".equals(realGame.matchedName))) {
                     setStyle("-fx-control-inner-background: " + realGame.strength.cssBackground + ";-fx-text-fill: red");

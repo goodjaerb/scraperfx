@@ -1479,16 +1479,18 @@ public class ScraperFX extends Application {
                                         //matched a game, get the rest of the data.
                                         localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
                                         
-                                        if(localGame.metadata == null) {
+                                        if(localGame.metadata != null) {
                                             final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
                                             if(videoLinks != null) {
                                                 localGame.metadata.videodownload = videoLinks[0];
                                                 localGame.metadata.videoembed = videoLinks[1];
                                             }
+                                        }
                                         
 //                                        System.out.println(localGame.metadata);
 //                                        localGame.metadata.videodownload = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoDownload(getCurrentSettings().scrapeAs, localGame);
 //                                        localGame.metadata.videoembed = 
+                                        if(localGame.metadata == null) {
                                             //error occurred while getting metadata.
                                             updateMessage("Error connecting to thegamesdb.net. Please try again.");
                                         }

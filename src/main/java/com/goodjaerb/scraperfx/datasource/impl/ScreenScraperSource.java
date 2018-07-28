@@ -50,8 +50,8 @@ public class ScreenScraperSource implements DataSource {
                 url = url.replaceAll("#DEVID", ScraperFX.getKeysValue("ScreenScraper.ID"));
                 url = url.replaceAll("#DEVPASS", ScraperFX.getKeysValue("ScreenScraper.KEY"));
                 url = url.replaceAll("#SYSTEMID", Integer.toString(ScreenScraperSystemIdMap.getSystemId(systemName)));
-                url = url.replaceAll("#GAMENAME", gameName);
-                url = url.replaceAll(" ", "%20");
+                url = url.replaceAll("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26"));
+//                url = url.replaceAll(" ", "%20");
                 
                 System.out.println("Connecting to '" + url + "'.");
                 

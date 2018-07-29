@@ -466,7 +466,7 @@ public class ScraperFX extends Application {
         
         matchedNameBrowseButton.setOnAction((e) -> {
             if(currentGame != null) {
-                SingleGameDownloadDialog d = new SingleGameDownloadDialog(getCurrentSettings().scrapeAs);
+                final SingleGameDownloadDialog d = new SingleGameDownloadDialog(getCurrentSettings().scrapeAs);
                 d.showAndWait();
                 loadCurrentGameFields(currentGame);
                 gamesListView.refresh();
@@ -1476,8 +1476,17 @@ public class ScraperFX extends Application {
                                         updateMessage("Could not match " + filename + " to a game.");
                                     }
                                     else {
+                                        MetaData lockedData = null;
+                                        if(localGame.strength == Game.MatchStrength.LOCKED) {
+                                            lockedData = localGame.metadata;
+                                        }
+                                        
                                         //matched a game, get the rest of the data.
                                         localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
+                                        
+                                        if(localGame.metadata == null && localGame.strength == Game.MatchStrength.LOCKED) {
+                                            localGame.metadata = lockedData;
+                                        }
                                         
                                         if(localGame.metadata != null) {
                                             System.out.println("Success! Checking for video links...");
@@ -1644,6 +1653,15 @@ public class ScraperFX extends Application {
                     currentGame.matchedName = gameName;
                     currentGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
                     currentGame.strength = Game.MatchStrength.LOCKED;
+                                        
+                    if(currentGame.metadata != null) {
+                        System.out.println("Success! Checking for video links...");
+                        final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, currentGame);
+                        if(videoLinks != null) {
+                            currentGame.metadata.videodownload = videoLinks[0];
+                            currentGame.metadata.videoembed = videoLinks[1];
+                        }
+                    }
                 }
                 catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);

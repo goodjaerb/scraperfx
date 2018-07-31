@@ -33,6 +33,7 @@ public class ScreenScraperSystemIdMap {
         SYSTEM_ID_MAP.put("Microsoft Xbox", 32);
         SYSTEM_ID_MAP.put("Microsoft Xbox 360", 33);
         SYSTEM_ID_MAP.put("MSX", 113);
+        SYSTEM_ID_MAP.put("Neo Geo Pocket Color", 82);
         SYSTEM_ID_MAP.put("Nintendo 3DS", 17);
         SYSTEM_ID_MAP.put("Nintendo 64", 14);
         SYSTEM_ID_MAP.put("Nintendo DS", 15);

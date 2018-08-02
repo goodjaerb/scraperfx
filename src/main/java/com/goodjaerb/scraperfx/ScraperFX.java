@@ -1285,10 +1285,11 @@ public class ScraperFX extends Application {
                             }
 
                             if(!ignore) {
+                                boolean refreshOnly = false;
                                 if(unmatchedOnlyCheckBox.isSelected()) {
                                     if(localGame.matchedName != null) {
                                         // this game is already matched and we only want unmatched games.
-                                        updateMessage("Skipping " + filename + ". Already matched. Scanning unmatched only.");
+                                        updateMessage("Skipping " + filename + ". Already matched.");
                                         updateProgress(++fileCount, totalFiles);
 //                                        // without sleeping, subsequent scans with cached data went so fast
 //                                        // i thought it was a bug. turns out the scan process is very fast,
@@ -1301,10 +1302,14 @@ public class ScraperFX extends Application {
 //                                                break;
 //                                            }
 //                                        }
-                                        continue;
+
+//                                        i use to skip matched games but if i want to refresh the metadata i don't want to 'continue'
+//                                        continue;
+                                        refreshOnly = true;
                                     }
                                 }
 
+                                
                                 String noExtName = filename.substring(0, filename.lastIndexOf(".")).toLowerCase();
                                 if(scrapeTypeGroup.getSelectedToggle() == scrapeAsArcadeButton) {
                                     localGame.matchedName = noExtName;
@@ -1321,7 +1326,7 @@ public class ScraperFX extends Application {
                                     }
                                 }
                                 else {
-                                    if(localGame.strength != Game.MatchStrength.LOCKED) {
+                                    if(localGame.strength != Game.MatchStrength.LOCKED && !refreshOnly) {
                                         if(getCurrentSettings().substringRegex != null && !"".equals(getCurrentSettings().substringRegex)) {
                                             Pattern pattern = Pattern.compile(".*" + getCurrentSettings().substringRegex + ".*");
                                             Matcher m = pattern.matcher(noExtName);

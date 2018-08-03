@@ -1290,7 +1290,7 @@ public class ScraperFX extends Application {
                                     if(localGame.matchedName != null) {
                                         // this game is already matched and we only want unmatched games.
                                         updateMessage("Skipping " + filename + ". Already matched.");
-                                        updateProgress(++fileCount, totalFiles);
+//                                        updateProgress(++fileCount, totalFiles);
 //                                        // without sleeping, subsequent scans with cached data went so fast
 //                                        // i thought it was a bug. turns out the scan process is very fast,
 //                                        // it's downloading the data that is slow.
@@ -1312,7 +1312,9 @@ public class ScraperFX extends Application {
                                 
                                 String noExtName = filename.substring(0, filename.lastIndexOf(".")).toLowerCase();
                                 if(scrapeTypeGroup.getSelectedToggle() == scrapeAsArcadeButton) {
-                                    localGame.matchedName = noExtName;
+                                    if(!refreshOnly) {
+                                        localGame.matchedName = noExtName;
+                                    }
                                     localGame.metadata = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
 //                                    System.out.println(localGame.metadata.images);
 //                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.ARCADE_ITALIA).getMetaData(null, localGame);

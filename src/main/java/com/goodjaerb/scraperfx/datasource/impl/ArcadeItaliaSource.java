@@ -54,13 +54,25 @@ public class ArcadeItaliaSource implements DataSource {
             if(data != null && data.result != null && data.result.length > 0) {
                 MetaData metadata = new MetaData();
                 metadata.metaName = data.result[0].title;
-                metadata.videoembed = "https://www.youtube.com/embed/" + data.result[0].youtube_video_id;
-                metadata.videodownload = data.result[0].url_video_shortplay;
+                if(notNullNorEmpty(data.result[0].youtube_video_id)) {
+                    metadata.videoembed = "https://www.youtube.com/embed/" + data.result[0].youtube_video_id;
+                }
+                if(notNullNorEmpty(data.result[0].url_video_shortplay)) {
+                    metadata.videodownload = data.result[0].url_video_shortplay;
+                }
                 metadata.images = new ArrayList<>();
-                metadata.images.add(new Image("title", data.result[0].url_image_title, "png", true));
-                metadata.images.add(new Image("game", data.result[0].url_image_ingame, "png", true));
-                metadata.images.add(new Image("marquee", data.result[0].url_image_marquee, "png", true));
-                metadata.images.add(new Image("flyer", data.result[0].url_image_flyer, "png", true));
+                if(notNullNorEmpty(data.result[0].url_image_title)) {
+                    metadata.images.add(new Image("title", data.result[0].url_image_title, "png", true));
+                }
+                if(notNullNorEmpty(data.result[0].url_image_ingame)) {
+                    metadata.images.add(new Image("game", data.result[0].url_image_ingame, "png", true));
+                }
+                if(notNullNorEmpty(data.result[0].url_image_marquee)) {
+                    metadata.images.add(new Image("marquee", data.result[0].url_image_marquee, "png", true));
+                }
+                if(notNullNorEmpty(data.result[0].url_image_flyer)) {
+                    metadata.images.add(new Image("flyer", data.result[0].url_image_flyer, "png", true));
+                }
                 return metadata;
             }
         }
@@ -69,6 +81,10 @@ public class ArcadeItaliaSource implements DataSource {
         }
         
         return null;
+    }
+    
+    private boolean notNullNorEmpty(String s) {
+        return s != null && !s.isEmpty();
     }
      
     public String getJson(String gameName) {

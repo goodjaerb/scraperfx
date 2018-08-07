@@ -54,6 +54,8 @@ public class ArcadeItaliaSource implements DataSource {
             if(data != null && data.result != null && data.result.length > 0) {
                 MetaData metadata = new MetaData();
                 metadata.metaName = data.result[0].title;
+                metadata.players = String.valueOf(data.result[0].players);
+                
                 if(notNullNorEmpty(data.result[0].youtube_video_id)) {
                     metadata.videoembed = "https://www.youtube.com/embed/" + data.result[0].youtube_video_id;
                 }

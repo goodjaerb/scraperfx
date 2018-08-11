@@ -98,7 +98,18 @@ public class Game implements Comparable<Game> {
     
     @Override
     public String toString() {
-        return metadata == null ? fileName : (metadata.favorite ? "*" + fileName : fileName);
+        String result = "";
+        if(metadata != null) {
+            if(metadata.favorite) {
+                result += "*";
+            }
+            if(metadata.metaName != null && !metadata.metaName.trim().isEmpty()) {
+                result += (metadata.metaName + " ");
+            }
+        }
+        result += ("(" + fileName + ")");
+        return result;
+//        return metadata == null ? fileName : (metadata.favorite ? "*" + fileName : fileName);
     }
     
     public String toLongString() {

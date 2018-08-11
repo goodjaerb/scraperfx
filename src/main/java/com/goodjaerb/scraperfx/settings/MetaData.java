@@ -17,6 +17,9 @@ import org.xmappr.annotation.RootElement;
 public class MetaData {
     public enum MetaDataId { NAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, IMAGES };
     
+    @Element(name = "favorite")
+    public Boolean favorite = false;
+    
     @Element(name = "name")
     public String metaName;
     

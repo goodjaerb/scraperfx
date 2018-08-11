@@ -324,6 +324,7 @@ public class ESOutput {
                                     if(g.metadata.metaPublisher != null)    writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
                                     if(g.metadata.metaGenre != null)        writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");
                                     if(g.metadata.players != null)          writer.append("\t\t<players>" + g.metadata.players + "</players>\n");
+                                    if(g.metadata.favorite)                 writer.append("\t\t<favorite>true</favorite>\n");
                                     
                                     if(g.metadata.videodownload != null && downloadVideosCheckBox.isSelected()) {
                                         if(ScraperFX.saveVideo(videoPath, g.fileName + "_video.mp4", g.metadata.videodownload)) {

@@ -139,6 +139,7 @@ public class ScraperFX extends Application {
     private final Tab gamesTab;
     private final BorderPane gamesPane;
     private final ScrollPane imagesScroll;
+    private final CheckBox favoriteCheckBox;
     private final CheckBox lockImagesCheckBox;
     private final ListView<Game> gamesListView;
     private final TextField matchedNameField;
@@ -234,6 +235,7 @@ public class ScraperFX extends Application {
         lockGenreCheckBox = new CheckBox("Lock");
         lockPlayersCheckBox = new CheckBox("Lock");
         lockImagesCheckBox = new CheckBox("Lock Images");
+        favoriteCheckBox = new CheckBox("Favorite");
         
         saveButton = new Button("Save");
         scanButton = new Button("Scan Now");
@@ -298,8 +300,8 @@ public class ScraperFX extends Application {
             scrapeAsArcadeSetup(scrapeAsArcadeButton.isSelected());
         });
         
-        arcadeScraperBox.getItems().addAll(SourceAgent.MAMEDB, SourceAgent.ARCADE_ITALIA);
-        arcadeScraperBox.getSelectionModel().select(SourceAgent.MAMEDB);
+        arcadeScraperBox.getItems().addAll(SourceAgent.ARCADE_ITALIA, SourceAgent.MAMEDB);
+        arcadeScraperBox.getSelectionModel().select(SourceAgent.ARCADE_ITALIA);
         
         consoleSelectComboBox.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends String> obs, String oldValue, String newValue) -> {
             if(getCurrentSettings() != null) {
@@ -496,6 +498,7 @@ public class ScraperFX extends Application {
         lockReleaseDateCheckBox.setOnAction((e) ->  lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, lockReleaseDateCheckBox.isSelected()));
         lockPlayersCheckBox.setOnAction((e) ->      lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, lockPlayersCheckBox.isSelected()));
         lockImagesCheckBox.setOnAction((e) -> {     currentGame.metadata.lockImages = lockImagesCheckBox.isSelected(); });
+        favoriteCheckBox.setOnAction((e) -> {       currentGame.metadata.favorite = favoriteCheckBox.isSelected(); gamesListView.refresh(); });
         
         VBox metaBox = new VBox();
         metaBox.getChildren().addAll(
@@ -515,7 +518,7 @@ public class ScraperFX extends Application {
         VBox imagesBox = new VBox();
         imagesBox.setPadding(new Insets(7.));
         imagesBox.setSpacing(7.);
-        imagesBox.getChildren().addAll(lockImagesCheckBox, imagesScroll);
+        imagesBox.getChildren().addAll(favoriteCheckBox, lockImagesCheckBox, imagesScroll);
         
         gamesPane.setPadding(new Insets(7.));
         gamesPane.setLeft(gamesListView);
@@ -920,6 +923,7 @@ public class ScraperFX extends Application {
             playersField.setEditable(!g.metadata.lockPlayers);
             
             lockImagesCheckBox.setSelected(g.metadata.lockImages);
+            favoriteCheckBox.setSelected(g.metadata.favorite);
 
             if(!isScanning.get()) {
                 Platform.runLater(() -> {
@@ -1328,6 +1332,13 @@ public class ScraperFX extends Application {
                                 if(!refreshOnly) {
                                     localGame.matchedName = noExtName;
                                 }
+                                    
+                                boolean wasFavorite = false;
+                                if(localGame.metadata != null && localGame.metadata.favorite) {
+                                    System.out.println(localGame.fileName + " was a favorite!");
+                                    wasFavorite = true;
+                                }
+                                
                                 localGame.metadata = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
 //                                    System.out.println(localGame.metadata.images);
 //                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.ARCADE_ITALIA).getMetaData(null, localGame);
@@ -1336,6 +1347,7 @@ public class ScraperFX extends Application {
                                     updateMessage("Could not match " + filename + " to a game.");
                                 }
                                 else {
+                                    localGame.metadata.favorite = wasFavorite;
                                     localGame.strength = Game.MatchStrength.STRONG;
                                     updateMessage("Matched " + filename + " to " + localGame.metadata.metaName + ".");
                                 }
@@ -1500,7 +1512,13 @@ public class ScraperFX extends Application {
                                     if(localGame.strength == Game.MatchStrength.LOCKED) {
                                         lockedData = localGame.metadata;
                                     }
-
+                                    
+                                    boolean wasFavorite = false;
+                                    if(localGame.metadata != null && localGame.metadata.favorite) {
+                                        System.out.println(localGame.fileName + " was a favorite!");
+                                        wasFavorite = true;
+                                    }
+                                    
                                     //matched a game, get the rest of the data.
                                     localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
 
@@ -1509,6 +1527,8 @@ public class ScraperFX extends Application {
                                     }
 
                                     if(localGame.metadata != null) {
+                                        localGame.metadata.favorite = wasFavorite;
+                                        
                                         System.out.println("Success! Checking for video links...");
                                         final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
                                         if(videoLinks != null) {

@@ -556,8 +556,8 @@ public class ScraperFX extends Application {
                 new ESOutput().output(
                         getSystemGameData(),
                         SETTINGS_DIR.resolve(ESOutput.GAMELISTS_DIR).resolve(getCurrentSettings().name),
-                        SETTINGS_DIR.resolve(getCurrentSettings().name).resolve(ESOutput.IMAGES_DIR),
-                        SETTINGS_DIR.resolve(getCurrentSettings().name).resolve(ESOutput.VIDEOS_DIR),
+                        SETTINGS_DIR.resolve("media").resolve(getCurrentSettings().name).resolve(ESOutput.IMAGES_DIR),
+                        SETTINGS_DIR.resolve("media").resolve(getCurrentSettings().name).resolve(ESOutput.VIDEOS_DIR),
                         getCurrentSettings().scrapeAsArcade);
             }
             else {

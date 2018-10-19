@@ -1597,7 +1597,8 @@ public class ScraperFX extends Application {
     }
     
     private class SingleGameDownloadDialog extends Stage {
-        private final ComboBox<String> selectGameBox;
+//        private final ComboBox<String> selectGameBox;
+        private final ListView<String> selectGameList;
         private final Button okButton;
         private final Button cancelButton;
         private final AtomicBoolean working;
@@ -1610,9 +1611,11 @@ public class ScraperFX extends Application {
         
             working = new AtomicBoolean(false);
             
-            selectGameBox = new ComboBox<>();
-            selectGameBox.getItems().add("Loading Games List...");
-            selectGameBox.getSelectionModel().select(0);
+//            selectGameBox = new ComboBox<>();
+//            selectGameBox.getItems().add("Loading Games List...");
+//            selectGameBox.getSelectionModel().select(0);
+            selectGameList = new ListView<>();
+            selectGameList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             
             okButton = new Button("OK");
             okButton.setDisable(true);
@@ -1637,7 +1640,8 @@ public class ScraperFX extends Application {
             vbox.setSpacing(7.);
             vbox.setPadding(new Insets(7.));
             vbox.getChildren().add(new Label("Select game:"));
-            vbox.getChildren().add(selectGameBox);
+//            vbox.getChildren().add(selectGameBox);
+            vbox.getChildren().add(selectGameList);
             vbox.getChildren().add(box);
             
             Scene scene = new Scene(vbox);
@@ -1652,7 +1656,8 @@ public class ScraperFX extends Application {
         private void onOkButton() {
             working.set(true);
             
-            String gameName = selectGameBox.getSelectionModel().getSelectedItem();
+//            String gameName = selectGameBox.getSelectionModel().getSelectedItem();
+            String gameName = selectGameList.getSelectionModel().getSelectedItem();
             
             okButton.setDisable(true);
             cancelButton.setDisable(true);
@@ -1709,6 +1714,7 @@ public class ScraperFX extends Application {
                 finally {
                     working.set(false);
                     Platform.runLater(() -> {
+                        gamesListView.refresh();
                         hide();
                     });
                 }
@@ -1726,9 +1732,12 @@ public class ScraperFX extends Application {
                     Collections.sort(gameList);
                     
                     Platform.runLater(() -> {
-                        selectGameBox.getItems().clear();
-                        selectGameBox.getItems().addAll(gameList);
-                        selectGameBox.getSelectionModel().select(0);
+                        selectGameList.getItems().clear();
+                        selectGameList.getItems().addAll(gameList);
+                        selectGameList.getSelectionModel().select(0);
+//                        selectGameBox.getItems().clear();
+//                        selectGameBox.getItems().addAll(gameList);
+//                        selectGameBox.getSelectionModel().select(0);
                         okButton.setDisable(false);
                     });
                 }

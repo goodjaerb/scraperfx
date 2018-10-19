@@ -107,7 +107,7 @@ public class Game implements Comparable<Game> {
                 result += (metadata.metaName + " ");
             }
         }
-        result += ("(" + fileName + ")");
+        result += ("[[" + fileName + "]]");
         return result;
 //        return metadata == null ? fileName : (metadata.favorite ? "*" + fileName : fileName);
     }

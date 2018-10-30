@@ -132,6 +132,7 @@ public class ScraperFX extends Application {
     private final TextField filenameRegexField;
     private final TextField ignoreRegexField;
     private final CheckBox unmatchedOnlyCheckBox;
+    private final CheckBox refreshMetaDataCheckBox;
     private final ToggleGroup outputMediaGroup;
     private final RadioButton outputMediaToUserDirButton;
     private final RadioButton outputMediaToRomsDirButton;
@@ -196,7 +197,8 @@ public class ScraperFX extends Application {
         gameSourceBrowseButton = new Button("...");
         filenameRegexField = new TextField();
         ignoreRegexField = new TextField();
-        unmatchedOnlyCheckBox = new CheckBox("Scan Unmatched Files Only");
+        unmatchedOnlyCheckBox = new CheckBox("Don't Re-match matched files");
+        refreshMetaDataCheckBox = new CheckBox("Refresh Matched Metadata");
         outputMediaGroup = new ToggleGroup();
         outputMediaToUserDirButton = new RadioButton("Output media to User Dir");
         outputMediaToUserDirButton.setToggleGroup(outputMediaGroup);
@@ -335,6 +337,8 @@ public class ScraperFX extends Application {
         unmatchedOnlyCheckBox.setOnAction((e) -> {
             getCurrentSettings().unmatchedOnly = unmatchedOnlyCheckBox.isSelected();
         });
+        
+        refreshMetaDataCheckBox.setPadding(new Insets(7.));
 
         HBox box21 = new HBox();
         box21.setSpacing(7.);
@@ -376,6 +380,7 @@ public class ScraperFX extends Application {
                 createBrowseFieldPane("Regex for Substring Removal (Advanced):", filenameRegexField),
                 createBrowseFieldPane("Regex for Files to Ignore (Advanced):", ignoreRegexField),
                 unmatchedOnlyCheckBox,
+                refreshMetaDataCheckBox,
                 outputMediaToUserDirButton,
                 outputMediaToRomsDirButton
         );
@@ -1320,9 +1325,12 @@ public class ScraperFX extends Application {
 //                                            }
 //                                        }
 
-//                                        i use to skip matched games but if i want to refresh the metadata i don't want to 'continue'
-//                                        continue;
-                                    refreshOnly = true;
+                                    if(refreshMetaDataCheckBox.isSelected()) {
+                                        refreshOnly = true;
+                                    }
+                                    else {
+                                        continue;
+                                    }
                                 }
                             }
 

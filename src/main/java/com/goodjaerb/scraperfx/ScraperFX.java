@@ -760,7 +760,9 @@ public class ScraperFX extends Application {
             return false;
         }
         
-        Files.createDirectories(path);
+        if(!Files.exists(path)) {
+            Files.createDirectories(path);
+        }
                     
         File outputFile = new File(path.toString() + File.separator + imageFileName + "." + imageOutputType);
         if(outputFile.exists()) {

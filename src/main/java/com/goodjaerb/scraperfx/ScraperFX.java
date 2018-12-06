@@ -316,6 +316,35 @@ public class ScraperFX extends Application {
             if(dir != null) {
                 gameSourceField.setText(dir.getPath());
                 getCurrentSettings().romsDir = dir.getPath();
+                
+                Alert listFilesAlert = new Alert(Alert.AlertType.CONFIRMATION, "Would you like to preload the game list with the files located in this directory? If not you will have to run a scan of every file before you can continue.", ButtonType.YES, ButtonType.NO);
+                Optional<ButtonType> result = listFilesAlert.showAndWait();
+
+                if(result.isPresent() && result.get() == ButtonType.YES) {
+                    FileSystem fs = FileSystems.getDefault();
+                    Path gamesPath = fs.getPath(gameSourceField.getText());
+                    if(Files.exists(gamesPath)) {final List<Path> paths = new ArrayList<>();
+                        DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
+                        try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+                            for(Path p: stream) {
+                                paths.add(p);
+                            }
+                        }
+                        catch(IOException ex) {
+                            Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                        Collections.sort(paths, (o1, o2) -> {
+                            return o1.getFileName().compareTo(o2.getFileName());
+                        });
+
+                        paths.forEach((p) -> {
+                            Game g = new Game(p.getFileName().toString());
+                            getSystemGameData().add(g);
+                            gamesListView.getItems().add(g);
+                        });
+                    }
+                }
             }
         });
         
@@ -898,66 +927,68 @@ public class ScraperFX extends Application {
     private void loadCurrentGameFields(Game g) {
         clearCurrentGameFields();
         
-        matchedNameField.setText(g.matchedName);
-        lockMatchedNameCheckBox.setSelected(g.strength == Game.MatchStrength.LOCKED);
-        if(g.metadata != null) {
-            metaNameField.setText(g.metadata.metaName);
-            metaDescArea.setText(g.metadata.metaDesc);
-            metaRatingField.setText(g.metadata.metaRating);
-            metaReleaseDateField.setText(g.metadata.metaReleaseDate);
-            metaDeveloperField.setText(g.metadata.metaDeveloper);
-            metaPublisherField.setText(g.metadata.metaPublisher);
-            metaGenreField.setText((g.metadata.metaGenre == null ? "" : g.metadata.metaGenre));
-            playersField.setText(g.metadata.players);
-            
-            lockNameCheckBox.setSelected(g.metadata.lockName);
-            metaNameField.setEditable(!g.metadata.lockName);
-            lockDescCheckBox.setSelected(g.metadata.lockDesc);
-            metaDescArea.setEditable(!g.metadata.lockDesc);
-            lockRatingCheckBox.setSelected(g.metadata.lockRating);
-            metaRatingField.setEditable(!g.metadata.lockRating);
-            lockReleaseDateCheckBox.setSelected(g.metadata.lockReleasedate);
-            metaReleaseDateField.setEditable(!g.metadata.lockReleasedate);
-            lockDeveloperCheckBox.setSelected(g.metadata.lockDeveloper);
-            metaDeveloperField.setEditable(!g.metadata.lockDeveloper);
-            lockPublisherCheckBox.setSelected(g.metadata.lockPublisher);
-            metaPublisherField.setEditable(!g.metadata.lockPublisher);
-            lockGenreCheckBox.setSelected(g.metadata.lockGenre);
-            metaGenreField.setEditable(!g.metadata.lockGenre);
-            lockPlayersCheckBox.setSelected(g.metadata.lockPlayers);
-            playersField.setEditable(!g.metadata.lockPlayers);
-            
-            lockImagesCheckBox.setSelected(g.metadata.lockImages);
-            favoriteCheckBox.setSelected(g.metadata.favorite);
+        if(g != null) {
+            matchedNameField.setText(g.matchedName);
+            lockMatchedNameCheckBox.setSelected(g.strength == Game.MatchStrength.LOCKED);
+            if(g.metadata != null) {
+                metaNameField.setText(g.metadata.metaName);
+                metaDescArea.setText(g.metadata.metaDesc);
+                metaRatingField.setText(g.metadata.metaRating);
+                metaReleaseDateField.setText(g.metadata.metaReleaseDate);
+                metaDeveloperField.setText(g.metadata.metaDeveloper);
+                metaPublisherField.setText(g.metadata.metaPublisher);
+                metaGenreField.setText((g.metadata.metaGenre == null ? "" : g.metadata.metaGenre));
+                playersField.setText(g.metadata.players);
 
-            if(!isScanning.get()) {
-                Platform.runLater(() -> {
-                    imageTaskList.stream().forEach((task) -> {
-                        task.cancel();
-                    });
-                    imageTaskList.clear();
+                lockNameCheckBox.setSelected(g.metadata.lockName);
+                metaNameField.setEditable(!g.metadata.lockName);
+                lockDescCheckBox.setSelected(g.metadata.lockDesc);
+                metaDescArea.setEditable(!g.metadata.lockDesc);
+                lockRatingCheckBox.setSelected(g.metadata.lockRating);
+                metaRatingField.setEditable(!g.metadata.lockRating);
+                lockReleaseDateCheckBox.setSelected(g.metadata.lockReleasedate);
+                metaReleaseDateField.setEditable(!g.metadata.lockReleasedate);
+                lockDeveloperCheckBox.setSelected(g.metadata.lockDeveloper);
+                metaDeveloperField.setEditable(!g.metadata.lockDeveloper);
+                lockPublisherCheckBox.setSelected(g.metadata.lockPublisher);
+                metaPublisherField.setEditable(!g.metadata.lockPublisher);
+                lockGenreCheckBox.setSelected(g.metadata.lockGenre);
+                metaGenreField.setEditable(!g.metadata.lockGenre);
+                lockPlayersCheckBox.setSelected(g.metadata.lockPlayers);
+                playersField.setEditable(!g.metadata.lockPlayers);
 
-                    if(g.metadata != null && g.metadata.images != null && !g.metadata.images.isEmpty()) {
-                        MetaImageViewBox box = new MetaImageViewBox();
+                lockImagesCheckBox.setSelected(g.metadata.lockImages);
+                favoriteCheckBox.setSelected(g.metadata.favorite);
 
-                        g.metadata.images.stream().filter((image) -> (image != null)).map((image) -> {
-                            MetaImageView metaImage = new MetaImageView(image);
-                            box.addView(metaImage);
-                            ImageLoadingTask task = new ImageLoadingTask(metaImage, image);
-                            return task;
-                        }).map((task) -> {
-                            imageTaskList.add(task);
-                            return task;
-                        }).map((task) -> new Thread(task)).map((t) -> {
-                            t.setDaemon(true);
-                            return t;
-                        }).forEach((t) -> {
-                            t.start();
+                if(!isScanning.get()) {
+                    Platform.runLater(() -> {
+                        imageTaskList.stream().forEach((task) -> {
+                            task.cancel();
                         });
+                        imageTaskList.clear();
 
-                        imagesScroll.setContent(box);
-                    }
-                });
+                        if(g.metadata != null && g.metadata.images != null && !g.metadata.images.isEmpty()) {
+                            MetaImageViewBox box = new MetaImageViewBox();
+
+                            g.metadata.images.stream().filter((image) -> (image != null)).map((image) -> {
+                                MetaImageView metaImage = new MetaImageView(image);
+                                box.addView(metaImage);
+                                ImageLoadingTask task = new ImageLoadingTask(metaImage, image);
+                                return task;
+                            }).map((task) -> {
+                                imageTaskList.add(task);
+                                return task;
+                            }).map((task) -> new Thread(task)).map((t) -> {
+                                t.setDaemon(true);
+                                return t;
+                            }).forEach((t) -> {
+                                t.start();
+                            });
+
+                            imagesScroll.setContent(box);
+                        }
+                    });
+                }
             }
         }
     }
@@ -1837,9 +1868,11 @@ public class ScraperFX extends Application {
             setText(item == null ? "" : item.toString());
             if(item != null) {
                 final Game realGame = getGame(item);
-                setStyle("-fx-control-inner-background: " + realGame.strength.cssBackground + ";");
-                if(realGame.strength == Game.MatchStrength.LOCKED && (realGame.matchedName == null || "".equals(realGame.matchedName))) {
-                    setStyle("-fx-control-inner-background: " + realGame.strength.cssBackground + ";-fx-text-fill: red");
+                if(realGame != null) {
+                    setStyle("-fx-control-inner-background: " + realGame.strength.cssBackground + ";");
+                    if(realGame.strength == Game.MatchStrength.LOCKED && (realGame.matchedName == null || "".equals(realGame.matchedName))) {
+                        setStyle("-fx-control-inner-background: " + realGame.strength.cssBackground + ";-fx-text-fill: red");
+                    }
                 }
             }
         }

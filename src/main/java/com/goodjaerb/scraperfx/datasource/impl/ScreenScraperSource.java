@@ -47,10 +47,14 @@ public class ScreenScraperSource implements DataSource {
 //                    url += params[i] + "=" + params[i + 1];
 //                }
 
+                Integer sysId = ScreenScraperSystemIdMap.getSystemId(systemName);
+                if(sysId == null) {
+                    return null;
+                }
 //                System.out.println("Using '" + gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("$", "%24").replaceAll("!", "%21") + "' as game name in url.");
                 url = url.replaceAll("#DEVID", ScraperFX.getKeysValue("ScreenScraper.ID"));
                 url = url.replaceAll("#DEVPASS", ScraperFX.getKeysValue("ScreenScraper.KEY"));
-                url = url.replaceAll("#SYSTEMID", Integer.toString(ScreenScraperSystemIdMap.getSystemId(systemName)));
+                url = url.replaceAll("#SYSTEMID", Integer.toString(sysId));//ScreenScraperSystemIdMap.getSystemId(systemName)));
                 url = url.replaceAll("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("\\$", "%24").replaceAll("!", "%21"));
 //                url = url.replaceAll(" ", "%20");
                 

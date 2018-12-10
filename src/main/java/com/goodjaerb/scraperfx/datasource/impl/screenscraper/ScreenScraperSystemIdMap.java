@@ -16,7 +16,7 @@ import java.util.Map;
 public class ScreenScraperSystemIdMap {
     private static final Map<String, Integer> SYSTEM_ID_MAP = new HashMap<>();
     
-    public static int getSystemId(String gamesDbSystemName) {
+    public static Integer getSystemId(String gamesDbSystemName) {
         return SYSTEM_ID_MAP.get(gamesDbSystemName);
     }
     

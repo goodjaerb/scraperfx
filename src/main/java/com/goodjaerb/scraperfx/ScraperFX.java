@@ -97,7 +97,10 @@ import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import java.nio.file.Paths;
+import javafx.collections.FXCollections;
+import javafx.collections.transformation.SortedList;
 import javafx.stage.WindowEvent;
+import javax.swing.event.DocumentEvent;
 import org.apache.commons.io.FileUtils;
 import org.ini4j.Ini;
 
@@ -143,6 +146,7 @@ public class ScraperFX extends Application {
     private final CheckBox favoriteCheckBox;
     private final CheckBox lockImagesCheckBox;
     private final ListView<Game> gamesListView;
+    private final ObservableList<Game> observableGamesList;
     private final TextField matchedNameField;
     private final Button matchedNameBrowseButton;
     private final Button matchedNameClearButton;
@@ -211,6 +215,7 @@ public class ScraperFX extends Application {
         imagesScroll = new ScrollPane();
         gamesListView = new ListView<>();
         gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
+        observableGamesList = FXCollections.observableArrayList();
         matchedNameField = new TextField();
         matchedNameField.setEditable(false);
         matchedNameBrowseButton = new Button("...");
@@ -316,6 +321,7 @@ public class ScraperFX extends Application {
             if(dir != null) {
                 gameSourceField.setText(dir.getPath());
                 getCurrentSettings().romsDir = dir.getPath();
+                getSystemGameData().clear();
                 
                 Alert listFilesAlert = new Alert(Alert.AlertType.CONFIRMATION, "Would you like to preload the game list with the files located in this directory? If not you will have to run a scan of every file before you can continue.", ButtonType.YES, ButtonType.NO);
                 Optional<ButtonType> result = listFilesAlert.showAndWait();
@@ -323,7 +329,8 @@ public class ScraperFX extends Application {
                 if(result.isPresent() && result.get() == ButtonType.YES) {
                     FileSystem fs = FileSystems.getDefault();
                     Path gamesPath = fs.getPath(gameSourceField.getText());
-                    if(Files.exists(gamesPath)) {final List<Path> paths = new ArrayList<>();
+                    if(Files.exists(gamesPath)) {
+                        final List<Path> paths = new ArrayList<>();
                         DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
                         try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
                             for(Path p: stream) {
@@ -334,14 +341,16 @@ public class ScraperFX extends Application {
                             Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                         }
 
-                        Collections.sort(paths, (o1, o2) -> {
-                            return o1.getFileName().compareTo(o2.getFileName());
-                        });
+//                        Collections.sort(paths, (o1, o2) -> {
+//                            return o1.getFileName().compareTo(o2.getFileName());
+//                        });
 
+                        observableGamesList.clear();
                         paths.forEach((p) -> {
                             Game g = new Game(p.getFileName().toString());
                             getSystemGameData().add(g);
-                            gamesListView.getItems().add(g);
+                            observableGamesList.add(g);
+//                            gamesListView.getItems().add(g);
                         });
                     }
                 }
@@ -702,6 +711,7 @@ public class ScraperFX extends Application {
             textControl.setEditable(true);
             data.lockMetaData(id, false);
         }
+        gamesListView.refresh();
     }
     
     private Image getImageFromURL(String url) throws MalformedURLException, IOException {
@@ -1022,14 +1032,17 @@ public class ScraperFX extends Application {
         ignoreRegexField.setText(getCurrentSettings().ignoreRegex);
         unmatchedOnlyCheckBox.setSelected(getCurrentSettings().unmatchedOnly);
         
-        gamesListView.getItems().clear();
+        observableGamesList.clear();
+//        gamesListView.getItems().clear();
         if(getSystemGameData(getCurrentSettings().name) != null) {
             getSystemGameData(getCurrentSettings().name).stream().forEach((g) -> {
-                gamesListView.getItems().add(g);
+                observableGamesList.add(g);
+//                gamesListView.getItems().add(g);
             });
         
-            ObservableList<Game> list = gamesListView.getItems();
-            Collections.sort(list);
+//            ObservableList<Game> list = gamesListView.getItems();
+//            Collections.sort(list);
+            SortedList<Game> list = new SortedList<>(observableGamesList);
             gamesListView.setItems(list);
         }
     }
@@ -1313,9 +1326,9 @@ public class ScraperFX extends Application {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
-                Collections.sort(paths, (o1, o2) -> {
-                    return o1.getFileName().compareTo(o2.getFileName());
-                });
+//                Collections.sort(paths, (o1, o2) -> {
+//                    return o1.getFileName().compareTo(o2.getFileName());
+//                });
                 
                 long totalFiles = Files.list(gamesPath).count();
                 long fileCount = 0;
@@ -1600,8 +1613,10 @@ public class ScraperFX extends Application {
 
                     Game g = new Game(localGame);
                     Platform.runLater(() -> {
-                        gamesListView.getItems().remove(g);
-                        gamesListView.getItems().add(g);
+//                        gamesListView.getItems().remove(g);
+//                        gamesListView.getItems().add(g);
+                        observableGamesList.remove(g);
+                        observableGamesList.add(g);
                         gamesListView.getSelectionModel().selectLast();//temporary?
                     });
 
@@ -1625,9 +1640,11 @@ public class ScraperFX extends Application {
             }
             finally {
                 Platform.runLater(() -> {
-                    ObservableList<Game> list = gamesListView.getItems();
-                    Collections.sort(list);
-                    gamesListView.setItems(list);
+//                    ObservableList<Game> list = gamesListView.getItems();
+//                    Collections.sort(list);
+//                    SortedList<Game> list = new SortedList<>(gamesListView.getItems());
+//                    gamesListView.setItems(list);
+                    gamesListView.refresh();
                 });
                 if(isScanning.get()) {
                     isScanning.set(false);

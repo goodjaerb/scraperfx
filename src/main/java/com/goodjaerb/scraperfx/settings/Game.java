@@ -93,7 +93,15 @@ public class Game implements Comparable<Game> {
     
     @Override
     public int compareTo(Game o) {
-        return fileName.toLowerCase().compareTo(o.fileName.toLowerCase());
+//        return fileName.toLowerCase().compareTo(o.fileName.toLowerCase());
+        return getCompareToValue().compareTo(o.getCompareToValue());
+    }
+    
+    private String getCompareToValue() {
+        if(metadata != null && metadata.metaName != null) {
+            return metadata.metaName.toLowerCase();
+        }
+        return fileName.toLowerCase();
     }
     
     @Override

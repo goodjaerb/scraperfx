@@ -98,7 +98,9 @@ import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import java.nio.file.Paths;
 import javafx.collections.FXCollections;
+import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.scene.layout.Priority;
 import javafx.stage.WindowEvent;
 import org.apache.commons.io.FileUtils;
 import org.ini4j.Ini;
@@ -147,8 +149,10 @@ public class ScraperFX extends Application {
     private final ToggleGroup sortByGroup;
     private final RadioButton sortByMetaNameRadioButton;
     private final RadioButton sortByFileNameRadioButton;
+    private final CheckBox hideIgnoredCheckBox;
     private final ObservableList<Game> observableGamesList;
     private final SortedList<Game> sortedGamesList;
+    private final FilteredList<Game> filteredGamesList;
     private final ListView<Game> gamesListView;
     private final TextField matchedNameField;
     private final Button matchedNameBrowseButton;
@@ -227,9 +231,12 @@ public class ScraperFX extends Application {
         sortByFileNameRadioButton = new RadioButton("Sort By File Name");
         sortByFileNameRadioButton.setToggleGroup(sortByGroup);
         
+        hideIgnoredCheckBox = new CheckBox("Hide Ignored Items");
+        
         observableGamesList = FXCollections.observableArrayList();
         sortedGamesList = new SortedList<>(observableGamesList);
-        gamesListView = new ListView<>(sortedGamesList);
+        filteredGamesList = new FilteredList<>(sortedGamesList);
+        gamesListView = new ListView<>(filteredGamesList);
         gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
         matchedNameField = new TextField();
         matchedNameField.setEditable(false);
@@ -310,13 +317,9 @@ public class ScraperFX extends Application {
         Button addSystemButton = new Button("Add System");
         addSystemButton.setOnAction((e) -> addSystemButtonActionPerformed() );
         
-        BorderPane box2 = new BorderPane();
-//        box2.setPadding(new Insets(7.));
-        box2.setCenter(systemList);
-        box2.setBottom(addSystemButton);
-//        VBox box2 = new VBox(systemList, addSystemButton);
-//        box2.setAlignment(Pos.CENTER);
-//        box2.setSpacing(7.);
+        VBox box2 = new VBox(systemList, addSystemButton);
+        VBox.setVgrow(systemList, Priority.ALWAYS);
+        box2.setSpacing(7.);
         // End System List
         
         /*
@@ -531,6 +534,17 @@ public class ScraperFX extends Application {
         });
         sortByMetaNameRadioButton.setSelected(true);
         
+        hideIgnoredCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
+                filteredGamesList.setPredicate((game) -> {
+                    return game.strength != Game.MatchStrength.IGNORE;
+                });
+            }
+            else {
+                filteredGamesList.setPredicate(null);
+            }
+        });
+        
         matchedNameClearButton.setOnAction((e) -> {
             clearCurrentGameFields();
             currentGame.matchedName = null;
@@ -599,14 +613,19 @@ public class ScraperFX extends Application {
         imagesBox.getChildren().addAll(favoriteCheckBox, lockImagesCheckBox, imagesScroll);
         
         VBox sortByBox = new VBox();
-        sortByBox.setPadding(new Insets(7.));
         sortByBox.setSpacing(7.);
         sortByBox.getChildren().addAll(sortByMetaNameRadioButton, sortByFileNameRadioButton);
         
-        BorderPane leftBox = new BorderPane();
-        leftBox.setPadding(new Insets(7.));
-        leftBox.setTop(sortByBox);
-        leftBox.setCenter(gamesListView);
+        VBox filterBox = new VBox();
+        filterBox.setSpacing(7.);
+        filterBox.getChildren().addAll(hideIgnoredCheckBox);
+        
+        HBox topBox = new HBox();
+        topBox.setSpacing(7.);
+        topBox.getChildren().addAll(sortByBox, filterBox);
+        
+        VBox leftBox = new VBox(7., topBox, gamesListView);
+        VBox.setVgrow(gamesListView, Priority.ALWAYS);
         
         gamesPane.setPadding(new Insets(7.));
         gamesPane.setLeft(leftBox);

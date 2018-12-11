@@ -15,7 +15,7 @@ import org.xmappr.annotation.RootElement;
  */
 @RootElement(name = "metadata")
 public class MetaData {
-    public enum MetaDataId { NAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, IMAGES };
+    public enum MetaDataId { NAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, VIDEO_EMBED, VIDEO_DOWNLOAD, IMAGES };
     
     @Element(name = "favorite")
     public Boolean favorite = false;
@@ -41,8 +41,14 @@ public class MetaData {
     @Element(name = "youtubeurl")
     public String videoembed;
     
+    @Element(name = "lockyoutubeurl")
+    public Boolean lockVideoEmbed;
+    
     @Element(name = "videodownload")
     public String videodownload;
+    
+    @Element(name = "lockvideodownload")
+    public Boolean lockVideoDownload;
     
     @Element(name = "rating")
     public String metaRating;
@@ -117,6 +123,8 @@ public class MetaData {
         this.lockPublisher = other.lockPublisher;
         this.lockRating = other.lockRating;
         this.lockReleasedate = other.lockReleasedate;
+        this.lockVideoEmbed = other.lockVideoEmbed;
+        this.lockVideoDownload = other.lockVideoDownload;
     }
     
     public void updateMetaData(MetaDataId id, String value) {
@@ -144,6 +152,12 @@ public class MetaData {
                 break;
             case RELEASE_DATE:
                 metaReleaseDate = value;
+                break;
+            case VIDEO_DOWNLOAD:
+                videodownload = value;
+                break;
+            case VIDEO_EMBED:
+                videoembed = value;
                 break;
         }
     }
@@ -177,6 +191,12 @@ public class MetaData {
             case IMAGES:
                 lockImages = lock;
                 break;
+            case VIDEO_DOWNLOAD:
+                lockVideoDownload = lock;
+                break;
+            case VIDEO_EMBED:
+                lockVideoEmbed = lock;
+                break;
         }
     }
     
@@ -189,6 +209,6 @@ public class MetaData {
 
     @Override
     public String toString() {
-        return "MetaData{" + "metaName=" + metaName + ", lockName=" + lockName + ", metaDesc=" + metaDesc + ", lockDesc=" + lockDesc + ", images=" + images + ", lockImages=" + lockImages + ", videoembed=" + videoembed + ", videodownload=" + videodownload + ", metaRating=" + metaRating + ", lockRating=" + lockRating + ", metaReleaseDate=" + metaReleaseDate + ", lockReleasedate=" + lockReleasedate + ", metaDeveloper=" + metaDeveloper + ", lockDeveloper=" + lockDeveloper + ", metaPublisher=" + metaPublisher + ", lockPublisher=" + lockPublisher + ", metaGenre=" + metaGenre + ", lockGenre=" + lockGenre + ", players=" + players + ", lockPlayers=" + lockPlayers + '}';
+        return "MetaData{" + "favorite=" + favorite + ", metaName=" + metaName + ", lockName=" + lockName + ", metaDesc=" + metaDesc + ", lockDesc=" + lockDesc + ", images=" + images + ", lockImages=" + lockImages + ", videoembed=" + videoembed + ", lockVideoEmbed=" + lockVideoEmbed + ", videodownload=" + videodownload + ", lockVideoDownload=" + lockVideoDownload + ", metaRating=" + metaRating + ", lockRating=" + lockRating + ", metaReleaseDate=" + metaReleaseDate + ", lockReleasedate=" + lockReleasedate + ", metaDeveloper=" + metaDeveloper + ", lockDeveloper=" + lockDeveloper + ", metaPublisher=" + metaPublisher + ", lockPublisher=" + lockPublisher + ", metaGenre=" + metaGenre + ", lockGenre=" + lockGenre + ", players=" + players + ", lockPlayers=" + lockPlayers + '}';
     }
 }

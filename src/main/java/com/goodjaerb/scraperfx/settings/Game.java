@@ -16,7 +16,7 @@ import org.xmappr.annotation.RootElement;
  */
 @RootElement(name = "game")
 public class Game implements Comparable<Game> {
-
+    
     public enum MatchStrength {
         LOCKED("lightblue"),
         STRONG("green"),
@@ -93,7 +93,6 @@ public class Game implements Comparable<Game> {
     
     @Override
     public int compareTo(Game o) {
-//        return fileName.toLowerCase().compareTo(o.fileName.toLowerCase());
         return getCompareToValue().compareTo(o.getCompareToValue());
     }
     
@@ -117,7 +116,6 @@ public class Game implements Comparable<Game> {
         }
         result += ("[[" + fileName + "]]");
         return result;
-//        return metadata == null ? fileName : (metadata.favorite ? "*" + fileName : fileName);
     }
     
     public String toLongString() {

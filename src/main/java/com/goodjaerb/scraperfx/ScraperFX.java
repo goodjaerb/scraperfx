@@ -98,9 +98,7 @@ import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import java.nio.file.Paths;
 import javafx.collections.FXCollections;
-import javafx.collections.transformation.SortedList;
 import javafx.stage.WindowEvent;
-import javax.swing.event.DocumentEvent;
 import org.apache.commons.io.FileUtils;
 import org.ini4j.Ini;
 
@@ -213,9 +211,9 @@ public class ScraperFX extends Application {
         gamesTab = new Tab("Games");
         gamesPane = new BorderPane();
         imagesScroll = new ScrollPane();
-        gamesListView = new ListView<>();
-        gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
         observableGamesList = FXCollections.observableArrayList();
+        gamesListView = new ListView<>(observableGamesList.sorted());
+        gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
         matchedNameField = new TextField();
         matchedNameField.setEditable(false);
         matchedNameBrowseButton = new Button("...");
@@ -341,16 +339,11 @@ public class ScraperFX extends Application {
                             Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                         }
 
-//                        Collections.sort(paths, (o1, o2) -> {
-//                            return o1.getFileName().compareTo(o2.getFileName());
-//                        });
-
                         observableGamesList.clear();
                         paths.forEach((p) -> {
                             Game g = new Game(p.getFileName().toString());
                             getSystemGameData().add(g);
                             observableGamesList.add(g);
-//                            gamesListView.getItems().add(g);
                         });
                     }
                 }
@@ -514,7 +507,9 @@ public class ScraperFX extends Application {
                 final SingleGameDownloadDialog d = new SingleGameDownloadDialog(getCurrentSettings().scrapeAs);
                 d.showAndWait();
                 loadCurrentGameFields(currentGame);
-                gamesListView.refresh();
+                Game updatedGame = observableGamesList.remove(observableGamesList.indexOf(currentGame));
+                observableGamesList.add(updatedGame);
+                gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
             }
         });
         
@@ -1033,17 +1028,9 @@ public class ScraperFX extends Application {
         unmatchedOnlyCheckBox.setSelected(getCurrentSettings().unmatchedOnly);
         
         observableGamesList.clear();
-//        gamesListView.getItems().clear();
-        if(getSystemGameData(getCurrentSettings().name) != null) {
-            getSystemGameData(getCurrentSettings().name).stream().forEach((g) -> {
-                observableGamesList.add(g);
-//                gamesListView.getItems().add(g);
-            });
-        
-//            ObservableList<Game> list = gamesListView.getItems();
-//            Collections.sort(list);
-            SortedList<Game> list = new SortedList<>(observableGamesList);
-            gamesListView.setItems(list);
+        if(getSystemGameData() != null) {
+            observableGamesList.addAll(getSystemGameData());
+//            gamesListView.setItems(observableGamesList.sorted());
         }
     }
     

@@ -165,6 +165,10 @@ public class ScraperFX extends Application {
     private final CheckBox lockGenreCheckBox;
     private final TextField playersField;
     private final CheckBox lockPlayersCheckBox;
+    private final TextField videoEmbedField;
+    private final CheckBox lockVideoEmbedCheckBox;
+    private final TextField videoDownloadField;
+    private final CheckBox lockVideoDownloadCheckBox;
     
     private final Button saveButton;
     private final Button scanButton;
@@ -229,6 +233,8 @@ public class ScraperFX extends Application {
         metaPublisherField = new TextField();
         metaGenreField = new TextField();
         playersField = new TextField();
+        videoEmbedField = new TextField();
+        videoDownloadField = new TextField();
         
         lockMatchedNameCheckBox = new CheckBox("Lock");
         lockNameCheckBox = new CheckBox("Lock");
@@ -239,6 +245,8 @@ public class ScraperFX extends Application {
         lockPublisherCheckBox = new CheckBox("Lock");
         lockGenreCheckBox = new CheckBox("Lock");
         lockPlayersCheckBox = new CheckBox("Lock");
+        lockVideoEmbedCheckBox = new CheckBox("Lock");
+        lockVideoDownloadCheckBox = new CheckBox("Lock");
         lockImagesCheckBox = new CheckBox("Lock Images");
         favoriteCheckBox = new CheckBox("Favorite");
         
@@ -548,7 +556,9 @@ public class ScraperFX extends Application {
                 createMetaFieldPane("Developer:", metaDeveloperField, lockDeveloperCheckBox),
                 createMetaFieldPane("Publisher:", metaPublisherField, lockPublisherCheckBox),
                 createMetaFieldPane("Genre:", metaGenreField, lockGenreCheckBox),
-                createMetaFieldPane("Players:", playersField, lockPlayersCheckBox)
+                createMetaFieldPane("Players:", playersField, lockPlayersCheckBox),
+                createMetaFieldPane("Video Embed URL:", videoEmbedField, lockVideoEmbedCheckBox),
+                createMetaFieldPane("Video Download URL:", videoDownloadField, lockVideoDownloadCheckBox)
         );
         
         imagesScroll.setPrefSize(200., 475.);
@@ -920,6 +930,8 @@ public class ScraperFX extends Application {
         metaPublisherField.clear();
         metaGenreField.clear();
         playersField.clear();
+        videoEmbedField.clear();
+        videoDownloadField.clear();
         imagesScroll.setContent(null);
         
         lockMatchedNameCheckBox.setSelected(false);
@@ -931,6 +943,8 @@ public class ScraperFX extends Application {
         lockPublisherCheckBox.setSelected(false);
         lockGenreCheckBox.setSelected(false);
         lockPlayersCheckBox.setSelected(false);
+        lockVideoEmbedCheckBox.setSelected(false);
+        lockVideoDownloadCheckBox.setSelected(false);
     }
     
     private void loadCurrentGameFields(Game g) {
@@ -948,6 +962,8 @@ public class ScraperFX extends Application {
                 metaPublisherField.setText(g.metadata.metaPublisher);
                 metaGenreField.setText((g.metadata.metaGenre == null ? "" : g.metadata.metaGenre));
                 playersField.setText(g.metadata.players);
+                videoEmbedField.setText(g.metadata.videoembed);
+                videoDownloadField.setText(g.metadata.videodownload);
 
                 lockNameCheckBox.setSelected(g.metadata.lockName);
                 metaNameField.setEditable(!g.metadata.lockName);
@@ -965,6 +981,10 @@ public class ScraperFX extends Application {
                 metaGenreField.setEditable(!g.metadata.lockGenre);
                 lockPlayersCheckBox.setSelected(g.metadata.lockPlayers);
                 playersField.setEditable(!g.metadata.lockPlayers);
+                lockVideoEmbedCheckBox.setSelected(g.metadata.lockVideoEmbed);
+                videoEmbedField.setEditable(!g.metadata.lockVideoEmbed);
+                lockVideoDownloadCheckBox.setSelected(g.metadata.lockVideoDownload);
+                videoDownloadField.setEditable(!g.metadata.lockVideoDownload);
 
                 lockImagesCheckBox.setSelected(g.metadata.lockImages);
                 favoriteCheckBox.setSelected(g.metadata.favorite);

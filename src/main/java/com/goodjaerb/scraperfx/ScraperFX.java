@@ -297,9 +297,13 @@ public class ScraperFX extends Application {
         Button addSystemButton = new Button("Add System");
         addSystemButton.setOnAction((e) -> addSystemButtonActionPerformed() );
         
-        VBox box2 = new VBox(systemList, addSystemButton);
-        box2.setAlignment(Pos.CENTER);
-        box2.setSpacing(7.);
+        BorderPane box2 = new BorderPane();
+//        box2.setPadding(new Insets(7.));
+        box2.setCenter(systemList);
+        box2.setBottom(addSystemButton);
+//        VBox box2 = new VBox(systemList, addSystemButton);
+//        box2.setAlignment(Pos.CENTER);
+//        box2.setSpacing(7.);
         // End System List
         
         /*

@@ -98,6 +98,7 @@ import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import java.nio.file.Paths;
 import javafx.collections.FXCollections;
+import javafx.collections.transformation.SortedList;
 import javafx.stage.WindowEvent;
 import org.apache.commons.io.FileUtils;
 import org.ini4j.Ini;
@@ -143,8 +144,12 @@ public class ScraperFX extends Application {
     private final ScrollPane imagesScroll;
     private final CheckBox favoriteCheckBox;
     private final CheckBox lockImagesCheckBox;
-    private final ListView<Game> gamesListView;
+    private final ToggleGroup sortByGroup;
+    private final RadioButton sortByMetaNameRadioButton;
+    private final RadioButton sortByFileNameRadioButton;
     private final ObservableList<Game> observableGamesList;
+    private final SortedList<Game> sortedGamesList;
+    private final ListView<Game> gamesListView;
     private final TextField matchedNameField;
     private final Button matchedNameBrowseButton;
     private final Button matchedNameClearButton;
@@ -215,8 +220,16 @@ public class ScraperFX extends Application {
         gamesTab = new Tab("Games");
         gamesPane = new BorderPane();
         imagesScroll = new ScrollPane();
+        
+        sortByGroup = new ToggleGroup();
+        sortByMetaNameRadioButton = new RadioButton("Sort By Game Name");
+        sortByMetaNameRadioButton.setToggleGroup(sortByGroup);
+        sortByFileNameRadioButton = new RadioButton("Sort By File Name");
+        sortByFileNameRadioButton.setToggleGroup(sortByGroup);
+        
         observableGamesList = FXCollections.observableArrayList();
-        gamesListView = new ListView<>(observableGamesList.sorted());
+        sortedGamesList = new SortedList<>(observableGamesList);
+        gamesListView = new ListView<>(sortedGamesList);
         gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
         matchedNameField = new TextField();
         matchedNameField.setEditable(false);
@@ -505,6 +518,19 @@ public class ScraperFX extends Application {
         
         gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem, unignoreItem));
         
+        sortByMetaNameRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
+                sortedGamesList.setComparator(Game.GAME_NAME_COMPARATOR);
+            }
+        });
+        
+        sortByFileNameRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
+                sortedGamesList.setComparator(Game.FILE_NAME_COMPARATOR);
+            }
+        });
+        sortByMetaNameRadioButton.setSelected(true);
+        
         matchedNameClearButton.setOnAction((e) -> {
             clearCurrentGameFields();
             currentGame.matchedName = null;
@@ -572,8 +598,18 @@ public class ScraperFX extends Application {
         imagesBox.setSpacing(7.);
         imagesBox.getChildren().addAll(favoriteCheckBox, lockImagesCheckBox, imagesScroll);
         
+        VBox sortByBox = new VBox();
+        sortByBox.setPadding(new Insets(7.));
+        sortByBox.setSpacing(7.);
+        sortByBox.getChildren().addAll(sortByMetaNameRadioButton, sortByFileNameRadioButton);
+        
+        BorderPane leftBox = new BorderPane();
+        leftBox.setPadding(new Insets(7.));
+        leftBox.setTop(sortByBox);
+        leftBox.setCenter(gamesListView);
+        
         gamesPane.setPadding(new Insets(7.));
-        gamesPane.setLeft(gamesListView);
+        gamesPane.setLeft(leftBox);
         gamesPane.setCenter(metaBox);
         gamesPane.setRight(imagesBox);
         
@@ -603,7 +639,7 @@ public class ScraperFX extends Application {
         });
         
         outputToGamelistButton.setOnAction((e) -> {
-            Collections.sort(getSystemGameData());
+            Collections.sort(getSystemGameData(), Game.GAME_NAME_COMPARATOR);
             if(outputMediaToUserDirButton.isSelected()) {
                 new ESOutput().output(
                         getSystemGameData(),

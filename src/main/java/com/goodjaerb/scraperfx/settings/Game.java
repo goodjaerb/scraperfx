@@ -5,6 +5,7 @@
  */
 package com.goodjaerb.scraperfx.settings;
 
+import java.util.Comparator;
 import java.util.Objects;
 import org.xmappr.annotation.Attribute;
 import org.xmappr.annotation.Element;
@@ -15,7 +16,26 @@ import org.xmappr.annotation.RootElement;
  * @author goodjaerb
  */
 @RootElement(name = "game")
-public class Game implements Comparable<Game> {
+public class Game {//implements Comparable<Game> {
+    
+    private enum CompareType { GAME_NAME, FILE_NAME };
+    
+    private static class GameComparator implements Comparator<Game> {
+        
+        private final CompareType compareType;
+        
+        public GameComparator(CompareType compareType) {
+            this.compareType = compareType;
+        }
+        
+        @Override
+        public int compare(Game o1, Game o2) {
+            return o1.getCompareToValue(compareType).compareTo(o2.getCompareToValue(compareType));
+        }
+    }
+    
+    public static final Comparator<Game> GAME_NAME_COMPARATOR = new GameComparator(CompareType.GAME_NAME);
+    public static final Comparator<Game> FILE_NAME_COMPARATOR = new GameComparator(CompareType.FILE_NAME);
     
     public enum MatchStrength {
         LOCKED("lightblue"),
@@ -91,14 +111,16 @@ public class Game implements Comparable<Game> {
         return Objects.equals(this.fileName, other.fileName);
     }
     
-    @Override
-    public int compareTo(Game o) {
-        return getCompareToValue().compareTo(o.getCompareToValue());
-    }
-    
-    private String getCompareToValue() {
-        if(metadata != null && metadata.metaName != null) {
-            return metadata.metaName.toLowerCase();
+//    @Override
+//    public int compareTo(Game o) {
+//        return getCompareToValue().compareTo(o.getCompareToValue());
+//    }
+//    
+    private String getCompareToValue(CompareType compareType) {
+        if(compareType == CompareType.GAME_NAME) {
+            if(metadata != null && metadata.metaName != null) {
+                return metadata.metaName.toLowerCase();
+            }
         }
         return fileName.toLowerCase();
     }

@@ -579,7 +579,12 @@ public class ScraperFX extends Application {
             }
             gamesListView.refresh();
         });
-        lockNameCheckBox.setOnAction((e) ->         lockMetaField(metaNameField, MetaDataId.NAME, currentGame.metadata, lockNameCheckBox.isSelected()));
+        lockNameCheckBox.setOnAction((e) -> {
+            lockMetaField(metaNameField, MetaDataId.NAME, currentGame.metadata, lockNameCheckBox.isSelected());
+            Game updatedGame = observableGamesList.remove(observableGamesList.indexOf(currentGame));
+            observableGamesList.add(updatedGame);
+            gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
+        });
         lockDescCheckBox.setOnAction((e) ->         lockMetaField(metaDescArea, MetaDataId.DESC, currentGame.metadata, lockDescCheckBox.isSelected()));
         lockDeveloperCheckBox.setOnAction((e) ->    lockMetaField(metaDeveloperField, MetaDataId.DEVELOPER, currentGame.metadata, lockDeveloperCheckBox.isSelected()));
         lockGenreCheckBox.setOnAction((e) ->        lockMetaField(metaGenreField, MetaDataId.GENRE, currentGame.metadata, lockGenreCheckBox.isSelected()));
@@ -712,12 +717,19 @@ public class ScraperFX extends Application {
         
         primaryStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, (event) -> {
             ButtonType saveThenQuitButton = new ButtonType("Save & Quit");
+            ButtonType dontQuitButton = new ButtonType("Wait, Don't Quit!");
             ButtonType justQuitButton = new ButtonType("Just Quit, Thanks.");
-            Alert closingAlert = new Alert(Alert.AlertType.CONFIRMATION, "ScraperFX is about to close. If you have made any new scans or settings changes you may want to save. Save now?", saveThenQuitButton, justQuitButton);
+            
+            Alert closingAlert = new Alert(Alert.AlertType.CONFIRMATION, "ScraperFX is about to close. If you have made any new scans or settings changes you may want to save. Save now?", saveThenQuitButton, dontQuitButton, justQuitButton);
             Optional<ButtonType> result = closingAlert.showAndWait();
 
-            if(result.isPresent() && result.get() == saveThenQuitButton) {
-                saveAll();
+            if(result.isPresent()) {
+                if(result.get() == saveThenQuitButton) {
+                    saveAll();
+                }
+                else if(result.get() == dontQuitButton) {
+                    event.consume();
+                }
             }
         });
         

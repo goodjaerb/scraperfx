@@ -42,13 +42,13 @@ public class MetaData {
     public String videoembed;
     
     @Element(name = "lockyoutubeurl")
-    public Boolean lockVideoEmbed;
+    public Boolean lockVideoEmbed = false;
     
     @Element(name = "videodownload")
     public String videodownload;
     
     @Element(name = "lockvideodownload")
-    public Boolean lockVideoDownload;
+    public Boolean lockVideoDownload = false;
     
     @Element(name = "rating")
     public String metaRating;

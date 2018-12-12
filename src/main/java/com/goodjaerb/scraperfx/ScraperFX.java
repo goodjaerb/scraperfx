@@ -97,6 +97,7 @@ import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import java.nio.file.Paths;
+import java.util.function.Predicate;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -150,6 +151,7 @@ public class ScraperFX extends Application {
     private final RadioButton sortByMetaNameRadioButton;
     private final RadioButton sortByFileNameRadioButton;
     private final CheckBox hideIgnoredCheckBox;
+    private final TextField filterField;
     private final ObservableList<Game> observableGamesList;
     private final SortedList<Game> sortedGamesList;
     private final FilteredList<Game> filteredGamesList;
@@ -232,10 +234,11 @@ public class ScraperFX extends Application {
         sortByFileNameRadioButton.setToggleGroup(sortByGroup);
         
         hideIgnoredCheckBox = new CheckBox("Hide Ignored Items");
+        filterField = new TextField();
         
         observableGamesList = FXCollections.observableArrayList();
         sortedGamesList = new SortedList<>(observableGamesList);
-        filteredGamesList = new FilteredList<>(sortedGamesList);
+        filteredGamesList = new FilteredList<>(sortedGamesList, getHideIgnoredPredicate());
         gamesListView = new ListView<>(filteredGamesList);
         gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
         matchedNameField = new TextField();
@@ -535,14 +538,11 @@ public class ScraperFX extends Application {
         sortByMetaNameRadioButton.setSelected(true);
         
         hideIgnoredCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if(newValue) {
-                filteredGamesList.setPredicate((game) -> {
-                    return game.strength != Game.MatchStrength.IGNORE;
-                });
-            }
-            else {
-                filteredGamesList.setPredicate(null);
-            }
+            filteredGamesList.setPredicate(getHideIgnoredPredicate().and(getFilterTextPredicate(filterField.getText())));
+        });
+        
+        filterField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredGamesList.setPredicate(getHideIgnoredPredicate().and(getFilterTextPredicate(filterField.getText())));
         });
         
         matchedNameClearButton.setOnAction((e) -> {
@@ -588,6 +588,8 @@ public class ScraperFX extends Application {
         lockReleaseDateCheckBox.setOnAction((e) ->  lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, lockReleaseDateCheckBox.isSelected()));
         lockPlayersCheckBox.setOnAction((e) ->      lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, lockPlayersCheckBox.isSelected()));
         lockImagesCheckBox.setOnAction((e) -> {     currentGame.metadata.lockImages = lockImagesCheckBox.isSelected(); });
+        lockVideoEmbedCheckBox.setOnAction((e) ->   lockMetaField(videoEmbedField, MetaDataId.VIDEO_EMBED, currentGame.metadata, lockVideoEmbedCheckBox.isSelected()));
+        lockVideoDownloadCheckBox.setOnAction((e) -> lockMetaField(videoDownloadField, MetaDataId.VIDEO_DOWNLOAD, currentGame.metadata, lockVideoDownloadCheckBox.isSelected()));
         favoriteCheckBox.setOnAction((e) -> {       currentGame.metadata.favorite = favoriteCheckBox.isSelected(); gamesListView.refresh(); });
         
         VBox metaBox = new VBox();
@@ -618,7 +620,7 @@ public class ScraperFX extends Application {
         
         VBox filterBox = new VBox();
         filterBox.setSpacing(7.);
-        filterBox.getChildren().addAll(hideIgnoredCheckBox);
+        filterBox.getChildren().addAll(hideIgnoredCheckBox, filterField);
         
         HBox topBox = new HBox();
         topBox.setSpacing(7.);
@@ -751,6 +753,26 @@ public class ScraperFX extends Application {
     
     public static Stage getPrimaryStage() {
         return mainStage;
+    }
+    
+    private Predicate<Game> getHideIgnoredPredicate() {
+        if(hideIgnoredCheckBox.isSelected()) {
+            return (game) -> {
+                return game.strength != Game.MatchStrength.IGNORE;
+            };
+        }
+        return (game) -> {
+            return true;
+        };
+    }
+    
+    private Predicate<Game> getFilterTextPredicate(String filterText) {
+        return (game) -> {
+            if(filterText.trim().isEmpty()) {
+                return true;
+            }
+            return game.fileName.toLowerCase().contains(filterText.toLowerCase()) || (game.metadata != null && game.metadata.metaName != null && game.metadata.metaName.toLowerCase().contains(filterText.toLowerCase()));
+        };
     }
     
     private void saveAll() {

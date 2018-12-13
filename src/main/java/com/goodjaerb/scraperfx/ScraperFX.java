@@ -5,6 +5,7 @@
  */
 package com.goodjaerb.scraperfx;
 
+import com.goodjaerb.scraperfx.dat.Datafile;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -96,6 +97,7 @@ import com.goodjaerb.scraperfx.settings.GameList;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
+import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
 import javafx.collections.FXCollections;
@@ -182,6 +184,7 @@ public class ScraperFX extends Application {
     private final CheckBox lockVideoDownloadCheckBox;
     
     private final Button saveButton;
+    private final Button applyDatFileButton;
     private final Button scanButton;
     private final Button deleteSystemButton;
     private final Button outputToGamelistButton;
@@ -274,6 +277,7 @@ public class ScraperFX extends Application {
         favoriteCheckBox = new CheckBox("Favorite");
         
         saveButton = new Button("Save");
+        applyDatFileButton = new Button("Apply DAT File");
         scanButton = new Button("Scan Now");
         deleteSystemButton = new Button("Delete System");
         outputToGamelistButton = new Button("Output to Gamelist.xml");
@@ -352,10 +356,10 @@ public class ScraperFX extends Application {
                 getCurrentSettings().romsDir = dir.getPath();
                 getSystemGameData().clear();
                 
-                Alert listFilesAlert = new Alert(Alert.AlertType.CONFIRMATION, "Would you like to preload the game list with the files located in this directory? If not you will have to run a scan of every file before you can continue.", ButtonType.YES, ButtonType.NO);
-                Optional<ButtonType> result = listFilesAlert.showAndWait();
-
-                if(result.isPresent() && result.get() == ButtonType.YES) {
+//                Alert listFilesAlert = new Alert(Alert.AlertType.CONFIRMATION, "Would you like to preload the game list with the files located in this directory? If not you will have to run a scan of every file before you can continue.", ButtonType.YES, ButtonType.NO);
+//                Optional<ButtonType> result = listFilesAlert.showAndWait();
+//
+//                if(result.isPresent() && result.get() == ButtonType.YES) {
                     FileSystem fs = FileSystems.getDefault();
                     Path gamesPath = fs.getPath(gameSourceField.getText());
                     if(Files.exists(gamesPath)) {
@@ -377,7 +381,7 @@ public class ScraperFX extends Application {
                             observableGamesList.add(g);
                         });
                     }
-                }
+//                }
             }
         });
         
@@ -683,6 +687,29 @@ public class ScraperFX extends Application {
             saveAll();
         });
         
+        applyDatFileButton.setOnAction((e) -> {
+            File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", "DAT FILE", "*.dat");
+            if(datFile != null) {
+                try {
+                    Datafile dat = readDatFile(datFile.toPath());
+
+                    observableGamesList.forEach((game) -> {
+                        String filename = game.fileName;
+                        
+                        if(dat.getElements().stream().noneMatch((element) -> {
+                            return filename.equals(element.getName() + ".zip");
+                        })) {
+                            game.strength = Game.MatchStrength.IGNORE;
+                            gamesListView.refresh();
+                        }
+                    });
+                }
+                catch (IOException ex) {
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
         outputToGamelistButton.setOnAction((e) -> {
             Collections.sort(getSystemGameData(), Game.GAME_NAME_COMPARATOR);
             if(outputMediaToUserDirButton.isSelected()) {
@@ -705,7 +732,7 @@ public class ScraperFX extends Application {
         
         deleteSystemButton.setOnAction((e) -> deleteSystemButtonOnActionPerformed() );
         
-        FlowPane settingsButtonPane = new FlowPane(saveButton, deleteSystemButton, scanButton, outputToGamelistButton);
+        FlowPane settingsButtonPane = new FlowPane(saveButton, applyDatFileButton, deleteSystemButton, scanButton, outputToGamelistButton);
         settingsButtonPane.setHgap(7.);
         settingsButtonPane.setAlignment(Pos.CENTER);
         
@@ -1229,6 +1256,22 @@ public class ScraperFX extends Application {
                 disableTabs();
                 clearSettingsTab();
             }
+        }
+    }
+    
+    private Datafile readDatFile(Path path) throws FileNotFoundException, IOException {
+        final Xmappr xm = new Xmappr(Datafile.class);
+        
+        final BufferedInputStream in = new BufferedInputStream(new FileInputStream(path.toFile()));
+        final CharsetDecoder charsetDecoder = StandardCharsets.UTF_8.newDecoder();
+        charsetDecoder.onMalformedInput(CodingErrorAction.REPLACE);
+        charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+        
+        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
+            return (Datafile)xm.fromXML(reader);
+        }
+        catch(IOException ex) {
+            throw ex;
         }
     }
     

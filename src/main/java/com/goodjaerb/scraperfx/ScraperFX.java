@@ -522,7 +522,26 @@ public class ScraperFX extends Application {
             gamesListView.refresh();
         });
         
-        gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem, unignoreItem));
+        MenuItem scanGamesItem = new MenuItem("Scan Selected Game(s)");
+        scanGamesItem.setOnAction((e) -> {
+            List<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            
+            FileSystem fs = FileSystems.getDefault();
+            Path gamesPath = fs.getPath(gameSourceField.getText());
+            if(Files.exists(gamesPath)) {
+//                tabPane.getSelectionModel().select(gamesTab);
+                
+                ScanTask scanner = new ScanTask(gamesPath, selectedGames);
+                ScanProgressDialog scanProgressDialog = new ScanProgressDialog(scanner);
+                
+                Thread t = new Thread(scanner);
+                t.setDaemon(true);
+                t.start();
+                scanProgressDialog.showAndWait();
+            }
+        });
+        
+        gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem, unignoreItem, scanGamesItem));
         
         sortByMetaNameRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue) {
@@ -1405,32 +1424,56 @@ public class ScraperFX extends Application {
     }
     
     private class ScanTask extends Task<Void> {
-        private final Path gamesPath;
+//        private final Path gamesPath;
+        private final List<Path> paths;
         
         public ScanTask(Path gamesPath) {
-            this.gamesPath = gamesPath;
+//            this.gamesPath = gamesPath;
+            paths = new ArrayList<>();
+            DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
+            try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+                stream.forEach((p) -> paths.add(p));
+//                for(Path p: stream) {
+//                    paths.add(p);
+//                }
+            }
+            catch(IOException ex) {
+                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        public ScanTask(Path gamesPath, List<Game> games) {
+            paths = new ArrayList<>();
+            DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file) && games.stream().anyMatch((game) -> file.getFileName().toString().equals(game.fileName)));
+            try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+                stream.forEach((p) -> paths.add(p));
+            }
+            catch(IOException ex) {
+                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         @Override
         protected Void call() throws Exception {
             isScanning.set(true);
             try {
-                final List<Path> paths = new ArrayList<>();
-                DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
-                try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
-                    for(Path p: stream) {
-                        paths.add(p);
-                    }
-                }
-                catch(IOException ex) {
-                    Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-                }
+//                final List<Path> paths = new ArrayList<>();
+//                DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
+//                try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+//                    for(Path p: stream) {
+//                        paths.add(p);
+//                    }
+//                }
+//                catch(IOException ex) {
+//                    Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+//                }
                 
 //                Collections.sort(paths, (o1, o2) -> {
 //                    return o1.getFileName().compareTo(o2.getFileName());
 //                });
                 
-                long totalFiles = Files.list(gamesPath).count();
+//                long totalFiles = Files.list(gamesPath).count();
+                long totalFiles = paths.size();
                 long fileCount = 0;
                 for(Path p : paths) {
                     if(isCancelled()) {
@@ -1715,9 +1758,13 @@ public class ScraperFX extends Application {
                     Platform.runLater(() -> {
 //                        gamesListView.getItems().remove(g);
 //                        gamesListView.getItems().add(g);
-                        observableGamesList.remove(g);
+                        int index = observableGamesList.indexOf(g);
+                        if(index != -1) {
+                            observableGamesList.remove(index);
+                        }
                         observableGamesList.add(g);
-                        gamesListView.getSelectionModel().selectLast();//temporary?
+                        gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(g));
+//                        gamesListView.getSelectionModel().selectLast();//temporary?
                     });
 
 //                        // without sleeping, subsequent scans with cached data went so fast

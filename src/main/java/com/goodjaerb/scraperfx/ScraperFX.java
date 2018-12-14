@@ -102,6 +102,8 @@ import java.util.function.Predicate;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
 import javafx.stage.WindowEvent;
 import org.apache.commons.io.FileUtils;
@@ -472,6 +474,21 @@ public class ScraperFX extends Application {
             }
         });
         
+        gamesListView.addEventHandler(KeyEvent.KEY_PRESSED, (event) -> {
+            if(event.getCode() == KeyCode.ESCAPE) {
+                filterField.setText("");
+            }
+            else if(event.getCode() == KeyCode.BACK_SPACE) {
+                String currentText = filterField.getText();
+                filterField.setText(currentText.substring(0, currentText.length() - 1));
+            }
+        });
+        
+        gamesListView.addEventHandler(KeyEvent.KEY_TYPED, (event) -> {
+            System.out.println(event.getCharacter());
+            filterField.appendText(event.getCharacter());
+        });
+        
         MenuItem lockGamesItem = new MenuItem("Lock");
         lockGamesItem.setOnAction((e) -> {
             ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
@@ -573,6 +590,12 @@ public class ScraperFX extends Application {
         
         filterField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredGamesList.setPredicate(buildFilterPredicate());
+        });
+        
+        filterField.addEventHandler(KeyEvent.KEY_PRESSED, (event) -> {
+            if(event.getCode() == KeyCode.ESCAPE) {
+                filterField.setText("");
+            }
         });
         
         matchedNameClearButton.setOnAction((e) -> {

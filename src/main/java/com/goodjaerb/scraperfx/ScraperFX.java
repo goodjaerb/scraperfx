@@ -185,7 +185,8 @@ public class ScraperFX extends Application {
     
     private final Button saveButton;
     private final Button applyDatFileButton;
-    private final Button scanButton;
+//    private final Button scanButton;
+    private final Button refreshFileListButton;
     private final Button deleteSystemButton;
     private final Button outputToGamelistButton;
     
@@ -278,7 +279,8 @@ public class ScraperFX extends Application {
         
         saveButton = new Button("Save");
         applyDatFileButton = new Button("Apply DAT File");
-        scanButton = new Button("Scan Now");
+        refreshFileListButton = new Button("Refresh File List");
+//        scanButton = new Button("Scan Now");
         deleteSystemButton = new Button("Delete System");
         outputToGamelistButton = new Button("Output to Gamelist.xml");
         
@@ -667,21 +669,21 @@ public class ScraperFX extends Application {
         gamesTab.setDisable(true);
         // End Games Tab
         
-        scanButton.setOnAction((ActionEvent e) -> {
-            FileSystem fs = FileSystems.getDefault();
-            Path gamesPath = fs.getPath(gameSourceField.getText());
-            if(Files.exists(gamesPath)) {
-                tabPane.getSelectionModel().select(gamesTab);
-                
-                ScanTask scanner = new ScanTask(gamesPath);
-                ScanProgressDialog scanProgressDialog = new ScanProgressDialog(scanner);
-                
-                Thread t = new Thread(scanner);
-                t.setDaemon(true);
-                t.start();
-                scanProgressDialog.showAndWait();
-            }
-        });
+//        scanButton.setOnAction((ActionEvent e) -> {
+//            FileSystem fs = FileSystems.getDefault();
+//            Path gamesPath = fs.getPath(gameSourceField.getText());
+//            if(Files.exists(gamesPath)) {
+//                tabPane.getSelectionModel().select(gamesTab);
+//                
+//                ScanTask scanner = new ScanTask(gamesPath);
+//                ScanProgressDialog scanProgressDialog = new ScanProgressDialog(scanner);
+//                
+//                Thread t = new Thread(scanner);
+//                t.setDaemon(true);
+//                t.start();
+//                scanProgressDialog.showAndWait();
+//            }
+//        });
         
         saveButton.setOnAction((e) -> {
             saveAll();
@@ -710,6 +712,31 @@ public class ScraperFX extends Application {
             }
         });
         
+        refreshFileListButton.setOnAction((e) -> {
+            FileSystem fs = FileSystems.getDefault();
+            Path gamesPath = fs.getPath(gameSourceField.getText());
+            if(Files.exists(gamesPath)) {
+                final List<Path> paths = new ArrayList<>();
+                DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
+                try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+                    for(Path p : stream) {
+                        paths.add(p);
+                    }
+                }
+                catch(IOException ex) {
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                paths.forEach((p) -> {
+                    Game g = new Game(p.getFileName().toString());
+                    if(!observableGamesList.contains(g)) {
+                        getSystemGameData().add(g);
+                        observableGamesList.add(g);
+                    }
+                });
+            }
+        });
+        
         outputToGamelistButton.setOnAction((e) -> {
             Collections.sort(getSystemGameData(), Game.GAME_NAME_COMPARATOR);
             if(outputMediaToUserDirButton.isSelected()) {
@@ -732,7 +759,7 @@ public class ScraperFX extends Application {
         
         deleteSystemButton.setOnAction((e) -> deleteSystemButtonOnActionPerformed() );
         
-        FlowPane settingsButtonPane = new FlowPane(saveButton, applyDatFileButton, deleteSystemButton, scanButton, outputToGamelistButton);
+        FlowPane settingsButtonPane = new FlowPane(saveButton, applyDatFileButton, deleteSystemButton, refreshFileListButton, outputToGamelistButton);
         settingsButtonPane.setHgap(7.);
         settingsButtonPane.setAlignment(Pos.CENTER);
         

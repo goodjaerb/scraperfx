@@ -42,7 +42,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -153,6 +152,7 @@ public class ScraperFX extends Application {
     private final RadioButton sortByMetaNameRadioButton;
     private final RadioButton sortByFileNameRadioButton;
     private final CheckBox hideIgnoredCheckBox;
+    private final CheckBox showOnlyNonMatchedCheckBox;
     private final TextField filterField;
     private final ObservableList<Game> observableGamesList;
     private final SortedList<Game> sortedGamesList;
@@ -238,6 +238,7 @@ public class ScraperFX extends Application {
         sortByFileNameRadioButton.setToggleGroup(sortByGroup);
         
         hideIgnoredCheckBox = new CheckBox("Hide Ignored Items");
+        showOnlyNonMatchedCheckBox = new CheckBox("Show Only Non-Matched Items");
         filterField = new TextField();
         
         observableGamesList = FXCollections.observableArrayList();
@@ -563,11 +564,15 @@ public class ScraperFX extends Application {
         sortByMetaNameRadioButton.setSelected(true);
         
         hideIgnoredCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(getHideIgnoredPredicate().and(getFilterTextPredicate(filterField.getText())));
+            filteredGamesList.setPredicate(buildFilterPredicate());
+        });
+        
+        showOnlyNonMatchedCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            filteredGamesList.setPredicate(buildFilterPredicate());
         });
         
         filterField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(getHideIgnoredPredicate().and(getFilterTextPredicate(filterField.getText())));
+            filteredGamesList.setPredicate(buildFilterPredicate());
         });
         
         matchedNameClearButton.setOnAction((e) -> {
@@ -650,7 +655,7 @@ public class ScraperFX extends Application {
         
         VBox filterBox = new VBox();
         filterBox.setSpacing(7.);
-        filterBox.getChildren().addAll(hideIgnoredCheckBox, filterField);
+        filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, filterField);
         
         HBox topBox = new HBox();
         topBox.setSpacing(7.);
@@ -840,10 +845,25 @@ public class ScraperFX extends Application {
         return mainStage;
     }
     
+    private Predicate<Game> buildFilterPredicate() {
+        return getHideIgnoredPredicate().and(getShowOnlyNonMatchedPredicate()).and(getFilterTextPredicate(filterField.getText()));
+    }
+    
     private Predicate<Game> getHideIgnoredPredicate() {
         if(hideIgnoredCheckBox.isSelected()) {
             return (game) -> {
                 return game.strength != Game.MatchStrength.IGNORE;
+            };
+        }
+        return (game) -> {
+            return true;
+        };
+    }
+    
+    private Predicate<Game> getShowOnlyNonMatchedPredicate() {
+        if(showOnlyNonMatchedCheckBox.isSelected()) {
+            return (game) -> {
+                return game.strength == Game.MatchStrength.NO_MATCH || game.strength == Game.MatchStrength.IGNORE;
             };
         }
         return (game) -> {

@@ -108,6 +108,7 @@ import javafx.scene.layout.Priority;
 import javafx.stage.WindowEvent;
 import org.apache.commons.io.FileUtils;
 import org.ini4j.Ini;
+import org.xmappr.XmapprException;
 
 /**
  *
@@ -1842,10 +1843,15 @@ public class ScraperFX extends Application {
                                         localGame.metadata.favorite = wasFavorite;
                                         
                                         System.out.println("Success! Checking for video links...");
-                                        final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
-                                        if(videoLinks != null) {
-                                            localGame.metadata.videodownload = videoLinks[0];
-                                            localGame.metadata.videoembed = videoLinks[1];
+                                        try {
+                                            final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
+                                            if(videoLinks != null) {
+                                                localGame.metadata.videodownload = videoLinks[0];
+                                                localGame.metadata.videoembed = videoLinks[1];
+                                            }
+                                        }
+                                        catch(XmapprException ex) {
+                                            System.out.println("Error getting video links for " + localGame.matchedName + ".");
                                         }
                                     }
 

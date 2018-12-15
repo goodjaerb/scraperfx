@@ -486,7 +486,6 @@ public class ScraperFX extends Application {
         });
         
         gamesListView.addEventHandler(KeyEvent.KEY_TYPED, (event) -> {
-            System.out.println(event.getCharacter());
             filterField.appendText(event.getCharacter());
         });
         
@@ -1919,6 +1918,9 @@ public class ScraperFX extends Application {
     
     private class SingleGameDownloadDialog extends Stage {
 //        private final ComboBox<String> selectGameBox;
+        private final ObservableList<String> namesList;
+        private final FilteredList<String> filteredNamesList;
+        private final TextField filterField;
         private final ListView<String> selectGameList;
         private final Button okButton;
         private final Button cancelButton;
@@ -1932,12 +1934,47 @@ public class ScraperFX extends Application {
         
             working = new AtomicBoolean(false);
             
+            namesList = FXCollections.observableArrayList();
+            filteredNamesList = new FilteredList<>(namesList);
+            
 //            selectGameBox = new ComboBox<>();
 //            selectGameBox.getItems().add("Loading Games List...");
 //            selectGameBox.getSelectionModel().select(0);
-            selectGameList = new ListView<>();
+            filterField = new TextField();
+        
+            filterField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredNamesList.setPredicate((name) -> {
+                    String filterText = newValue.trim();
+                    if(filterText.isEmpty()) {
+                        return true;
+                    }
+                    return name.toLowerCase().contains(filterText.toLowerCase());
+                });
+            });
+
+            filterField.addEventHandler(KeyEvent.KEY_PRESSED, (event) -> {
+                if(event.getCode() == KeyCode.ESCAPE) {
+                    filterField.setText("");
+                }
+            });
+
+            selectGameList = new ListView<>(filteredNamesList);
             selectGameList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            
+        
+            selectGameList.addEventHandler(KeyEvent.KEY_PRESSED, (event) -> {
+                if(event.getCode() == KeyCode.ESCAPE) {
+                    filterField.setText("");
+                }
+                else if(event.getCode() == KeyCode.BACK_SPACE) {
+                    String currentText = filterField.getText();
+                    filterField.setText(currentText.substring(0, currentText.length() - 1));
+                }
+            });
+
+            selectGameList.addEventHandler(KeyEvent.KEY_TYPED, (event) -> {
+                filterField.appendText(event.getCharacter());
+            });
+        
             okButton = new Button("OK");
             okButton.setDisable(true);
             okButton.setOnAction((e) -> onOkButton());
@@ -1962,6 +1999,7 @@ public class ScraperFX extends Application {
             vbox.setPadding(new Insets(7.));
             vbox.getChildren().add(new Label("Select game:"));
 //            vbox.getChildren().add(selectGameBox);
+            vbox.getChildren().add(filterField);
             vbox.getChildren().add(selectGameList);
             vbox.getChildren().add(box);
             
@@ -2053,9 +2091,11 @@ public class ScraperFX extends Application {
                     Collections.sort(gameList);
                     
                     Platform.runLater(() -> {
-                        selectGameList.getItems().clear();
-                        selectGameList.getItems().addAll(gameList);
-                        selectGameList.getSelectionModel().select(0);
+                        namesList.clear();
+                        namesList.addAll(gameList);
+//                        selectGameList.getItems().clear();
+//                        selectGameList.getItems().addAll(gameList);
+//                        selectGameList.getSelectionModel().select(0);
 //                        selectGameBox.getItems().clear();
 //                        selectGameBox.getItems().addAll(gameList);
 //                        selectGameBox.getSelectionModel().select(0);

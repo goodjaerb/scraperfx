@@ -1843,15 +1843,10 @@ public class ScraperFX extends Application {
                                         localGame.metadata.favorite = wasFavorite;
                                         
                                         System.out.println("Success! Checking for video links...");
-                                        try {
-                                            final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
-                                            if(videoLinks != null) {
-                                                localGame.metadata.videodownload = videoLinks[0];
-                                                localGame.metadata.videoembed = videoLinks[1];
-                                            }
-                                        }
-                                        catch(XmapprException ex) {
-                                            System.out.println("Error getting video links for " + localGame.matchedName + ".");
+                                        final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
+                                        if(videoLinks != null) {
+                                            localGame.metadata.videodownload = videoLinks[0];
+                                            localGame.metadata.videoembed = videoLinks[1];
                                         }
                                     }
 

@@ -156,6 +156,8 @@ public class ScraperFX extends Application {
     private final RadioButton sortByFileNameRadioButton;
     private final CheckBox hideIgnoredCheckBox;
     private final CheckBox showOnlyNonMatchedCheckBox;
+    private final CheckBox hideLockedCheckBox;
+    private final CheckBox showOnlyLockedCheckBox;
     private final TextField filterField;
     private final ObservableList<Game> observableGamesList;
     private final SortedList<Game> sortedGamesList;
@@ -242,6 +244,8 @@ public class ScraperFX extends Application {
         
         hideIgnoredCheckBox = new CheckBox("Hide Ignored Items");
         showOnlyNonMatchedCheckBox = new CheckBox("Show Only Non-Matched Items");
+        hideLockedCheckBox = new CheckBox("Hide Locked Items");
+        showOnlyLockedCheckBox = new CheckBox("Show Only Locked Items");
         filterField = new TextField();
         
         observableGamesList = FXCollections.observableArrayList();
@@ -597,6 +601,14 @@ public class ScraperFX extends Application {
             filteredGamesList.setPredicate(buildFilterPredicate());
         });
         
+        hideLockedCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            filteredGamesList.setPredicate(buildFilterPredicate());
+        });
+        
+        showOnlyLockedCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            filteredGamesList.setPredicate(buildFilterPredicate());
+        });
+        
         filterField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredGamesList.setPredicate(buildFilterPredicate());
         });
@@ -683,11 +695,11 @@ public class ScraperFX extends Application {
         
         VBox sortByBox = new VBox();
         sortByBox.setSpacing(7.);
-        sortByBox.getChildren().addAll(sortByMetaNameRadioButton, sortByFileNameRadioButton);
+        sortByBox.getChildren().addAll(sortByMetaNameRadioButton, sortByFileNameRadioButton, filterField);
         
         VBox filterBox = new VBox();
         filterBox.setSpacing(7.);
-        filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, filterField);
+        filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, hideLockedCheckBox, showOnlyLockedCheckBox);
         
         HBox topBox = new HBox();
         topBox.setSpacing(7.);
@@ -878,7 +890,11 @@ public class ScraperFX extends Application {
     }
     
     private Predicate<Game> buildFilterPredicate() {
-        return getHideIgnoredPredicate().and(getShowOnlyNonMatchedPredicate()).and(getFilterTextPredicate(filterField.getText()));
+        return getHideIgnoredPredicate().and(
+                getShowOnlyNonMatchedPredicate()).and(
+                getFilterTextPredicate(filterField.getText())).and(
+                getHideLockedPredicate()).and(
+                getShowOnlyLockedPredicate());
     }
     
     private Predicate<Game> getHideIgnoredPredicate() {
@@ -896,6 +912,28 @@ public class ScraperFX extends Application {
         if(showOnlyNonMatchedCheckBox.isSelected()) {
             return (game) -> {
                 return game.strength == Game.MatchStrength.NO_MATCH || game.strength == Game.MatchStrength.IGNORE;
+            };
+        }
+        return (game) -> {
+            return true;
+        };
+    }
+    
+    private Predicate<Game> getHideLockedPredicate() {
+        if(hideLockedCheckBox.isSelected()) {
+            return (game) -> {
+                return game.strength != Game.MatchStrength.LOCKED;
+            };
+        }
+        return (game) -> {
+            return true;
+        };
+    }
+    
+    private Predicate<Game> getShowOnlyLockedPredicate() {
+        if(showOnlyLockedCheckBox.isSelected()) {
+            return (game) -> {
+                return game.strength == Game.MatchStrength.LOCKED;
             };
         }
         return (game) -> {

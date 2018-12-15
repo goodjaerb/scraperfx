@@ -406,11 +406,20 @@ public class ScraperFX extends Application {
         });
         
         unmatchedOnlyCheckBox.setPadding(new Insets(7.));
-        unmatchedOnlyCheckBox.setOnAction((e) -> {
+        unmatchedOnlyCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {//setOnAction((e) -> {
             getCurrentSettings().unmatchedOnly = unmatchedOnlyCheckBox.isSelected();
+            
+            refreshMetaDataCheckBox.setSelected(false);
+            if(unmatchedOnlyCheckBox.isSelected()) {
+                refreshMetaDataCheckBox.setDisable(false);
+            }
+            else {
+                refreshMetaDataCheckBox.setDisable(true);
+            }
         });
         
         refreshMetaDataCheckBox.setPadding(new Insets(7.));
+        refreshMetaDataCheckBox.setDisable(false);
 
         HBox box21 = new HBox();
         box21.setSpacing(7.);
@@ -558,9 +567,9 @@ public class ScraperFX extends Application {
                 ScanTask scanner = new ScanTask(gamesPath, selectedGames);
                 ScanProgressDialog scanProgressDialog = new ScanProgressDialog(scanner);
                 
-                Thread t = new Thread(scanner);
-                t.setDaemon(true);
-                t.start();
+//                Thread t = new Thread(scanner);
+//                t.setDaemon(true);
+//                t.start();
                 scanProgressDialog.showAndWait();
             }
         });
@@ -1598,7 +1607,13 @@ public class ScraperFX extends Application {
                     if(localGame == null) {
                         localGame = new Game(filename);
                     }
-                    if(localGame.strength != Game.MatchStrength.IGNORE) {
+                    
+                    System.out.println("============================================================\nBEGINNING SCAN OF '" + localGame.fileName + "'");
+                    if(localGame.strength == Game.MatchStrength.IGNORE) {
+                        System.out.println("Ignoring '" + localGame.fileName + "' due to PRESET IGNORE flag.");
+                        updateMessage("Ignoring '" + localGame.fileName + "' due to PRESET IGNORE flag.");
+                    }
+                    else {
                         boolean ignore = false;
                         if(getCurrentSettings().ignoreRegex != null && !"".equals(getCurrentSettings().ignoreRegex)) {
                             Pattern ignorePattern = Pattern.compile(".*" + getCurrentSettings().ignoreRegex + ".*");
@@ -1607,65 +1622,93 @@ public class ScraperFX extends Application {
                                 localGame.matchedName = null;
                                 localGame.strength = Game.MatchStrength.IGNORE;
                                 ignore = true;
+                                
+                                System.out.println("Ignoring '" + localGame.fileName + "' due to REGEX IGNORE flag.");
+                                updateMessage("Ignoring '" + localGame.fileName + "' due to REGEX IGNORE flag.");
                             }
                         }
 
                         if(!ignore) {
-                            boolean refreshOnly = false;
-                            if(unmatchedOnlyCheckBox.isSelected()) {
-                                if(localGame.matchedName != null) {
-                                    // this game is already matched and we only want unmatched games.
-                                    updateMessage("Skipping " + filename + ". Already matched.");
-//                                        updateProgress(++fileCount, totalFiles);
-//                                        // without sleeping, subsequent scans with cached data went so fast
-//                                        // i thought it was a bug. turns out the scan process is very fast,
-//                                        // it's downloading the data that is slow.
-//                                        try {
-//                                            Thread.sleep(4);
-//                                        }
-//                                        catch(InterruptedException interrupted) {
-//                                            if(isCancelled()) {
-//                                                break;
-//                                            }
-//                                        }
+//                            boolean refreshOnly = false;
+                            boolean refreshMatchedGame = false;
+                            boolean skipMatching = false;
+                            boolean startedUnmatched = false;
+                            
+                            if(localGame.strength == Game.MatchStrength.NO_MATCH) {
+                                startedUnmatched = true;
+                            }
+                            
+                            if(localGame.strength == Game.MatchStrength.LOCKED) {
+                                skipMatching = true;
+                                System.out.println("Not matching '" + localGame.fileName + "' because it is LOCKED.");
+                                updateMessage("Not matching '" + localGame.fileName + "' because it is LOCKED.");
+//                                System.out.println("Not refreshing metadata for '" + localGame.fileName + "' because it is LOCKED.");
+//                                updateMessage("Not refreshing metadata for '" + localGame.fileName + "' because it is LOCKED.");
+                            }
+                            else if(unmatchedOnlyCheckBox.isSelected() 
+                                    && localGame.strength != Game.MatchStrength.IGNORE && localGame.strength != Game.MatchStrength.NO_MATCH) {
+                                // this game is already matched and we only want unmatched games.
+                                skipMatching = true;
 
-                                    if(refreshMetaDataCheckBox.isSelected()) {
-                                        refreshOnly = true;
-                                    }
-                                    else {
-                                        continue;
-                                    }
+                                System.out.println("Not matching '" + localGame.fileName + "' because it is ALREADY MATCHED.");
+                                updateMessage("Not matching '" + localGame.fileName + "' because it is ALREADY MATCHED.");
+                            }
+                            else {
+                                System.out.println("Will attempt to match '" + localGame.fileName + "'.");
+                                updateMessage("Will attempt to match '" + localGame.fileName + "'.");
+                            }
+                            
+                            if(!startedUnmatched && !refreshMetaDataCheckBox.isDisabled()) {
+                                if(refreshMetaDataCheckBox.isSelected()) {
+                                    refreshMatchedGame = true;
+
+                                    System.out.println("Refreshing metadata for '" + localGame.fileName + "'.");
+                                    updateMessage("Refreshing metadata for '" + localGame.fileName + "'.");
+                                }
+                                else {
+                                    System.out.println("NOT refreshing metadata for '" + localGame.fileName + "' due to check-box (un)selection.");
+                                    updateMessage("NOT refreshing metadata for '" + localGame.fileName + "' due to check-box (un)selection.");
                                 }
                             }
-
+                            
+                            if(skipMatching) {
+                                if(!refreshMatchedGame) {
+                                    System.out.println("ENDING SCAN OF '" + localGame.fileName + "'\n============================================================");
+                                    continue;
+                                }
+                            }
 
                             String noExtName = filename.substring(0, filename.lastIndexOf(".")).toLowerCase();
                             if(scrapeTypeGroup.getSelectedToggle() == scrapeAsArcadeButton) {
-                                if(!refreshOnly) {
+                                if(!skipMatching) {
                                     localGame.matchedName = noExtName;
                                 }
                                     
-                                boolean wasFavorite = false;
-                                if(localGame.metadata != null && localGame.metadata.favorite) {
-                                    System.out.println(localGame.fileName + " was a favorite!");
-                                    wasFavorite = true;
-                                }
+                                if(refreshMatchedGame || startedUnmatched) {
+                                    boolean wasFavorite = false;
+                                    if(localGame.metadata != null && localGame.metadata.favorite) {
+                                        wasFavorite = true;
+                                    }
                                 
-                                localGame.metadata = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
-//                                    System.out.println(localGame.metadata.images);
-//                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.ARCADE_ITALIA).getMetaData(null, localGame);
-                                if(localGame.metadata == null) {
-                                    localGame.matchedName = null;
-                                    updateMessage("Could not match " + filename + " to a game.");
-                                }
-                                else {
-                                    localGame.metadata.favorite = wasFavorite;
-                                    localGame.strength = Game.MatchStrength.STRONG;
-                                    updateMessage("Matched " + filename + " to " + localGame.metadata.metaName + ".");
+                                    localGame.metadata = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
+    //                                    System.out.println(localGame.metadata.images);
+    //                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.ARCADE_ITALIA).getMetaData(null, localGame);
+                                    if(localGame.metadata == null) {
+                                        localGame.matchedName = null;
+                                        System.out.println("Could not match '" + filename + "' to a game.");
+                                        updateMessage("Could not match '" + filename + "' to a game.");
+                                    }
+                                    else {
+                                        localGame.metadata.favorite = wasFavorite;
+                                        localGame.strength = Game.MatchStrength.STRONG;
+                                        System.out.println("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                        updateMessage("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                    }
                                 }
                             }
                             else {
-                                if(localGame.strength != Game.MatchStrength.LOCKED && !refreshOnly) {
+//                                if(localGame.strength != Game.MatchStrength.LOCKED && !refreshOnly) {
+                                if(!skipMatching) {
                                     if(getCurrentSettings().substringRegex != null && !"".equals(getCurrentSettings().substringRegex)) {
                                         Pattern pattern = Pattern.compile(".*" + getCurrentSettings().substringRegex + ".*");
                                         Matcher m = pattern.matcher(noExtName);
@@ -1814,38 +1857,47 @@ public class ScraperFX extends Application {
                                             }
                                         }
                                     }
+                                    
+                                    System.out.println("Matched '" + filename + "' to game '" + localGame.matchedName + "'.");
+                                    updateMessage("Matched '" + filename + "' to game '" + localGame.matchedName + "'.");
                                 }
 
                                 if(localGame.matchedName == null) {
-                                    updateMessage("Could not match " + filename + " to a game.");
+                                    System.out.println("Could not match '" + filename + "' to a game.");
+                                    updateMessage("Could not match '" + filename + "' to a game.");
                                 }
                                 else {
-                                    MetaData lockedData = null;
-                                    if(localGame.strength == Game.MatchStrength.LOCKED) {
-                                        lockedData = localGame.metadata;
-                                    }
-                                    
-                                    boolean wasFavorite = false;
-                                    if(localGame.metadata != null && localGame.metadata.favorite) {
-                                        System.out.println(localGame.fileName + " was a favorite!");
-                                        wasFavorite = true;
-                                    }
-                                    
-                                    //matched a game, get the rest of the data.
-                                    localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
+                                    if(!skipMatching || refreshMatchedGame || startedUnmatched) {
+                                        MetaData lockedData = null;
+                                        if(localGame.strength == Game.MatchStrength.LOCKED) {
+                                            lockedData = localGame.metadata;
+                                        }
 
-                                    if(localGame.metadata == null && localGame.strength == Game.MatchStrength.LOCKED) {
-                                        localGame.metadata = lockedData;
-                                    }
+                                        boolean wasFavorite = false;
+                                        if(localGame.metadata != null && localGame.metadata.favorite) {
+                                            wasFavorite = true;
+                                        }
+                                    
+                                        //matched a game, get the rest of the data.
+                                        localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
 
-                                    if(localGame.metadata != null) {
-                                        localGame.metadata.favorite = wasFavorite;
-                                        
-                                        System.out.println("Success! Checking for video links...");
-                                        final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
-                                        if(videoLinks != null) {
-                                            localGame.metadata.videodownload = videoLinks[0];
-                                            localGame.metadata.videoembed = videoLinks[1];
+                                        if(localGame.metadata == null && localGame.strength == Game.MatchStrength.LOCKED) {
+                                            localGame.metadata = lockedData;
+                                            
+                                            System.out.println("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                            updateMessage("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                        }
+
+                                        if(localGame.metadata != null) {
+                                            localGame.metadata.favorite = wasFavorite;
+
+                                            final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
+                                            if(videoLinks != null) {
+                                                localGame.metadata.videodownload = videoLinks[0];
+                                                localGame.metadata.videoembed = videoLinks[1];
+                                            }
+                                            System.out.println("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                            updateMessage("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
                                         }
                                     }
 
@@ -1856,7 +1908,6 @@ public class ScraperFX extends Application {
                                         //error occurred while getting metadata.
                                         updateMessage("Error connecting to thegamesdb.net. Please try again.");
                                     }
-                                    updateMessage("Matched " + filename + " to " + localGame.matchedName + ".");
                                 }
                             }
                         }
@@ -1879,6 +1930,7 @@ public class ScraperFX extends Application {
                         gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(g));
 //                        gamesListView.getSelectionModel().selectLast();//temporary?
                     });
+                    System.out.println("ENDING SCAN OF '" + localGame.fileName + "'\n============================================================");
 
 //                        // without sleeping, subsequent scans with cached data went so fast
 //                        // i thought it was a bug. turns out the scan process is very fast,
@@ -2151,6 +2203,12 @@ public class ScraperFX extends Application {
                 else {
                     hide();
                 }
+            });
+            
+            setOnShown((event) -> {
+                Thread t = new Thread(task);
+                t.setDaemon(true);
+                t.start();
             });
             
             setOnHidden((e) -> {

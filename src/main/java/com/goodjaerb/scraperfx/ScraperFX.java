@@ -915,7 +915,7 @@ public class ScraperFX extends Application {
     private Predicate<Game> getShowOnlyNonMatchedPredicate() {
         if(showOnlyNonMatchedCheckBox.isSelected()) {
             return (game) -> {
-                return game.strength == Game.MatchStrength.NO_MATCH || game.strength == Game.MatchStrength.IGNORE;
+                return game.strength == Game.MatchStrength.NO_MATCH || game.strength == Game.MatchStrength.IGNORE || game.matchedName == null || "".equals(game.matchedName);
             };
         }
         return (game) -> {

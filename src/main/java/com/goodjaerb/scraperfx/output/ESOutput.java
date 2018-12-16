@@ -35,6 +35,7 @@ import javafx.stage.Stage;
 import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
+import javafx.stage.Window;
 
 /**
  *
@@ -95,12 +96,8 @@ public class ESOutput {
     public static final String IMAGES_DIR = "images";
     public static final String VIDEOS_DIR = "videos";
     
-    public ESOutput() {
-        
-    }
-    
-    public void output(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade) {
-        OutputDialog d = new OutputDialog(games, outputPath, imagesPath, videoPath, arcade);
+    public void output(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
+        OutputDialog d = new OutputDialog(games, outputPath, imagesPath, videoPath, arcade, parentWindow);
         d.showAndWait();
     }
    
@@ -120,7 +117,7 @@ public class ESOutput {
         
 //        private final boolean arcade;
         
-        public OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade) {
+        public OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
             super();
 //            this.arcade = arcade;
             
@@ -246,7 +243,7 @@ public class ESOutput {
             setTitle("EmulationStation Output");
             setResizable(false);
             initModality(Modality.WINDOW_MODAL);
-            initOwner(ScraperFX.getPrimaryStage());
+            initOwner(parentWindow);
             setScene(scene);
         }
         

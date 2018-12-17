@@ -98,6 +98,8 @@ import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
@@ -1854,12 +1856,38 @@ public class ScraperFX extends Application {
         private final Button                    cancelButton = new Button("Cancel");
         private final AtomicBoolean             working = new AtomicBoolean(false);
         
+        private final Timer     workingTimer = new Timer();
+        private final TimerTask workingTask = new TimerTask() {
+            private int n = 1;
+            private String text;
+            
+            @Override
+            public void run() {
+                switch(n) {
+                    case 1:
+                        text = ".";
+                        break;
+                    case 2:
+                        text = "..";
+                        break;
+                    case 3:
+                        n = 1;
+                        text = "...";
+                        break;
+                }
+                n++;
+                Platform.runLater(() -> {
+                    okButton.setText("Downloading" + text);
+                });
+            }
+        };
+        
         private final String systemName;
         
         public SingleGameDownloadDialog(String systemName, Window parentWindow) {
             super();
             this.systemName = systemName;
-        
+            
             filterField.textProperty().addListener((observable, oldValue, newValue) -> {
                 filteredNamesList.setPredicate(name -> {
                     String filterText = newValue.trim();
@@ -1896,11 +1924,9 @@ public class ScraperFX extends Application {
             cancelButton.setOnAction(e -> onCancelButton());
             
             setOnShown(e -> onShown());
-            setOnCloseRequest(e -> {
-                // this is horrible. this whole class needs a rework.
-                if(working.get()) {
-                    e.consume();
-                }
+            setOnHidden(e -> {
+                workingTimer.cancel();
+                System.out.println("cancelled");
             });
             
             HBox box = new HBox();
@@ -1931,32 +1957,33 @@ public class ScraperFX extends Application {
             okButton.setDisable(true);
             cancelButton.setDisable(true);
             
-            new Thread(() -> {
-                while(working.get()) {
-                    try {
-                        Platform.runLater(() -> {
-                            int n = (int)(Math.random() * 3 + 1);
-                            String text = null;
-                            switch(n) {
-                                case 1:
-                                    text = ".";
-                                    break;
-                                case 2:
-                                    text = "..";
-                                    break;
-                                case 3:
-                                    text = "...";
-                                    break;
-                            }
-                            okButton.setText("Downloading" + text);
-                        });
-                        Thread.sleep(100);
-                    }
-                    catch(InterruptedException ex) {
-                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }).start();
+            workingTimer.schedule(workingTask, 0, 250);
+//            new Thread(() -> {
+//                while(working.get()) {
+//                    try {
+//                        Platform.runLater(() -> {
+//                            int n = (int)(Math.random() * 3 + 1);
+//                            String text = null;
+//                            switch(n) {
+//                                case 1:
+//                                    text = ".";
+//                                    break;
+//                                case 2:
+//                                    text = "..";
+//                                    break;
+//                                case 3:
+//                                    text = "...";
+//                                    break;
+//                            }
+//                            okButton.setText("Downloading" + text);
+//                        });
+//                        Thread.sleep(100);
+//                    }
+//                    catch(InterruptedException ex) {
+//                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
+//            }).start();
             
             new Thread(() -> {
                 try {

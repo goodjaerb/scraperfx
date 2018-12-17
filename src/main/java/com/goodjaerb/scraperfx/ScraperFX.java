@@ -100,11 +100,8 @@ import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -1487,10 +1484,10 @@ public class ScraperFX extends Application {
     private class ScanTask extends Task<Void> {
         private final List<Path> paths = new ArrayList<>();
         
-        private final Consumer<String> status;
+        private final Consumer<String> statusConsumer;
         
         public ScanTask(Consumer<String> status, Path gamesPath, List<Game> games) {
-            this.status = status;
+            this.statusConsumer = status;
             
             DirectoryStream.Filter<Path> filter = path -> Files.isRegularFile(path) && games.stream().anyMatch((game) -> path.getFileName().toString().equals(game.fileName));
             try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
@@ -1520,7 +1517,7 @@ public class ScraperFX extends Application {
                     
                     System.out.println("============================================================\nBEGINNING SCAN OF '" + localGame.fileName + "'");
                     if(localGame.strength == Game.MatchStrength.IGNORE) {
-                        status.accept("Ignoring '" + localGame.fileName + "' due to PRESET IGNORE flag.");
+                        statusConsumer.accept("Ignoring '" + localGame.fileName + "' due to PRESET IGNORE flag.");
                     }
                     else {
                         boolean ignore = false;
@@ -1532,7 +1529,7 @@ public class ScraperFX extends Application {
                                 localGame.strength = Game.MatchStrength.IGNORE;
                                 ignore = true;
                                 
-                                status.accept("Ignoring '" + localGame.fileName + "' due to REGEX IGNORE flag.");
+                                statusConsumer.accept("Ignoring '" + localGame.fileName + "' due to REGEX IGNORE flag.");
                             }
                         }
 
@@ -1547,27 +1544,27 @@ public class ScraperFX extends Application {
                             
                             if(localGame.strength == Game.MatchStrength.LOCKED) {
                                 skipMatching = true;
-                                status.accept("Not matching '" + localGame.fileName + "' because it is LOCKED.");
+                                statusConsumer.accept("Not matching '" + localGame.fileName + "' because it is LOCKED.");
                             }
                             else if(unmatchedOnlyCheckBox.isSelected() 
                                     && localGame.strength != Game.MatchStrength.IGNORE && localGame.strength != Game.MatchStrength.NO_MATCH) {
                                 // this game is already matched and we only want unmatched games.
                                 skipMatching = true;
 
-                                status.accept("Not matching '" + localGame.fileName + "' because it is ALREADY MATCHED.");
+                                statusConsumer.accept("Not matching '" + localGame.fileName + "' because it is ALREADY MATCHED.");
                             }
                             else {
-                                status.accept("Will attempt to match '" + localGame.fileName + "'.");
+                                statusConsumer.accept("Will attempt to match '" + localGame.fileName + "'.");
                             }
                             
                             if(!startedUnmatched && !refreshMetaDataCheckBox.isDisabled()) {
                                 if(refreshMetaDataCheckBox.isSelected()) {
                                     refreshMatchedGame = true;
 
-                                    status.accept("Refreshing metadata for '" + localGame.fileName + "'.");
+                                    statusConsumer.accept("Refreshing metadata for '" + localGame.fileName + "'.");
                                 }
                                 else {
-                                    status.accept("NOT refreshing metadata for '" + localGame.fileName + "' due to check-box (un)selection.");
+                                    statusConsumer.accept("NOT refreshing metadata for '" + localGame.fileName + "' due to check-box (un)selection.");
                                 }
                             }
                             
@@ -1589,7 +1586,7 @@ public class ScraperFX extends Application {
                                     
                                     if(newMetaData != null) {
                                         if(!skipMatching) {
-                                            status.accept("Matched '" + filename + "' to game '" + newMetaData.metaName + "'.");
+                                            statusConsumer.accept("Matched '" + filename + "' to game '" + newMetaData.metaName + "'.");
                                         }
                                     }
                                     else {
@@ -1597,10 +1594,10 @@ public class ScraperFX extends Application {
                                         if(localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
                                             newMetaData = new MetaData();
                                             newMetaData.setMetaData(localGame.metadata);
-                                            status.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                            statusConsumer.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
                                         }
                                         else {
-                                            status.accept("Could not match '" + filename + "' to a game.");
+                                            statusConsumer.accept("Could not match '" + filename + "' to a game.");
                                         }
                                     }
                                     
@@ -1612,7 +1609,7 @@ public class ScraperFX extends Application {
                                             localGame.strength = Game.MatchStrength.STRONG;
                                         }
                                         localGame.updateMetaData(newMetaData);
-                                        status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                        statusConsumer.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
                                     }
                                 }
                             }
@@ -1768,10 +1765,10 @@ public class ScraperFX extends Application {
                                     }
                                     
                                     if(localGame.matchedName == null) {
-                                        status.accept("Could not match '" + filename + "' to a game.");
+                                        statusConsumer.accept("Could not match '" + filename + "' to a game.");
                                     }
                                     else {
-                                        status.accept("Matched '" + filename + "' to game '" + localGame.matchedName + "'.");
+                                        statusConsumer.accept("Matched '" + filename + "' to game '" + localGame.matchedName + "'.");
                                     }
                                 }
 
@@ -1784,7 +1781,7 @@ public class ScraperFX extends Application {
                                             newMetaData = new MetaData();
                                             newMetaData.setMetaData(localGame.metadata);
                                             
-                                            status.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                            statusConsumer.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
                                         }
 
                                         if(newMetaData != null) {
@@ -1799,13 +1796,13 @@ public class ScraperFX extends Application {
                                             }
                                             
                                             localGame.updateMetaData(newMetaData);
-                                            status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                            statusConsumer.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
                                         }
                                     }
 
                                     if(localGame.metadata == null) {
                                         //error occurred while getting metadata.
-                                        status.accept("Error connecting to thegamesdb.net. Please try again.");
+                                        statusConsumer.accept("Error connecting to thegamesdb.net. Please try again.");
                                     }
                                 }
                             }
@@ -2012,41 +2009,28 @@ public class ScraperFX extends Application {
     
     private class ScanProgressDialog extends Stage {
         
-        private final TextArea      messageArea = new TextArea();
-        private final ProgressBar   progressBar = new ProgressBar();
-        private final Button        cancelButton = new Button("Cancel Scan");
-        
-        private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
-        
-        private final AnimationTimer messageConsumer = new AnimationTimer() {
-            
-            @Override
-            public void handle(long now) {
-                List<String> messages = new ArrayList<>();
-                messageQueue.drainTo(messages);
-                messages.forEach(msg -> messageArea.appendText(msg + "\n"));
-            }
-        };
+        private final QueuedMessageBox  messageArea = new QueuedMessageBox();
+        private final ProgressBar       progressBar = new ProgressBar();
+        private final Button            cancelButton = new Button("Cancel Scan");
         
         public ScanProgressDialog(Path gamesPath, List<Game> selectedGames, Window parentWindow) {
             super();
             
             ScanTask task = new ScanTask(message -> {
                 System.out.println(message);
-                messageQueue.offer(message);
+                messageArea.queueMessage(message);
             }, gamesPath, selectedGames);
             
             task.setOnSucceeded(e -> {
-                messageQueue.offer("Scan complete!");
+                messageArea.queueMessage("Scan complete!");
                 cancelButton.setText("Close");
             });
             
             task.setOnCancelled(e -> {
-                messageQueue.offer("Scan cancelled!");
+                messageArea.queueMessage("Scan cancelled!");
                 cancelButton.setText("Close");
             });
             
-            messageArea.setEditable(false);
             progressBar.progressProperty().bind(task.progressProperty());
             
             cancelButton.setOnAction(e -> {
@@ -2059,12 +2043,12 @@ public class ScraperFX extends Application {
             });
             
             setOnShown(e -> {
-                messageConsumer.start();
+                messageArea.start();
                 new Thread(task).start();
             });
             
             setOnHidden(e -> {
-                messageConsumer.stop();
+                messageArea.stop();
                 task.cancel();
             });
             

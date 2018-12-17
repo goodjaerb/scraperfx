@@ -5,6 +5,7 @@
  */
 package com.goodjaerb.scraperfx.output;
 
+import com.goodjaerb.scraperfx.QueuedMessageBox;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -26,7 +27,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -35,6 +35,7 @@ import javafx.stage.Stage;
 import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
+import java.util.function.Consumer;
 import javafx.stage.Window;
 
 /**
@@ -103,41 +104,25 @@ public class ESOutput {
    
     private class OutputDialog extends Stage {
         
-        private final List<String> esTags;
-        private final List<CheckBox> enableTagCheckBoxes;
-        private final List<ComboBox<String>> primaryMetaDataTypes;
-        private final List<ComboBox<String>> secondaryMetaDataTypes;
-        private final CheckBox skipUnmatchedCheckBox;
-        private final CheckBox downloadVideosCheckBox;
+        private final List<String>              esTags = new ArrayList<>();
+        private final List<CheckBox>            enableTagCheckBoxes = new ArrayList<>();
+        private final List<ComboBox<String>>    primaryMetaDataTypes = new ArrayList<>();
+        private final List<ComboBox<String>>    secondaryMetaDataTypes = new ArrayList<>();
+        private final CheckBox                  skipUnmatchedCheckBox = new CheckBox("Skip Unmatched Files");
+        private final CheckBox                  downloadVideosCheckBox = new CheckBox("Download Videos");
         
-        private final Button startButton;
-        private final Button cancelButton;
-        private final ProgressBar progressBar;
-        private final TextArea messageArea;
-        
-//        private final boolean arcade;
+        private final Button            startButton = new Button("Start");
+        private final Button            cancelButton = new Button("Cancel");
+        private final ProgressBar       progressBar = new ProgressBar();
+        private final QueuedMessageBox  messageArea = new QueuedMessageBox("Press START to begin.\n");
         
         public OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
             super();
-//            this.arcade = arcade;
-            
-            skipUnmatchedCheckBox = new CheckBox("Skip Unmatched Files");
-            downloadVideosCheckBox = new CheckBox("Download Videos");
-            messageArea = new TextArea("Press START to begin.\n");
-            messageArea.setEditable(false);
-            progressBar = new ProgressBar();
-            startButton = new Button("Start");
-            cancelButton = new Button("Cancel");
             
             VBox tagsBox = new VBox();
             tagsBox.setSpacing(7.);
             tagsBox.setPadding(new Insets(7.));
             tagsBox.getChildren().add(new Label("EmulationStation Image Tags"));
-            
-            esTags = new ArrayList<>();
-            enableTagCheckBoxes = new ArrayList<>();
-            primaryMetaDataTypes = new ArrayList<>();
-            secondaryMetaDataTypes = new ArrayList<>();
             
             for(ESImageTag tag : ESImageTag.values()) {
                 esTags.add(tag.getTag());
@@ -197,32 +182,29 @@ public class ESOutput {
             tagsBox.getChildren().add(messageArea);
             tagsBox.getChildren().add(buttonBox);
             
-            OutputTask task = new OutputTask(games, outputPath, imagesPath, videoPath);//, arcade);
-
-            task.messageProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-                messageArea.appendText(newValue + "\n");
-            });
+            OutputTask task = new OutputTask(message -> {
+                System.out.println(message);
+                messageArea.queueMessage(message);
+            }, games, outputPath, imagesPath, videoPath);
 
             task.progressProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                 progressBar.setProgress((double)newValue);
             });
 
             task.setOnSucceeded((e) -> {
-                messageArea.appendText("Output complete!");
+                messageArea.queueMessage("Output complete!");
                 cancelButton.setText("Close");
             });
 
             task.setOnCancelled((e) -> {
-                messageArea.appendText("Output cancelled!");
+                messageArea.queueMessage("Output cancelled!");
                 cancelButton.setText("Close");
             });
                 
             startButton.setOnAction((e) -> {
                 startButton.setDisable(true);
-
-                Thread t = new Thread(task);
-                t.setDaemon(true);
-                t.start();
+                messageArea.start();
+                new Thread(task).start();
             });
             
             cancelButton.setOnAction((e) -> {
@@ -235,6 +217,7 @@ public class ESOutput {
             });
             
             setOnHidden((e) -> {
+                messageArea.stop();
                 task.cancel();
             });
 
@@ -252,22 +235,22 @@ public class ESOutput {
             private final Path outputPath;
             private final Path imagesPath;
             private final Path videoPath;
+            
+            private final Consumer<String> messageConsumer;
 
-            public OutputTask(List<Game> games, Path outputPath, Path imagesPath, Path videoPath) {
+            public OutputTask(Consumer<String> messageConsumer, List<Game> games, Path outputPath, Path imagesPath, Path videoPath) {
                 this.games = games;
                 this.outputPath = outputPath.resolve("gamelist.xml");
                 this.imagesPath = imagesPath;
                 this.videoPath = videoPath;
+                
+                this.messageConsumer = messageConsumer;
             }
 
             @Override
             protected Void call()  {
                 AtomicBoolean isScanning = new AtomicBoolean(true);
                 try {
-//                    FileSystem fs = FileSystems.getDefault();
-//                    Path imagesPath = fs.getPath(imagesPathStr);
-//                    Path videoPath = fs.getPath(videoPathStr);
-//                    Path outputPath = fs.getPath(outputPathStr, "gamelist.xml");
                     Files.createDirectories(outputPath.getParent());
                     try {
                         Files.createFile(outputPath);
@@ -276,7 +259,6 @@ public class ESOutput {
                         // good!
                     }
 
-//                    File outputFile = outputPath.toFile();
                     try(final BufferedWriter writer = Files.newBufferedWriter(outputPath)) {//new BufferedWriter(new FileWriter(outputFile))) {
                         writer.append("<gameList>\n");
 
@@ -375,28 +357,17 @@ public class ESOutput {
                                 }
 
                                 writer.append("\t</game>\n");
-                                updateMessage("Completed " + g.fileName + " output to gamelist.xml");
+                                messageConsumer.accept("Completed " + g.fileName + " output to gamelist.xml");
                             }
                             updateProgress(++fileCount, games.size());
-                            
-                            try {
-                                //if this isn't here then i only get one update to the message box.
-                                Thread.sleep(1);
-                            }
-                            catch(InterruptedException interrupted) {
-                                if(isCancelled()) {
-                                    break;
-                                }
-                            }
                         }
 
                         writer.append("</gameList>\n");
+                        isScanning.set(false);
                     }
                     catch(IOException ex) {
                         Logger.getLogger(ESOutput.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
-                    isScanning.set(false);
                 }
                 catch(IOException ex) {
                     Logger.getLogger(ESOutput.class.getName()).log(Level.SEVERE, null, ex);

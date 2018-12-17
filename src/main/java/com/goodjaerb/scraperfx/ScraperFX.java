@@ -1854,7 +1854,6 @@ public class ScraperFX extends Application {
         private final ListView<String>          selectGameList = new ListView<>(filteredNamesList);
         private final Button                    okButton = new Button("OK");
         private final Button                    cancelButton = new Button("Cancel");
-        private final AtomicBoolean             working = new AtomicBoolean(false);
         
         private final Timer     workingTimer = new Timer();
         private final TimerTask workingTask = new TimerTask() {
@@ -1921,13 +1920,10 @@ public class ScraperFX extends Application {
             okButton.setOnAction(e -> onOkButton());
             okButton.setPrefWidth(175);
             
-            cancelButton.setOnAction(e -> onCancelButton());
+            cancelButton.setOnAction(e -> hide());
             
             setOnShown(e -> onShown());
-            setOnHidden(e -> {
-                workingTimer.cancel();
-                System.out.println("cancelled");
-            });
+            setOnHidden(e -> workingTimer.cancel());
             
             HBox box = new HBox();
             box.setSpacing(7.);
@@ -1952,38 +1948,10 @@ public class ScraperFX extends Application {
         }
         
         private void onOkButton() {
-            working.set(true);
-            
             okButton.setDisable(true);
             cancelButton.setDisable(true);
             
             workingTimer.schedule(workingTask, 0, 250);
-//            new Thread(() -> {
-//                while(working.get()) {
-//                    try {
-//                        Platform.runLater(() -> {
-//                            int n = (int)(Math.random() * 3 + 1);
-//                            String text = null;
-//                            switch(n) {
-//                                case 1:
-//                                    text = ".";
-//                                    break;
-//                                case 2:
-//                                    text = "..";
-//                                    break;
-//                                case 3:
-//                                    text = "...";
-//                                    break;
-//                            }
-//                            okButton.setText("Downloading" + text);
-//                        });
-//                        Thread.sleep(100);
-//                    }
-//                    catch(InterruptedException ex) {
-//                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
-//            }).start();
             
             new Thread(() -> {
                 try {
@@ -2013,17 +1981,12 @@ public class ScraperFX extends Application {
                     });
                 }
                 finally {
-                    working.set(false);
                     Platform.runLater(() -> {
                         gamesListView.refresh();
                         hide();
                     });
                 }
             }).start();
-        }
-        
-        private void onCancelButton() {
-            hide();
         }
         
         private void onShown() {

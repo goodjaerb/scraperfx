@@ -114,17 +114,33 @@ public class MetaData {
     }
     
     public void transferLocksFrom(MetaData other) {
-        this.lockDesc = other.lockDesc;
-        this.lockDeveloper = other.lockDeveloper;
-        this.lockGenre = other.lockGenre;
-        this.lockImages = other.lockImages;
-        this.lockName = other.lockName;
-        this.lockPlayers = other.lockPlayers;
-        this.lockPublisher = other.lockPublisher;
-        this.lockRating = other.lockRating;
-        this.lockReleasedate = other.lockReleasedate;
-        this.lockVideoEmbed = other.lockVideoEmbed;
-        this.lockVideoDownload = other.lockVideoDownload;
+        this.lockDesc           = other.lockDesc;
+        this.lockDeveloper      = other.lockDeveloper;
+        this.lockGenre          = other.lockGenre;
+        this.lockImages         = other.lockImages;
+        this.lockName           = other.lockName;
+        this.lockPlayers        = other.lockPlayers;
+        this.lockPublisher      = other.lockPublisher;
+        this.lockRating         = other.lockRating;
+        this.lockReleasedate    = other.lockReleasedate;
+        this.lockVideoEmbed     = other.lockVideoEmbed;
+        this.lockVideoDownload  = other.lockVideoDownload;
+    }
+    
+    public void setMetaData(MetaData other) {
+        metaReleaseDate    = other.metaReleaseDate;
+        metaRating         = other.metaRating;
+        metaPublisher      = other.metaPublisher;
+        metaName           = other.metaName;
+        metaDeveloper      = other.metaDeveloper;
+        metaDesc           = other.metaDesc;
+        players            = other.players;
+        metaGenre          = other.metaGenre;
+        images             = other.images;
+        videodownload      = other.videodownload;
+        videoembed         = other.videoembed;
+        favorite           = other.favorite;
+        transferLocksFrom(other);
     }
     
     public void updateMetaData(MetaDataId id, String value) {

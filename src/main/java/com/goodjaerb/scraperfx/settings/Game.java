@@ -81,6 +81,24 @@ public class Game {//implements Comparable<Game> {
         this.metadata = g.metadata;
     }
     
+    public void updateMetaData(MetaData newMetaData) {
+        if(metadata == null) {
+            metadata = new MetaData();
+        }
+        metadata.metaReleaseDate    = metadata.lockReleasedate      ? metadata.metaReleaseDate      : newMetaData.metaReleaseDate;
+        metadata.metaRating         = metadata.lockRating           ? metadata.metaRating           : newMetaData.metaRating;
+        metadata.metaPublisher      = metadata.lockPublisher        ? metadata.metaPublisher        : newMetaData.metaPublisher;
+        metadata.metaName           = metadata.lockName             ? metadata.metaName             : newMetaData.metaName;
+        metadata.metaDeveloper      = metadata.lockDeveloper        ? metadata.metaDeveloper        : newMetaData.metaDeveloper;
+        metadata.metaDesc           = metadata.lockDesc             ? metadata.metaDesc             : newMetaData.metaDesc;
+        metadata.players            = metadata.lockPlayers          ? metadata.players              : newMetaData.players;
+        metadata.metaGenre          = metadata.lockGenre            ? metadata.metaGenre            : newMetaData.metaGenre;
+        metadata.images             = metadata.lockImages           ? metadata.images               : newMetaData.images;
+        metadata.videodownload      = metadata.lockVideoDownload    ? metadata.videodownload        : newMetaData.videodownload;
+        metadata.videoembed         = metadata.lockVideoEmbed       ? metadata.videoembed           : newMetaData.videoembed;
+        metadata.favorite           = newMetaData.favorite;
+    }
+    
     public String getImageUrlByType(String type) {
         if(metadata != null && metadata.images != null) {
             for(Image img : metadata.images) {

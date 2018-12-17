@@ -196,22 +196,22 @@ public class GamesDbLegacySource implements DataSource {
         MetaData data = null;
         if(cachedGameMap.get(id).game != null) {
             data = new MetaData();
-            if(game.metadata == null) {
-                game.metadata = new MetaData();
-            }
-            else {
-                data.transferLocksFrom(game.metadata);
-            }
+//            if(game.metadata == null) {
+//                game.metadata = new MetaData();
+//            }
+//            else {
+//                data.transferLocksFrom(game.metadata);
+//            }
             GamesDBGame g = cachedGameMap.get(id).game;
-            data.metaReleaseDate    = game.metadata.lockReleasedate     ? game.metadata.metaReleaseDate     : g.releaseDate;
-            data.metaRating         = game.metadata.lockRating          ? game.metadata.metaRating          : g.rating;
-            data.metaPublisher      = game.metadata.lockPublisher       ? game.metadata.metaPublisher       : g.publisher;
-            data.metaName           = game.metadata.lockName            ? game.metadata.metaName            : g.title;
-            data.metaDeveloper      = game.metadata.lockDeveloper       ? game.metadata.metaDeveloper       : g.developer;
-            data.metaDesc           = game.metadata.lockDesc            ? game.metadata.metaDesc            : g.overview;
-            data.players            = game.metadata.lockPlayers         ? game.metadata.players             : g.players;
-            data.metaGenre          = game.metadata.lockGenre           ? game.metadata.metaGenre           : g.convertGenres();
-            data.images             = game.metadata.lockImages          ? game.metadata.images              : g.getImages();
+            data.metaReleaseDate    = g.releaseDate;//game.metadata.lockReleasedate     ? game.metadata.metaReleaseDate     : g.releaseDate;
+            data.metaRating         = g.rating;//game.metadata.lockRating          ? game.metadata.metaRating          : g.rating;
+            data.metaPublisher      = g.publisher;//game.metadata.lockPublisher       ? game.metadata.metaPublisher       : g.publisher;
+            data.metaName           = g.title;//game.metadata.lockName            ? game.metadata.metaName            : g.title;
+            data.metaDeveloper      = g.developer;//game.metadata.lockDeveloper       ? game.metadata.metaDeveloper       : g.developer;
+            data.metaDesc           = g.overview;//game.metadata.lockDesc            ? game.metadata.metaDesc            : g.overview;
+            data.players            = g.players;//game.metadata.lockPlayers         ? game.metadata.players             : g.players;
+            data.metaGenre          = g.convertGenres();//game.metadata.lockGenre           ? game.metadata.metaGenre           : g.convertGenres();
+            data.images             = g.getImages();//game.metadata.lockImages          ? game.metadata.images              : g.getImages();
         }
         return data;
     }

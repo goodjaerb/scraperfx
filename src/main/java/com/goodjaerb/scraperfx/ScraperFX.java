@@ -1583,19 +1583,33 @@ public class ScraperFX extends Application {
                                 }
                                     
                                 if(refreshMatchedGame || startedUnmatched) {
-                                    boolean wasFavorite = false;
-                                    if(localGame.metadata != null && localGame.metadata.favorite) {
-                                        wasFavorite = true;
-                                    }
-                                
-                                    localGame.metadata = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
-                                    if(localGame.metadata == null) {
-                                        localGame.matchedName = null;
-                                        status.accept("Could not match '" + filename + "' to a game.");
+                                    MetaData newMetaData = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
+                                    
+                                    if(newMetaData != null) {
+                                        if(!skipMatching) {
+                                            status.accept("Matched '" + filename + "' to game '" + newMetaData.metaName + "'.");
+                                        }
                                     }
                                     else {
-                                        localGame.metadata.favorite = wasFavorite;
-                                        localGame.strength = Game.MatchStrength.STRONG;
+                                        localGame.matchedName = null;
+                                        if(localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
+                                            newMetaData = new MetaData();
+                                            newMetaData.setMetaData(localGame.metadata);
+                                            status.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                        }
+                                        else {
+                                            status.accept("Could not match '" + filename + "' to a game.");
+                                        }
+                                    }
+                                    
+                                    if(newMetaData != null) {
+                                        if(localGame.metadata != null && localGame.metadata.favorite) {
+                                            newMetaData.favorite = true;
+                                        }
+                                        if(localGame.strength != Game.MatchStrength.LOCKED) {
+                                            localGame.strength = Game.MatchStrength.STRONG;
+                                        }
+                                        localGame.updateMetaData(newMetaData);
                                         status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
                                     }
                                 }
@@ -1761,33 +1775,28 @@ public class ScraperFX extends Application {
 
                                 if(localGame.matchedName != null) {
                                     if(!skipMatching || refreshMatchedGame || startedUnmatched) {
-                                        MetaData lockedData = null;
-                                        if(localGame.strength == Game.MatchStrength.LOCKED) {
-                                            lockedData = localGame.metadata;
-                                        }
-
-                                        boolean wasFavorite = false;
-                                        if(localGame.metadata != null && localGame.metadata.favorite) {
-                                            wasFavorite = true;
-                                        }
-                                    
                                         //matched a game, get the rest of the data.
-                                        localGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
+                                        MetaData newMetaData = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
 
-                                        if(localGame.metadata == null && localGame.strength == Game.MatchStrength.LOCKED) {
-                                            localGame.metadata = lockedData;
+                                        if(newMetaData == null && localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
+                                            newMetaData = new MetaData();
+                                            newMetaData.setMetaData(localGame.metadata);
                                             
                                             status.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
                                         }
 
-                                        if(localGame.metadata != null) {
-                                            localGame.metadata.favorite = wasFavorite;
-
+                                        if(newMetaData != null) {
+                                            if(localGame.metadata != null && localGame.metadata.favorite) {
+                                                newMetaData.favorite = true;
+                                            }
+                                            
                                             final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
                                             if(videoLinks != null) {
-                                                localGame.metadata.videodownload = videoLinks[0];
-                                                localGame.metadata.videoembed = videoLinks[1];
+                                                newMetaData.videodownload = videoLinks[0];
+                                                newMetaData.videoembed = videoLinks[1];
                                             }
+                                            
+                                            localGame.updateMetaData(newMetaData);
                                             status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
                                         }
                                     }
@@ -1952,16 +1961,21 @@ public class ScraperFX extends Application {
             new Thread(() -> {
                 try {
                     currentGame.matchedName = selectGameList.getSelectionModel().getSelectedItem();
-                    currentGame.metadata = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
-                    currentGame.strength = Game.MatchStrength.LOCKED;
-                                        
-                    if(currentGame.metadata != null) {
-                        System.out.println("Success! Checking for video links...");
+                    MetaData newMetaData = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
+                    
+                    if(newMetaData != null) {
+                        if(currentGame.metadata != null && currentGame.metadata.favorite) {
+                            newMetaData.favorite = true;
+                        }
+
                         final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, currentGame);
                         if(videoLinks != null) {
-                            currentGame.metadata.videodownload = videoLinks[0];
-                            currentGame.metadata.videoembed = videoLinks[1];
+                            newMetaData.videodownload = videoLinks[0];
+                            newMetaData.videoembed = videoLinks[1];
                         }
+
+                        currentGame.updateMetaData(newMetaData);
+                        currentGame.strength = Game.MatchStrength.LOCKED;
                     }
                 }
                 catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
@@ -2020,7 +2034,7 @@ public class ScraperFX extends Application {
             public void handle(long now) {
                 List<String> messages = new ArrayList<>();
                 messageQueue.drainTo(messages);
-                messages.forEach(msg -> messageArea.appendText("\n" + msg));
+                messages.forEach(msg -> messageArea.appendText(msg + "\n"));
             }
         };
         

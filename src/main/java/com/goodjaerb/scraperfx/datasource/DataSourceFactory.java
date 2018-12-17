@@ -11,11 +11,10 @@ package com.goodjaerb.scraperfx.datasource;
  */
 public class DataSourceFactory {
     public enum SourceAgent {
-        THEGAMESDB_LEGACY("com.goodjaerb.scraperfx.datasource.impl.GamesDbLegacySource"),
-//        ARCADE("com.goodjaerb.scraperfx.datasource.impl.ArcadeSource"),
         ARCADE_ITALIA("com.goodjaerb.scraperfx.datasource.impl.ArcadeItaliaSource"),
+        MAMEDB("com.goodjaerb.scraperfx.datasource.impl.MameDbSource"),
         SCREEN_SCRAPER("com.goodjaerb.scraperfx.datasource.impl.ScreenScraperSource"),
-        MAMEDB("com.goodjaerb.scraperfx.datasource.impl.MameDbSource");
+        THEGAMESDB_LEGACY("com.goodjaerb.scraperfx.datasource.impl.GamesDbLegacySource");
         
         private final String className;
         private DataSource dataSource;

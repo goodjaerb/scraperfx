@@ -66,37 +66,17 @@ public class MameDbSource implements DataSource {
                 data.metaName = m.group(1).replace("&amp;", "&").replace("&#039;", "'");
                 data.images = new ArrayList<>();
                 
-//                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/decals/" + game.matchedName + "\\.png).*\"></img>");
                 p = Pattern.compile("<img src='/(snap/.*\\.png)' alt='Snapshot:.*'/>");
                 m = p.matcher(result);
                 if(m.find()) {
                     data.images.add(new Image("game", BASE_URL + m.group(1), "png", true));
                 }
                 
-//                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/titles/" + game.matchedName + "\\.png).*\"></img>");
                 p = Pattern.compile("<img src='/(titles/.*\\.png)' alt='Title:.*'/>");
                 m = p.matcher(result);
                 if(m.find()) {
                     data.images.add(new Image("title", BASE_URL + m.group(1), "png", true));
                 }
-                
-//                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/ingames/" + game.matchedName + "\\.png).*\"></img>");
-//                m = p.matcher(result);
-//                if(m.find()) {
-//                    data.images.add(new Image("game", m.group(1), true));
-//                }
-//                
-//                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/marquees/" + game.matchedName + "\\.png).*\"></img>");
-//                m = p.matcher(result);
-//                if(m.find()) {
-//                    data.images.add(new Image("marquee", m.group(1), true));
-//                }
-//                
-//                p = Pattern.compile("src_full=\"(http://adb.arcadeitalia.net/media/mame.current/flyers/" + game.matchedName + "\\.png).*\"></img>");
-//                m = p.matcher(result);
-//                if(m.find()) {
-//                    data.images.add(new Image("flyer", m.group(1), true));
-//                }
             }
             
             return data;

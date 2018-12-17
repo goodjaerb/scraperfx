@@ -56,6 +56,8 @@ public class ArcadeItaliaSource implements DataSource {
                 metadata.metaName = data.result[0].title;
                 metadata.players = String.valueOf(data.result[0].players);
                 metadata.metaGenre = data.result[0].genre;
+                metadata.metaReleaseDate = data.result[0].year;
+                metadata.metaDeveloper = data.result[0].manufacturer;
                 
                 if(notNullNorEmpty(data.result[0].youtube_video_id)) {
                     metadata.videoembed = "https://www.youtube.com/embed/" + data.result[0].youtube_video_id;

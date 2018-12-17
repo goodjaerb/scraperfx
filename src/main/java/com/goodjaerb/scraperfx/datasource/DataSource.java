@@ -22,11 +22,4 @@ public interface DataSource {
     public default String[] getVideoLinks(String systemName, Game game) {
         return null;
     }
-//    public default String getVideoDownload(String systemName, Game game) {
-//        return null;
-//    }
-    
-//    public default String getVideoEmbed(String systemName, Game game) {
-//        return null;
-//    }
 }

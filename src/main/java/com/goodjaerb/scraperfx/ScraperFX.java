@@ -129,175 +129,104 @@ public class ScraperFX extends Application {
     private static SystemSettings   settings;
     private static String           currentSystemName;
     
-    private final ListView<String> systemList;
+    private final ListView<String>                          systemList = new ListView<>();
+    private final TabPane                                   tabPane = new TabPane();
+    private final Tab                                       settingsTab = new Tab("Settings");
+    private final ToggleGroup                               scrapeTypeGroup = new ToggleGroup();
+    private final RadioButton                               scrapeAsConsoleButton = new RadioButton("Console");
+    private final RadioButton                               scrapeAsArcadeButton = new RadioButton("Arcade");
+    private final ComboBox<DataSourceFactory.SourceAgent>   arcadeScraperBox = new ComboBox<>();
+    private final ComboBox<String>                          consoleSelectComboBox = new ComboBox<>();
+    private final TextField                                 gameSourceField = new TextField();
+    private final Button                                    gameSourceBrowseButton = new Button("...");
+    private final TextField                                 filenameRegexField = new TextField();
+    private final TextField                                 ignoreRegexField = new TextField();
+    private final CheckBox                                  unmatchedOnlyCheckBox = new CheckBox("Don't Re-match matched files");
+    private final CheckBox                                  refreshMetaDataCheckBox = new CheckBox("Refresh Matched Metadata");
+    private final ToggleGroup                               outputMediaGroup = new ToggleGroup();
+    private final RadioButton                               outputMediaToUserDirButton = new RadioButton("Output media to User Dir");
+    private final RadioButton                               outputMediaToRomsDirButton = new RadioButton("Output media to Roms Dir");
     
-    private final TabPane tabPane;
+    private final Tab                   gamesTab = new Tab("Games");
+    private final BorderPane            gamesPane = new BorderPane();
+    private final ScrollPane            imagesScroll = new ScrollPane();
+    private final CheckBox              favoriteCheckBox = new CheckBox("Favorite");
+    private final CheckBox              lockImagesCheckBox = new CheckBox("Lock Images");
+    private final ToggleGroup           sortByGroup = new ToggleGroup();
+    private final RadioButton           sortByMetaNameRadioButton = new RadioButton("Sort By Game Name");
+    private final RadioButton           sortByFileNameRadioButton = new RadioButton("Sort By File Name");
+    private final CheckBox              hideIgnoredCheckBox = new CheckBox("Hide Ignored Items");
+    private final CheckBox              showOnlyNonMatchedCheckBox = new CheckBox("Show Only Non-Matched Items");
+    private final CheckBox              hideLockedCheckBox = new CheckBox("Hide Locked Items");
+    private final CheckBox              showOnlyLockedCheckBox = new CheckBox("Show Only Locked Items");
+    private final TextField             filterField = new TextField();
+    private final ObservableList<Game>  observableGamesList = FXCollections.observableArrayList();
+    private final SortedList<Game>      sortedGamesList = new SortedList<>(observableGamesList);
+    private final FilteredList<Game>    filteredGamesList = new FilteredList<>(sortedGamesList, getHideIgnoredPredicate());
+    private final ListView<Game>        gamesListView = new ListView<>(filteredGamesList);
+    private final TextField             matchedNameField = new TextField();
+    private final Button                matchedNameBrowseButton = new Button("...");
+    private final Button                matchedNameClearButton = new Button("X");
+    private final CheckBox              lockMatchedNameCheckBox = new CheckBox("Lock");
+    private final TextField             metaNameField = new TextField();
+    private final CheckBox              lockNameCheckBox = new CheckBox("Lock");
+    private final TextArea              metaDescArea = new TextArea();
+    private final CheckBox              lockDescCheckBox = new CheckBox("Lock");
+    private final TextField             metaRatingField = new TextField();
+    private final CheckBox              lockRatingCheckBox = new CheckBox("Lock");
+    private final TextField             metaReleaseDateField = new TextField();
+    private final CheckBox              lockReleaseDateCheckBox = new CheckBox("Lock");
+    private final TextField             metaDeveloperField = new TextField();
+    private final CheckBox              lockDeveloperCheckBox = new CheckBox("Lock");
+    private final TextField             metaPublisherField = new TextField();
+    private final CheckBox              lockPublisherCheckBox = new CheckBox("Lock");
+    private final TextField             metaGenreField = new TextField();
+    private final CheckBox              lockGenreCheckBox = new CheckBox("Lock");
+    private final TextField             playersField = new TextField();
+    private final CheckBox              lockPlayersCheckBox = new CheckBox("Lock");
+    private final TextField             videoEmbedField = new TextField();
+    private final CheckBox              lockVideoEmbedCheckBox = new CheckBox("Lock");
+    private final TextField             videoDownloadField = new TextField();
+    private final CheckBox              lockVideoDownloadCheckBox = new CheckBox("Lock");
     
-    private final Tab                                       settingsTab;
-    private final ToggleGroup                               scrapeTypeGroup;
-    private final RadioButton                               scrapeAsConsoleButton;
-    private final RadioButton                               scrapeAsArcadeButton;
-    private final ComboBox<DataSourceFactory.SourceAgent>   arcadeScraperBox;
-    private final ComboBox<String>                          consoleSelectComboBox;
-    private final TextField                                 gameSourceField;
-    private final Button                                    gameSourceBrowseButton;
-    private final TextField                                 filenameRegexField;
-    private final TextField                                 ignoreRegexField;
-    private final CheckBox                                  unmatchedOnlyCheckBox;
-    private final CheckBox                                  refreshMetaDataCheckBox;
-    private final ToggleGroup                               outputMediaGroup;
-    private final RadioButton                               outputMediaToUserDirButton;
-    private final RadioButton                               outputMediaToRomsDirButton;
+    private final Button saveButton = new Button("Save");
+    private final Button applyDatFileButton = new Button("Apply DAT File");
+//    private final Button scanButton = new Button("Scan Now");;
+    private final Button refreshFileListButton = new Button("Refresh File List");
+    private final Button deleteSystemButton = new Button("Delete System");
+    private final Button outputToGamelistButton = new Button("Output to Gamelist.xml");
     
-    private final Tab                   gamesTab;
-    private final BorderPane            gamesPane;
-    private final ScrollPane            imagesScroll;
-    private final CheckBox              favoriteCheckBox;
-    private final CheckBox              lockImagesCheckBox;
-    private final ToggleGroup           sortByGroup;
-    private final RadioButton           sortByMetaNameRadioButton;
-    private final RadioButton           sortByFileNameRadioButton;
-    private final CheckBox              hideIgnoredCheckBox;
-    private final CheckBox              showOnlyNonMatchedCheckBox;
-    private final CheckBox              hideLockedCheckBox;
-    private final CheckBox              showOnlyLockedCheckBox;
-    private final TextField             filterField;
-    private final ObservableList<Game>  observableGamesList;
-    private final SortedList<Game>      sortedGamesList;
-    private final FilteredList<Game>    filteredGamesList;
-    private final ListView<Game>        gamesListView;
-    private final TextField             matchedNameField;
-    private final Button                matchedNameBrowseButton;
-    private final Button                matchedNameClearButton;
-    private final CheckBox              lockMatchedNameCheckBox;
-    private final TextField             metaNameField;
-    private final CheckBox              lockNameCheckBox;
-    private final TextArea              metaDescArea;
-    private final CheckBox              lockDescCheckBox;
-    private final TextField             metaRatingField;
-    private final CheckBox              lockRatingCheckBox;
-    private final TextField             metaReleaseDateField;
-    private final CheckBox              lockReleaseDateCheckBox;
-    private final TextField             metaDeveloperField;
-    private final CheckBox              lockDeveloperCheckBox;
-    private final TextField             metaPublisherField;
-    private final CheckBox              lockPublisherCheckBox;
-    private final TextField             metaGenreField;    
-    private final CheckBox              lockGenreCheckBox;
-    private final TextField             playersField;
-    private final CheckBox              lockPlayersCheckBox;
-    private final TextField             videoEmbedField;
-    private final CheckBox              lockVideoEmbedCheckBox;
-    private final TextField             videoDownloadField;
-    private final CheckBox              lockVideoDownloadCheckBox;
+    private final AtomicBoolean isScanning = new AtomicBoolean(false);
     
-    private final Button saveButton;
-    private final Button applyDatFileButton;
-//    private final Button scanButton;
-    private final Button refreshFileListButton;
-    private final Button deleteSystemButton;
-    private final Button outputToGamelistButton;
-    
-    private final AtomicBoolean isScanning;
-    
-    private final List<ImageLoadingTask> imageTaskList;
+    private final List<ImageLoadingTask> imageTaskList = new ArrayList<>();
     
     private GameData gamedata;
     private Scene rootScene;
     private Game currentGame;
     
     public ScraperFX() {
-        systemList = new ListView<>();
-        
-        tabPane = new TabPane();
-        
-        settingsTab = new Tab("Settings");
-        scrapeTypeGroup = new ToggleGroup();
-        scrapeAsConsoleButton = new RadioButton("Console");
         scrapeAsConsoleButton.setToggleGroup(scrapeTypeGroup);
         scrapeAsConsoleButton.setSelected(true);
-        scrapeAsArcadeButton = new RadioButton("Arcade");
         scrapeAsArcadeButton.setToggleGroup(scrapeTypeGroup);
-        arcadeScraperBox = new ComboBox<>();
-        consoleSelectComboBox = new ComboBox<>();
+        
         consoleSelectComboBox.setEditable(false);
-        gameSourceField = new TextField();
+        
         gameSourceField.setEditable(false);
-        gameSourceBrowseButton = new Button("...");
-        filenameRegexField = new TextField();
-        ignoreRegexField = new TextField();
-        unmatchedOnlyCheckBox = new CheckBox("Don't Re-match matched files");
-        refreshMetaDataCheckBox = new CheckBox("Refresh Matched Metadata");
-        outputMediaGroup = new ToggleGroup();
-        outputMediaToUserDirButton = new RadioButton("Output media to User Dir");
+        
         outputMediaToUserDirButton.setToggleGroup(outputMediaGroup);
         outputMediaToUserDirButton.setSelected(true);
-        outputMediaToRomsDirButton = new RadioButton("Output media to Roms Dir");
         outputMediaToRomsDirButton.setToggleGroup(outputMediaGroup);
         
-        gamesTab = new Tab("Games");
-        gamesPane = new BorderPane();
-        imagesScroll = new ScrollPane();
-        
-        sortByGroup = new ToggleGroup();
-        sortByMetaNameRadioButton = new RadioButton("Sort By Game Name");
         sortByMetaNameRadioButton.setToggleGroup(sortByGroup);
-        sortByFileNameRadioButton = new RadioButton("Sort By File Name");
         sortByFileNameRadioButton.setToggleGroup(sortByGroup);
         
-        hideIgnoredCheckBox = new CheckBox("Hide Ignored Items");
-        showOnlyNonMatchedCheckBox = new CheckBox("Show Only Non-Matched Items");
-        hideLockedCheckBox = new CheckBox("Hide Locked Items");
-        showOnlyLockedCheckBox = new CheckBox("Show Only Locked Items");
-        filterField = new TextField();
-        
-        observableGamesList = FXCollections.observableArrayList();
-        sortedGamesList = new SortedList<>(observableGamesList);
-        filteredGamesList = new FilteredList<>(sortedGamesList, getHideIgnoredPredicate());
-        gamesListView = new ListView<>(filteredGamesList);
         gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
-        matchedNameField = new TextField();
+        
         matchedNameField.setEditable(false);
-        matchedNameBrowseButton = new Button("...");
-        matchedNameClearButton = new Button("X");
         matchedNameClearButton.setStyle("-fx-font-weight: bold");
         matchedNameClearButton.setTextFill(Color.RED);
-        metaNameField = new TextField();
-        metaDescArea = new TextArea();
+        
         metaDescArea.setWrapText(true);
-        metaRatingField = new TextField();
-        metaReleaseDateField = new TextField();
-        metaDeveloperField = new TextField();
-        metaPublisherField = new TextField();
-        metaGenreField = new TextField();
-        playersField = new TextField();
-        videoEmbedField = new TextField();
-        videoDownloadField = new TextField();
-        
-        lockMatchedNameCheckBox = new CheckBox("Lock");
-        lockNameCheckBox = new CheckBox("Lock");
-        lockDescCheckBox = new CheckBox("Lock");
-        lockRatingCheckBox = new CheckBox("Lock");
-        lockReleaseDateCheckBox = new CheckBox("Lock");
-        lockDeveloperCheckBox = new CheckBox("Lock");
-        lockPublisherCheckBox = new CheckBox("Lock");
-        lockGenreCheckBox = new CheckBox("Lock");
-        lockPlayersCheckBox = new CheckBox("Lock");
-        lockVideoEmbedCheckBox = new CheckBox("Lock");
-        lockVideoDownloadCheckBox = new CheckBox("Lock");
-        lockImagesCheckBox = new CheckBox("Lock Images");
-        favoriteCheckBox = new CheckBox("Favorite");
-        
-        saveButton = new Button("Save");
-        applyDatFileButton = new Button("Apply DAT File");
-        refreshFileListButton = new Button("Refresh File List");
-//        scanButton = new Button("Scan Now");
-        deleteSystemButton = new Button("Delete System");
-        outputToGamelistButton = new Button("Output to Gamelist.xml");
-        
-        isScanning = new AtomicBoolean(false);
-        
-        imageTaskList = new ArrayList<>();
     }
     
     @Override

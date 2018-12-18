@@ -47,9 +47,10 @@ public class MameDbSource implements DataSource {
         try {
             final MetaData data = new MetaData();
             
+            String url = BASE_URL + "game/" + game.matchedName;
             Logger.getLogger(MameDbSource.class.getName()).log(Level.INFO, "Connecting to ''{0}''.", url);
                 
-            conn = (HttpURLConnection)new URL(BASE_URL + "game/" + game.matchedName).openConnection();
+            conn = (HttpURLConnection)new URL(url).openConnection();
             
             reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             

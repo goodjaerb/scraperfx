@@ -36,6 +36,7 @@ import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
 import java.util.function.Consumer;
+import javafx.application.Platform;
 import javafx.stage.Window;
 
 /**
@@ -184,7 +185,7 @@ public class ESOutput {
             
             OutputTask task = new OutputTask(message -> {
                 System.out.println(message);
-                messageArea.queueMessage(message);
+                Platform.runLater(() -> messageArea.queueMessage(message));
             }, games, outputPath, imagesPath, videoPath);
 
             task.progressProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {

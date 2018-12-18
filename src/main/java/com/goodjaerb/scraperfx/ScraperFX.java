@@ -2018,7 +2018,7 @@ public class ScraperFX extends Application {
             
             ScanTask task = new ScanTask(message -> {
                 System.out.println(message);
-                messageArea.queueMessage(message);
+                Platform.runLater(() -> messageArea.queueMessage(message));
             }, gamesPath, selectedGames);
             
             task.setOnSucceeded(e -> {

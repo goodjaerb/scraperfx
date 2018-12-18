@@ -98,6 +98,7 @@ import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
@@ -1504,6 +1505,7 @@ public class ScraperFX extends Application {
             try {
                 long totalFiles = paths.size();
                 long fileCount = 0;
+                long startTime = System.nanoTime();
                 for(Path p : paths) {
                     if(isCancelled()) {
                         break;
@@ -1515,7 +1517,6 @@ public class ScraperFX extends Application {
                         localGame = new Game(filename);
                     }
                     
-                    System.out.println("============================================================\nBEGINNING SCAN OF '" + localGame.fileName + "'");
                     if(localGame.strength == Game.MatchStrength.IGNORE) {
                         statusConsumer.accept("Ignoring '" + localGame.fileName + "' due to PRESET IGNORE flag.");
                     }
@@ -1570,7 +1571,6 @@ public class ScraperFX extends Application {
                             
                             if(skipMatching) {
                                 if(!refreshMatchedGame) {
-                                    System.out.println("ENDING SCAN OF '" + localGame.fileName + "'\n============================================================");
                                     continue;
                                 }
                             }
@@ -1823,9 +1823,9 @@ public class ScraperFX extends Application {
                         observableGamesList.add(g);
                         gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(g));
                     });
-                    System.out.println("ENDING SCAN OF '" + localGame.fileName + "'\n============================================================");
                 }
                 isScanning.set(false);
+                statusConsumer.accept(Duration.ofNanos(System.nanoTime() - startTime).toString());
             }
             catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                 Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
@@ -2016,10 +2016,7 @@ public class ScraperFX extends Application {
         public ScanProgressDialog(Path gamesPath, List<Game> selectedGames, Window parentWindow) {
             super();
             
-            ScanTask task = new ScanTask(message -> {
-                System.out.println(message);
-                Platform.runLater(() -> messageArea.queueMessage(message));
-            }, gamesPath, selectedGames);
+            ScanTask task = new ScanTask(message -> Platform.runLater(() -> messageArea.queueMessage(message)), gamesPath, selectedGames);
             
             task.setOnSucceeded(e -> {
                 messageArea.queueMessage("Scan complete!");

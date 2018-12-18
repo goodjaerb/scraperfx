@@ -76,7 +76,6 @@ public class ScreenScraperSource implements DataSource {
     
     @Override
     public String[] getVideoLinks(String systemName, Game game) {
-        System.out.println("Getting video links for '" + game.matchedName + "'.");
         try(Reader xmlReader = getGameXML(systemName, game.matchedName)) {
             if(xmlReader != null) {
                 Xmappr xm = new Xmappr(ScreenScraperXmlGameData.class);

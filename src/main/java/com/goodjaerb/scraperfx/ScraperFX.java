@@ -101,6 +101,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javafx.collections.FXCollections;
@@ -200,11 +201,14 @@ public class ScraperFX extends Application {
     
     private final List<ImageLoadingTask> imageTaskList = new ArrayList<>();
     
-    private GameData gamedata;
-    private Scene rootScene;
+    private final GameData gamedata = new GameData();
+    private final Scene rootScene;
     private Game currentGame;
     
     public ScraperFX() {
+        StackPane root = new StackPane();
+        rootScene = new Scene(root);
+        
         scrapeAsConsoleButton.setToggleGroup(scrapeTypeGroup);
         scrapeAsConsoleButton.setSelected(true);
         scrapeAsArcadeButton.setToggleGroup(scrapeTypeGroup);
@@ -227,10 +231,7 @@ public class ScraperFX extends Application {
         matchedNameClearButton.setTextFill(Color.RED);
         
         metaDescArea.setWrapText(true);
-    }
-    
-    @Override
-    public void start(Stage primaryStage) {
+        
         /*
         * System List
         */
@@ -290,7 +291,7 @@ public class ScraperFX extends Application {
         });
         
         gameSourceBrowseButton.setOnAction((e) -> {
-            File dir = Chooser.getDir("Game Source Directory", gameSourceBrowseButton.getScene().getWindow());
+            File dir = Chooser.getDir("Game Source Directory", rootScene.getWindow());
             if(dir != null) {
                 gameSourceField.setText(dir.getPath());
                 getCurrentSettings().romsDir = dir.getPath();
@@ -361,26 +362,6 @@ public class ScraperFX extends Application {
         selectConsoleBox.setPadding(new Insets(7.));
         selectConsoleBox.getChildren().add(new Label("Select Console:"));
         selectConsoleBox.getChildren().add(consoleSelectComboBox);
-        
-        new Thread(() -> {
-            try {
-                List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemNames();
-                Platform.runLater(() -> {
-                    consoleSelectComboBox.getItems().clear();
-                    consoleSelectComboBox.getItems().addAll(consoles);
-                    com.goodjaerb.scraperfx.settings.System currentSystem = getCurrentSettings();
-                    if(currentSystem != null && !currentSystem.scrapeAsArcade) {
-                        consoleSelectComboBox.getSelectionModel().select(currentSystem.scrapeAs);
-                    }
-                    else {
-                        consoleSelectComboBox.getSelectionModel().select(0);
-                    }
-                });
-            }
-            catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }).start();
         
         VBox settingsPane = new VBox();
         settingsPane.getChildren().addAll(
@@ -734,11 +715,33 @@ public class ScraperFX extends Application {
         HBox mainBox = new HBox(box2, rightPane);
         mainBox.setSpacing(7.);
         
-        StackPane root = new StackPane(mainBox);
         StackPane.setMargin(mainBox, new Insets(7.));
         
-        rootScene = new Scene(root);
-
+        root.getChildren().add(mainBox);
+    }
+    
+    @Override
+    public void start(Stage primaryStage) {
+        new Thread(() -> {
+            try {
+                List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemNames();
+                Platform.runLater(() -> {
+                    consoleSelectComboBox.getItems().clear();
+                    consoleSelectComboBox.getItems().addAll(consoles);
+                    com.goodjaerb.scraperfx.settings.System currentSystem = getCurrentSettings();
+                    if(currentSystem != null && !currentSystem.scrapeAsArcade) {
+                        consoleSelectComboBox.getSelectionModel().select(currentSystem.scrapeAs);
+                    }
+                    else {
+                        consoleSelectComboBox.getSelectionModel().select(0);
+                    }
+                });
+            }
+            catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }).start();
+        
         try {
             readGameData();
             readSettings();
@@ -1328,15 +1331,16 @@ public class ScraperFX extends Application {
             charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
             
             try(final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
-                gamedata = (GameData)xm.fromXML(reader);
+//                gamedata = (GameData)xm.fromXML(reader);
+                gamedata.setTo((GameData)xm.fromXML(reader));
             }
             catch(IOException ex) {
                 throw ex;
             }
         }
-        else {
-            gamedata = new GameData();
-        }
+//        else {
+//            gamedata = new GameData();
+//        }
     }
     
     private void writeSettings() throws IOException {
@@ -1502,14 +1506,15 @@ public class ScraperFX extends Application {
         @Override
         protected Void call() throws Exception {
             isScanning.set(true);
-            try {
-                long totalFiles = paths.size();
-                long fileCount = 0;
+                final long totalFiles = paths.size();
+//                long fileCount = 0;
+                AtomicLong fileCount = new AtomicLong(0);
                 long startTime = System.nanoTime();
-                for(Path p : paths) {
-                    if(isCancelled()) {
-                        break;
-                    }
+//                for(Path p : paths) {
+                paths.parallelStream().forEach(p -> {
+//                    if(isCancelled()) {
+//                        break;
+//                    }
 
                     String filename = p.getFileName().toString();
                     Game localGame = getGame(new Game(filename));
@@ -1535,285 +1540,292 @@ public class ScraperFX extends Application {
                         }
 
                         if(!ignore) {
-                            boolean refreshMatchedGame = false;
-                            boolean skipMatching = false;
-                            boolean startedUnmatched = false;
-                            
-                            if(localGame.strength == Game.MatchStrength.NO_MATCH) {
-                                startedUnmatched = true;
-                            }
-                            
-                            if(localGame.strength == Game.MatchStrength.LOCKED) {
-                                skipMatching = true;
-                                statusConsumer.accept("Not matching '" + localGame.fileName + "' because it is LOCKED.");
-                            }
-                            else if(unmatchedOnlyCheckBox.isSelected() 
-                                    && localGame.strength != Game.MatchStrength.IGNORE && localGame.strength != Game.MatchStrength.NO_MATCH) {
-                                // this game is already matched and we only want unmatched games.
-                                skipMatching = true;
+                            try {
+                                boolean refreshMatchedGame = false;
+                                boolean skipMatching = false;
+                                boolean startedUnmatched = false;
 
-                                statusConsumer.accept("Not matching '" + localGame.fileName + "' because it is ALREADY MATCHED.");
-                            }
-                            else {
-                                statusConsumer.accept("Will attempt to match '" + localGame.fileName + "'.");
-                            }
-                            
-                            if(!startedUnmatched && !refreshMetaDataCheckBox.isDisabled()) {
-                                if(refreshMetaDataCheckBox.isSelected()) {
-                                    refreshMatchedGame = true;
+                                if(localGame.strength == Game.MatchStrength.NO_MATCH) {
+                                    startedUnmatched = true;
+                                }
 
-                                    statusConsumer.accept("Refreshing metadata for '" + localGame.fileName + "'.");
+                                if(localGame.strength == Game.MatchStrength.LOCKED) {
+                                    skipMatching = true;
+                                    statusConsumer.accept("Not matching '" + localGame.fileName + "' because it is LOCKED.");
+                                }
+                                else if(unmatchedOnlyCheckBox.isSelected() 
+                                        && localGame.strength != Game.MatchStrength.IGNORE && localGame.strength != Game.MatchStrength.NO_MATCH) {
+                                    // this game is already matched and we only want unmatched games.
+                                    skipMatching = true;
+
+                                    statusConsumer.accept("Not matching '" + localGame.fileName + "' because it is ALREADY MATCHED.");
                                 }
                                 else {
-                                    statusConsumer.accept("NOT refreshing metadata for '" + localGame.fileName + "' due to check-box (un)selection.");
+                                    statusConsumer.accept("Will attempt to match '" + localGame.fileName + "'.");
                                 }
-                            }
-                            
-                            if(skipMatching) {
-                                if(!refreshMatchedGame) {
-                                    continue;
-                                }
-                            }
 
-                            String noExtName = filename.substring(0, filename.lastIndexOf(".")).toLowerCase();
-                            if(scrapeTypeGroup.getSelectedToggle() == scrapeAsArcadeButton) {
-                                if(!skipMatching) {
-                                    localGame.matchedName = noExtName;
-                                }
-                                    
-                                if(refreshMatchedGame || startedUnmatched) {
-                                    MetaData newMetaData = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
-                                    
-                                    if(newMetaData != null) {
-                                        if(!skipMatching) {
-                                            statusConsumer.accept("Matched '" + filename + "' to game '" + newMetaData.metaName + "'.");
-                                        }
+                                if(!startedUnmatched && !refreshMetaDataCheckBox.isDisabled()) {
+                                    if(refreshMetaDataCheckBox.isSelected()) {
+                                        refreshMatchedGame = true;
+
+                                        statusConsumer.accept("Refreshing metadata for '" + localGame.fileName + "'.");
                                     }
                                     else {
-                                        localGame.matchedName = null;
-                                        if(localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
-                                            newMetaData = new MetaData();
-                                            newMetaData.setMetaData(localGame.metadata);
-                                            statusConsumer.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
-                                        }
-                                        else {
-                                            statusConsumer.accept("Could not match '" + filename + "' to a game.");
-                                        }
-                                    }
-                                    
-                                    if(newMetaData != null) {
-                                        if(localGame.metadata != null && localGame.metadata.favorite) {
-                                            newMetaData.favorite = true;
-                                        }
-                                        if(localGame.strength != Game.MatchStrength.LOCKED) {
-                                            localGame.strength = Game.MatchStrength.STRONG;
-                                        }
-                                        localGame.updateMetaData(newMetaData);
-                                        statusConsumer.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                        statusConsumer.accept("NOT refreshing metadata for '" + localGame.fileName + "' due to check-box (un)selection.");
                                     }
                                 }
-                            }
-                            else {
-                                if(!skipMatching) {
-                                    if(getCurrentSettings().substringRegex != null && !"".equals(getCurrentSettings().substringRegex)) {
-                                        Pattern pattern = Pattern.compile(".*" + getCurrentSettings().substringRegex + ".*");
-                                        Matcher m = pattern.matcher(noExtName);
-                                        if(m.matches()) {
-                                            for(int i = 1; i <= m.groupCount(); i++) {
-                                                noExtName = noExtName.replaceAll(m.group(i), "");
-                                            }
-                                        }
+
+                                if(skipMatching) {
+                                    if(!refreshMatchedGame) {
+                                        return;
+    //                                    continue;
                                     }
-                                    noExtName = noExtName.replaceAll(" - ", " ");
-                                    noExtName = noExtName.replaceAll("\\(.*\\)", "");
-                                    noExtName = noExtName.replaceAll("\\[.*\\]", "");
-                                    noExtName = noExtName.replaceAll(" and ", " ");
-                                    noExtName = noExtName.replaceAll("\\p{Punct}", "");
-                                    noExtName = noExtName.trim();
+                                }
 
-                                    boolean hundredpercentmatch = false;
-                                    List<String> hitNames = new ArrayList<>();
-                                    List<Double> hitPercents = new ArrayList<>();
-                                    List<Double> remoteHitPercents = new ArrayList<>();
-                                    int mostPartsHit = 0;
-                                    boolean hitPartIsNumber = false;
-
-                                    List<String> allSysGames = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
-                                    for(String gameName : allSysGames) {
-                                        String lowerCaseName = gameName.toLowerCase().replaceAll(" - ", " ");//gameName.toLowerCase().replaceAll("'", "");
-                                        lowerCaseName = lowerCaseName.replaceAll("\\(.*\\)", "");
-                                        lowerCaseName = lowerCaseName.replaceAll("\\[.*\\]", "");
-                                        lowerCaseName = lowerCaseName.replaceAll(" and ", " ");
-                                        lowerCaseName = lowerCaseName.replaceAll("\\p{Punct}", "");
-                                        lowerCaseName = lowerCaseName.trim();
-
-                                        if(noExtName.equals(lowerCaseName)) {
-                                            //100% match, so pretty sure, right?
-                                            localGame.matchedName = gameName;// + " (FULL MATCH)";
-                                            localGame.strength = Game.MatchStrength.STRONG;
-                                            hundredpercentmatch = true;
-                                            break;
-                                        }
-                                        else {
-                                            //find based on parts from both local filename and database names.
-                                            String[] localParts = noExtName.split("\\s");
-                                            String[] split = lowerCaseName.split("\\s");
-
-                                            int hits = 0;
-                                            int hitLength = 0;
-                                            for(String split1 : split) {
-                                                if(!"".equals(split1)) {
-                                                    for(int q = 0; q < localParts.length; q++) {
-                                                        if(!"".equals(localParts[q])) {
-                                                            if(isNumeral(split1)) {
-                                                                // 1-15, either digits or roman.
-                                                                if(localParts[q].equals(asDigit(split1)) || localParts[q].equals(asRoman(split1))) {
-                                                                    hits++;
-                                                                    hitLength += split1.length();
-                                                                    hitPartIsNumber = true;//needed later if this is the only part hit.
-                                                                    localParts[q] = "";//piece matched, clear it out to prevent rematching.
-                                                                    break;
-                                                                }
-                                                            }
-                                                            else {
-                                                                if(isInteger(localParts[q]) || isInteger(split1)) {
-                                                                    // i don't want to do contains on numbers because weird things can happen
-                                                                    // where a filename with a 000 in it (for whatever reason) will match
-                                                                    // any game with say a 2000 in the title (happens a lot).
-                                                                    if(localParts[q].equals(split1)) {
-                                                                        hits++;
-                                                                        hitLength += split1.length();
-                                                                        localParts[q] = "";//piece matched, clear it out to prevent rematching.
-                                                                        break;
-                                                                    }
-                                                                }
-                                                                else if(localParts[q].contains(split1)) {
-                                                                    hits++;
-                                                                    hitLength += split1.length();
-                                                                    localParts[q] = localParts[q].replace(split1, ""); //piece matched, clear it out to prevent rematching.
-                                                                    break;
-                                                                }
-                                                                else if(split1.contains(localParts[q])) {
-                                                                    hits++;
-                                                                    hitLength += localParts[q].length();
-                                                                    localParts[q] = "";
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            if(hits > 0) {
-                                                if(hits > mostPartsHit) {
-                                                    mostPartsHit = hits;
-                                                }
-                                                hitNames.add(gameName);
-                                                hitPercents.add((double)hitLength / (double)noExtName.replaceAll("\\s", "").length());
-                                                remoteHitPercents.add((double)hitLength / (double)lowerCaseName.length());
-                                            }
-                                        }
+                                String noExtName = filename.substring(0, filename.lastIndexOf(".")).toLowerCase();
+                                if(scrapeTypeGroup.getSelectedToggle() == scrapeAsArcadeButton) {
+                                    if(!skipMatching) {
+                                        localGame.matchedName = noExtName;
                                     }
 
-                                    if(!hundredpercentmatch && !hitNames.isEmpty()) {
-                                        if(mostPartsHit == 1 && hitPartIsNumber) {
-                                            // i hope this will solve matching non-existing games with sequels of other games just because
-                                            // they both have a number in them.
+                                    if(refreshMatchedGame || startedUnmatched) {
+                                        MetaData newMetaData = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
 
-                                            // do nothing;
+                                        if(newMetaData != null) {
+                                            if(!skipMatching) {
+                                                statusConsumer.accept("Matched '" + filename + "' to game '" + newMetaData.metaName + "'.");
+                                            }
                                         }
                                         else {
-                                            int index = -1;
-                                            double highest = -1;
-                                            List<String> tieNames = new ArrayList<>();
-
-                                            for(int i = 0; i < hitPercents.size(); i++) {
-                                                if(hitPercents.get(i) > highest) {
-                                                    tieNames.clear();
-                                                    tieNames.add(hitNames.get(i));
-                                                    highest = hitPercents.get(i);
-                                                    index = i;
-                                                }
-                                                else if(hitPercents.get(i) == highest) {
-                                                    tieNames.add(hitNames.get(i));
-                                                }
-                                            }
-
-                                            if(highest < .25) {
-                                                localGame.matchedName = null;
-                                                localGame.strength = Game.MatchStrength.LOW_PERCENTAGE;
-                                            }
-                                            else if(tieNames.size() < 2) {
-                                                localGame.matchedName = hitNames.get(index);// + " (" + (int)(100 * hitPercents.get(index)) + "%) " + "(r=" + (int)(100 * remoteHitPercents.get(index)) + ")";
-                                                localGame.strength = Game.MatchStrength.BEST_GUESS;
+                                            localGame.matchedName = null;
+                                            if(localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
+                                                newMetaData = new MetaData();
+                                                newMetaData.setMetaData(localGame.metadata);
+                                                statusConsumer.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
                                             }
                                             else {
-                                                //choose tiebreaker by percent used of remote name.
-                                                index = -1;
-                                                highest = -1;
-                                                for(int q = 0; q < tieNames.size(); q++) {
-                                                    if(remoteHitPercents.get(hitNames.indexOf(tieNames.get(q))) > highest) {
-                                                        highest = remoteHitPercents.get(hitNames.indexOf(tieNames.get(q)));
-                                                        index = q;
-                                                    }
-                                                }
-
-                                                localGame.matchedName = tieNames.get(index);// + " via tiebreak (" + (int)(100 * hitPercents.get(hitNames.indexOf(tieNames.get(index)))) + "%) " + "(r=" + (int)(100 * remoteHitPercents.get(hitNames.indexOf(tieNames.get(index)))) + ")";
-                                                localGame.strength = Game.MatchStrength.TIE_BREAKER;
+                                                statusConsumer.accept("Could not match '" + filename + "' to a game.");
                                             }
-                                        }
-                                    }
-                                    
-                                    if(localGame.matchedName == null) {
-                                        statusConsumer.accept("Could not match '" + filename + "' to a game.");
-                                    }
-                                    else {
-                                        statusConsumer.accept("Matched '" + filename + "' to game '" + localGame.matchedName + "'.");
-                                    }
-                                }
-
-                                if(localGame.matchedName != null) {
-                                    if(!skipMatching || refreshMatchedGame || startedUnmatched) {
-                                        //matched a game, get the rest of the data.
-                                        MetaData newMetaData = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
-
-                                        if(newMetaData == null && localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
-                                            newMetaData = new MetaData();
-                                            newMetaData.setMetaData(localGame.metadata);
-                                            
-                                            statusConsumer.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
                                         }
 
                                         if(newMetaData != null) {
                                             if(localGame.metadata != null && localGame.metadata.favorite) {
                                                 newMetaData.favorite = true;
                                             }
-                                            
-                                            final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
-                                            if(videoLinks != null) {
-                                                newMetaData.videodownload = videoLinks[0];
-                                                newMetaData.videoembed = videoLinks[1];
+                                            if(localGame.strength != Game.MatchStrength.LOCKED) {
+                                                localGame.strength = Game.MatchStrength.STRONG;
                                             }
-                                            
                                             localGame.updateMetaData(newMetaData);
                                             statusConsumer.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
                                         }
                                     }
+                                }
+                                else {
+                                    if(!skipMatching) {
+                                        if(getCurrentSettings().substringRegex != null && !"".equals(getCurrentSettings().substringRegex)) {
+                                            Pattern pattern = Pattern.compile(".*" + getCurrentSettings().substringRegex + ".*");
+                                            Matcher m = pattern.matcher(noExtName);
+                                            if(m.matches()) {
+                                                for(int i = 1; i <= m.groupCount(); i++) {
+                                                    noExtName = noExtName.replaceAll(m.group(i), "");
+                                                }
+                                            }
+                                        }
+                                        noExtName = noExtName.replaceAll(" - ", " ");
+                                        noExtName = noExtName.replaceAll("\\(.*\\)", "");
+                                        noExtName = noExtName.replaceAll("\\[.*\\]", "");
+                                        noExtName = noExtName.replaceAll(" and ", " ");
+                                        noExtName = noExtName.replaceAll("\\p{Punct}", "");
+                                        noExtName = noExtName.trim();
 
-                                    if(localGame.metadata == null) {
-                                        //error occurred while getting metadata.
-                                        statusConsumer.accept("Error connecting to thegamesdb.net. Please try again.");
+                                        boolean hundredpercentmatch = false;
+                                        List<String> hitNames = new ArrayList<>();
+                                        List<Double> hitPercents = new ArrayList<>();
+                                        List<Double> remoteHitPercents = new ArrayList<>();
+                                        int mostPartsHit = 0;
+                                        boolean hitPartIsNumber = false;
+
+                                        List<String> allSysGames = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
+                                        for(String gameName : allSysGames) {
+                                            String lowerCaseName = gameName.toLowerCase().replaceAll(" - ", " ");//gameName.toLowerCase().replaceAll("'", "");
+                                            lowerCaseName = lowerCaseName.replaceAll("\\(.*\\)", "");
+                                            lowerCaseName = lowerCaseName.replaceAll("\\[.*\\]", "");
+                                            lowerCaseName = lowerCaseName.replaceAll(" and ", " ");
+                                            lowerCaseName = lowerCaseName.replaceAll("\\p{Punct}", "");
+                                            lowerCaseName = lowerCaseName.trim();
+
+                                            if(noExtName.equals(lowerCaseName)) {
+                                                //100% match, so pretty sure, right?
+                                                localGame.matchedName = gameName;// + " (FULL MATCH)";
+                                                localGame.strength = Game.MatchStrength.STRONG;
+                                                hundredpercentmatch = true;
+                                                break;
+                                            }
+                                            else {
+                                                //find based on parts from both local filename and database names.
+                                                String[] localParts = noExtName.split("\\s");
+                                                String[] split = lowerCaseName.split("\\s");
+
+                                                int hits = 0;
+                                                int hitLength = 0;
+                                                for(String split1 : split) {
+                                                    if(!"".equals(split1)) {
+                                                        for(int q = 0; q < localParts.length; q++) {
+                                                            if(!"".equals(localParts[q])) {
+                                                                if(isNumeral(split1)) {
+                                                                    // 1-15, either digits or roman.
+                                                                    if(localParts[q].equals(asDigit(split1)) || localParts[q].equals(asRoman(split1))) {
+                                                                        hits++;
+                                                                        hitLength += split1.length();
+                                                                        hitPartIsNumber = true;//needed later if this is the only part hit.
+                                                                        localParts[q] = "";//piece matched, clear it out to prevent rematching.
+                                                                        break;
+                                                                    }
+                                                                }
+                                                                else {
+                                                                    if(isInteger(localParts[q]) || isInteger(split1)) {
+                                                                        // i don't want to do contains on numbers because weird things can happen
+                                                                        // where a filename with a 000 in it (for whatever reason) will match
+                                                                        // any game with say a 2000 in the title (happens a lot).
+                                                                        if(localParts[q].equals(split1)) {
+                                                                            hits++;
+                                                                            hitLength += split1.length();
+                                                                            localParts[q] = "";//piece matched, clear it out to prevent rematching.
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                    else if(localParts[q].contains(split1)) {
+                                                                        hits++;
+                                                                        hitLength += split1.length();
+                                                                        localParts[q] = localParts[q].replace(split1, ""); //piece matched, clear it out to prevent rematching.
+                                                                        break;
+                                                                    }
+                                                                    else if(split1.contains(localParts[q])) {
+                                                                        hits++;
+                                                                        hitLength += localParts[q].length();
+                                                                        localParts[q] = "";
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if(hits > 0) {
+                                                    if(hits > mostPartsHit) {
+                                                        mostPartsHit = hits;
+                                                    }
+                                                    hitNames.add(gameName);
+                                                    hitPercents.add((double)hitLength / (double)noExtName.replaceAll("\\s", "").length());
+                                                    remoteHitPercents.add((double)hitLength / (double)lowerCaseName.length());
+                                                }
+                                            }
+                                        }
+
+                                        if(!hundredpercentmatch && !hitNames.isEmpty()) {
+                                            if(mostPartsHit == 1 && hitPartIsNumber) {
+                                                // i hope this will solve matching non-existing games with sequels of other games just because
+                                                // they both have a number in them.
+
+                                                // do nothing;
+                                            }
+                                            else {
+                                                int index = -1;
+                                                double highest = -1;
+                                                List<String> tieNames = new ArrayList<>();
+
+                                                for(int i = 0; i < hitPercents.size(); i++) {
+                                                    if(hitPercents.get(i) > highest) {
+                                                        tieNames.clear();
+                                                        tieNames.add(hitNames.get(i));
+                                                        highest = hitPercents.get(i);
+                                                        index = i;
+                                                    }
+                                                    else if(hitPercents.get(i) == highest) {
+                                                        tieNames.add(hitNames.get(i));
+                                                    }
+                                                }
+
+                                                if(highest < .25) {
+                                                    localGame.matchedName = null;
+                                                    localGame.strength = Game.MatchStrength.LOW_PERCENTAGE;
+                                                }
+                                                else if(tieNames.size() < 2) {
+                                                    localGame.matchedName = hitNames.get(index);// + " (" + (int)(100 * hitPercents.get(index)) + "%) " + "(r=" + (int)(100 * remoteHitPercents.get(index)) + ")";
+                                                    localGame.strength = Game.MatchStrength.BEST_GUESS;
+                                                }
+                                                else {
+                                                    //choose tiebreaker by percent used of remote name.
+                                                    index = -1;
+                                                    highest = -1;
+                                                    for(int q = 0; q < tieNames.size(); q++) {
+                                                        if(remoteHitPercents.get(hitNames.indexOf(tieNames.get(q))) > highest) {
+                                                            highest = remoteHitPercents.get(hitNames.indexOf(tieNames.get(q)));
+                                                            index = q;
+                                                        }
+                                                    }
+
+                                                    localGame.matchedName = tieNames.get(index);// + " via tiebreak (" + (int)(100 * hitPercents.get(hitNames.indexOf(tieNames.get(index)))) + "%) " + "(r=" + (int)(100 * remoteHitPercents.get(hitNames.indexOf(tieNames.get(index)))) + ")";
+                                                    localGame.strength = Game.MatchStrength.TIE_BREAKER;
+                                                }
+                                            }
+                                        }
+
+                                        if(localGame.matchedName == null) {
+                                            statusConsumer.accept("Could not match '" + filename + "' to a game.");
+                                        }
+                                        else {
+                                            statusConsumer.accept("Matched '" + filename + "' to game '" + localGame.matchedName + "'.");
+                                        }
+                                    }
+
+                                    if(localGame.matchedName != null) {
+                                        if(!skipMatching || refreshMatchedGame || startedUnmatched) {
+                                            //matched a game, get the rest of the data.
+                                            MetaData newMetaData = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
+
+                                            if(newMetaData == null && localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
+                                                newMetaData = new MetaData();
+                                                newMetaData.setMetaData(localGame.metadata);
+
+                                                statusConsumer.accept("Metadata came back NULL; Restored previous metadata for LOCKED game '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                            }
+
+                                            if(newMetaData != null) {
+                                                if(localGame.metadata != null && localGame.metadata.favorite) {
+                                                    newMetaData.favorite = true;
+                                                }
+
+                                                final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
+                                                if(videoLinks != null) {
+                                                    newMetaData.videodownload = videoLinks[0];
+                                                    newMetaData.videoembed = videoLinks[1];
+                                                }
+
+                                                localGame.updateMetaData(newMetaData);
+                                                statusConsumer.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
+                                            }
+                                        }
+
+                                        if(localGame.metadata == null) {
+                                            //error occurred while getting metadata.
+                                            statusConsumer.accept("Error connecting to thegamesdb.net. Please try again.");
+                                        }
                                     }
                                 }
+                            }
+                            catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
                     }
 
-                    updateProgress(++fileCount, totalFiles);
+                    updateProgress(fileCount.incrementAndGet(), totalFiles);
 
-                    getSystemGameData().remove(localGame);
-                    getSystemGameData().add(localGame);
-
+                    synchronized(gamedata) {
+                        getSystemGameData().remove(localGame);
+                        getSystemGameData().add(localGame);
+                    }
                     Game g = new Game(localGame);
                     Platform.runLater(() -> {
                         int index = observableGamesList.indexOf(g);
@@ -1823,14 +1835,11 @@ public class ScraperFX extends Application {
                         observableGamesList.add(g);
                         gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(g));
                     });
-                }
-                isScanning.set(false);
+                });
                 statusConsumer.accept(Duration.ofNanos(System.nanoTime() - startTime).toString());
-            }
-            catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            finally {
+                isScanning.set(false);
+//            }
+//            finally {
                 Platform.runLater(() -> {
                     gamesListView.refresh();
                 });
@@ -1838,7 +1847,7 @@ public class ScraperFX extends Application {
                     isScanning.set(false);
                     cancel();
                 }
-            }
+//            }
             
             return null;
         }
@@ -2011,21 +2020,24 @@ public class ScraperFX extends Application {
         
         private final QueuedMessageBox  messageArea = new QueuedMessageBox();
         private final ProgressBar       progressBar = new ProgressBar();
-        private final Button            cancelButton = new Button("Cancel Scan");
+        private final Button            cancelButton = new Button("Close");
         
         public ScanProgressDialog(Path gamesPath, List<Game> selectedGames, Window parentWindow) {
             super();
             
             ScanTask task = new ScanTask(message -> Platform.runLater(() -> messageArea.queueMessage(message)), gamesPath, selectedGames);
+            cancelButton.setDisable(true);
             
             task.setOnSucceeded(e -> {
                 messageArea.queueMessage("Scan complete!");
-                cancelButton.setText("Close");
+                cancelButton.setDisable(false);
+//                cancelButton.setText("Close");
             });
             
             task.setOnCancelled(e -> {
                 messageArea.queueMessage("Scan cancelled!");
-                cancelButton.setText("Close");
+                cancelButton.setDisable(false);
+//                cancelButton.setText("Close");
             });
             
             progressBar.progressProperty().bind(task.progressProperty());

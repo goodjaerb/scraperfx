@@ -24,6 +24,11 @@ public class GameData {
         gamelist = new ArrayList<>();
     }
     
+    public void setTo(GameData other) {
+        this.gamelist.clear();
+        this.gamelist.addAll(other.gamelist);
+    }
+    
     public List<Game> getSystemData(String systemName) {
         for(GameList list : gamelist) {
             if(systemName.equals(list.system)) {

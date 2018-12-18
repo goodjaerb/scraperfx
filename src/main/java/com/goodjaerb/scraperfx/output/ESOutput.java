@@ -183,10 +183,7 @@ public class ESOutput {
             tagsBox.getChildren().add(messageArea);
             tagsBox.getChildren().add(buttonBox);
             
-            OutputTask task = new OutputTask(message -> {
-                System.out.println(message);
-                Platform.runLater(() -> messageArea.queueMessage(message));
-            }, games, outputPath, imagesPath, videoPath);
+            OutputTask task = new OutputTask(message -> Platform.runLater(() -> messageArea.queueMessage(message)), games, outputPath, imagesPath, videoPath);
 
             task.progressProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                 progressBar.setProgress((double)newValue);

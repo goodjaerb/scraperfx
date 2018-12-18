@@ -62,7 +62,7 @@ public class GamesDbLegacySource implements DataSource {
                     url += params[i] + "=" + params[i + 1];
                 }
                 
-                System.out.println("Connecting to '" + url + "'.");
+                Logger.getLogger(GamesDbLegacySource.class.getName()).log(Level.INFO, "Connecting to ''{0}''.", url);
 
                 conn = (HttpURLConnection)new URL(url).openConnection();
                 conn.setRequestMethod("GET");
@@ -76,7 +76,7 @@ public class GamesDbLegacySource implements DataSource {
             }
             catch(IOException ex) {
                 if(++retryCount < 3) {
-                    System.out.println("Connection error with thegamesdb.net. Retrying...");
+                    Logger.getLogger(GamesDbLegacySource.class.getName()).log(Level.WARNING, "Connection error with thegamesdb.net. Retrying...");
                 }
             }
         }

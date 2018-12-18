@@ -901,7 +901,7 @@ public class ScraperFX extends Application {
             }
             catch(IOException ex) {
                 if(++retry < 3) {
-                    System.out.println("Error retrieving image from " + url + ". Retrying...");
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.WARNING, "Error retrieving image from {0}. Retrying...", url);
                 }
             }
         }

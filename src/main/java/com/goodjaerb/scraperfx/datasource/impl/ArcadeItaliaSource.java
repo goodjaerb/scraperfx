@@ -99,6 +99,8 @@ public class ArcadeItaliaSource implements DataSource {
             try {
                 String url = API_URL + gameName;
                 
+                Logger.getLogger(ArcadeItaliaSource.class.getName()).log(Level.INFO, "Connecting to ''{0}''.", url);
+                
                 conn = (HttpURLConnection)new URL(url).openConnection();
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty(PROP_USER_AGENT, VAL_USER_AGENT);
@@ -112,7 +114,7 @@ public class ArcadeItaliaSource implements DataSource {
             }
             catch(IOException ex) {
                 if(++retryCount < 3) {
-                    System.out.println("Connection error with thegamesdb.net. Retrying...");
+                    Logger.getLogger(ArcadeItaliaSource.class.getName()).log(Level.WARNING, "Connection error with thegamesdb.net. Retrying...");
                 }
             }
         }

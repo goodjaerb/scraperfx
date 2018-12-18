@@ -50,7 +50,7 @@ public class ScreenScraperSource implements DataSource {
                 url = url.replaceAll("#SYSTEMID", Integer.toString(sysId));
                 url = url.replaceAll("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("\\$", "%24").replaceAll("!", "%21"));
                 
-                System.out.println("Connecting to '" + url + "'.");
+                Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.INFO, "Connecting to ''{0}''.", url);
                 
                 conn = (HttpURLConnection)new URL(url).openConnection();
                 conn.setRequestMethod("GET");
@@ -64,7 +64,7 @@ public class ScreenScraperSource implements DataSource {
             }
             catch(IOException ex) {
                 if(++retryCount < 3) {
-                    System.out.println("Connection error with screenscraper.fr. Retrying...");
+                    Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.WARNING, "Connection error with screenscraper.fr. Retrying...");
                 }
             }
             catch(Exception ex) {
@@ -90,7 +90,7 @@ public class ScreenScraperSource implements DataSource {
                     }
                 }
                 catch(Exception ex) {
-                    Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.WARNING, "Unable to parse XML. Game probably did not match correctly between GamesDB and ScreenScraper.", ex);
+                    Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.WARNING, "Unable to parse XML. Game (" + game.matchedName + ") probably did not match correctly between GamesDB and ScreenScraper.", ex);
                 }
             }
         }

@@ -36,7 +36,6 @@ import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
 import java.util.function.Consumer;
-import javafx.application.Platform;
 import javafx.stage.Window;
 
 /**

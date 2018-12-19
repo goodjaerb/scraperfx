@@ -2028,7 +2028,7 @@ public class ScraperFX extends Application {
         public ScanProgressDialog(Path gamesPath, List<Game> selectedGames, Window parentWindow) {
             super();
             
-            ScanTask task = new ScanTask(message -> Platform.runLater(() -> messageArea.queueMessage(message)), gamesPath, selectedGames);
+            ScanTask task = new ScanTask(message -> messageArea.queueMessage(message), gamesPath, selectedGames);
             cancelButton.setDisable(true);
             
             task.setOnSucceeded(e -> {

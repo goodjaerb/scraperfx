@@ -196,13 +196,12 @@ public class ScraperFX extends Application {
     private final Button deleteSystemButton = new Button("Delete System");
     private final Button outputToGamelistButton = new Button("Output to Gamelist.xml");
     
-    private final AtomicBoolean isScanning = new AtomicBoolean(false);
+    private final List<ImageLoadingTask>    imageTaskList = new ArrayList<>();
+    private final GameData                  gamedata = new GameData();
+    private final Scene                     rootScene;
     
-    private final List<ImageLoadingTask> imageTaskList = new ArrayList<>();
-    
-    private final GameData gamedata = new GameData();
-    private final Scene rootScene;
-    private Game currentGame;
+    private Game        currentGame;
+    private ScanTask    scanTask;
     
     public ScraperFX() {
         StackPane root = new StackPane();
@@ -1154,7 +1153,7 @@ public class ScraperFX extends Application {
                 lockImagesCheckBox.setSelected(g.metadata.lockImages);
                 favoriteCheckBox.setSelected(g.metadata.favorite);
 
-                if(!isScanning.get()) {
+                if(!scanTask.isRunning()) {
                     Platform.runLater(() -> {
                         imageTaskList.forEach(task -> task.cancel());
                         imageTaskList.clear();
@@ -1500,8 +1499,6 @@ public class ScraperFX extends Application {
         
         @Override
         protected Void call() throws Exception {
-            isScanning.set(true);
-
             final long totalFiles = paths.size();
             long fileCount = 0;
             long startTime = System.nanoTime();
@@ -1829,7 +1826,6 @@ public class ScraperFX extends Application {
                 });
             }
             statusConsumer.accept(Duration.ofNanos(System.nanoTime() - startTime).toString());
-            isScanning.set(false);
                 
             Platform.runLater(() -> {
                 gamesListView.refresh();
@@ -2011,24 +2007,24 @@ public class ScraperFX extends Application {
         public ScanProgressDialog(Path gamesPath, List<Game> selectedGames, Window parentWindow) {
             super();
             
-            ScanTask task = new ScanTask(message -> messageArea.queueMessage(message), gamesPath, selectedGames);
+            scanTask = new ScanTask(message -> messageArea.queueMessage(message), gamesPath, selectedGames);
             cancelButton.setDisable(true);
             
-            task.setOnSucceeded(e -> {
+            scanTask.setOnSucceeded(e -> {
                 messageArea.queueMessage("Scan complete!");
                 cancelButton.setDisable(false);
             });
             
-            task.setOnCancelled(e -> {
+            scanTask.setOnCancelled(e -> {
                 messageArea.queueMessage("Scan cancelled!");
                 cancelButton.setDisable(false);
             });
             
-            progressBar.progressProperty().bind(task.progressProperty());
+            progressBar.progressProperty().bind(scanTask.progressProperty());
             
             cancelButton.setOnAction(e -> {
-                if(task.isRunning()) {
-                    task.cancel();
+                if(scanTask.isRunning()) {
+                    scanTask.cancel();
                 }
                 else {
                     hide();
@@ -2037,14 +2033,14 @@ public class ScraperFX extends Application {
             
             setOnShown(e -> {
                 messageArea.start();
-                Thread t = new Thread(task);
+                Thread t = new Thread(scanTask);
                 t.setDaemon(true);
                 t.start();
             });
             
             setOnHidden(e -> {
                 messageArea.stop();
-                task.cancel();
+                scanTask.cancel();
             });
             
             FlowPane p = new FlowPane(7., 7., progressBar, cancelButton);

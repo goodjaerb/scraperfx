@@ -2023,7 +2023,7 @@ public class ScraperFX extends Application {
         
         private final QueuedMessageBox  messageArea = new QueuedMessageBox();
         private final ProgressBar       progressBar = new ProgressBar();
-        private final Button            cancelButton = new Button("Close");
+        private final Button            cancelButton = new Button("Cancel");
         
         public ScanProgressDialog(Path gamesPath, List<Game> selectedGames, Window parentWindow) {
             super();
@@ -2056,7 +2056,9 @@ public class ScraperFX extends Application {
             
             setOnShown(e -> {
                 messageArea.start();
-                new Thread(task).start();
+                Thread t = new Thread(task);
+                t.setDaemon(true);
+                t.start();
             });
             
             setOnHidden(e -> {

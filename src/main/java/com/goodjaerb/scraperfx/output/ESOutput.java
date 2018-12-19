@@ -202,7 +202,9 @@ public class ESOutput {
             startButton.setOnAction((e) -> {
                 startButton.setDisable(true);
                 messageArea.start();
-                new Thread(task).start();
+                Thread t = new Thread(task);
+                t.setDaemon(true);
+                t.start();
             });
             
             cancelButton.setOnAction((e) -> {

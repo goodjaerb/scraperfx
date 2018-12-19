@@ -1506,15 +1506,16 @@ public class ScraperFX extends Application {
         @Override
         protected Void call() throws Exception {
             isScanning.set(true);
+//            try {
                 final long totalFiles = paths.size();
-//                long fileCount = 0;
-                AtomicLong fileCount = new AtomicLong(0);
+                long fileCount = 0;
+//                AtomicLong fileCount = new AtomicLong(0);
                 long startTime = System.nanoTime();
-//                for(Path p : paths) {
-                paths.parallelStream().forEach(p -> {
-//                    if(isCancelled()) {
-//                        break;
-//                    }
+                for(Path p : paths) {
+//                paths.parallelStream().forEach(p -> {
+                    if(isCancelled()) {
+                        break;
+                    }
 
                     String filename = p.getFileName().toString();
                     Game localGame = getGame(new Game(filename));
@@ -1577,8 +1578,8 @@ public class ScraperFX extends Application {
 
                                 if(skipMatching) {
                                     if(!refreshMatchedGame) {
-                                        return;
-    //                                    continue;
+//                                        return;
+                                        continue;
                                     }
                                 }
 
@@ -1820,7 +1821,8 @@ public class ScraperFX extends Application {
                         }
                     }
 
-                    updateProgress(fileCount.incrementAndGet(), totalFiles);
+                    updateProgress(++fileCount, totalFiles);
+//                    updateProgress(fileCount.incrementAndGet(), totalFiles);
 
                     synchronized(gamedata) {
                         getSystemGameData().remove(localGame);
@@ -1835,7 +1837,8 @@ public class ScraperFX extends Application {
                         observableGamesList.add(g);
                         gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(g));
                     });
-                });
+                }
+//                });
                 statusConsumer.accept(Duration.ofNanos(System.nanoTime() - startTime).toString());
                 isScanning.set(false);
 //            }

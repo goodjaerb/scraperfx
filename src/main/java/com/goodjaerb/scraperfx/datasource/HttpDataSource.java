@@ -22,11 +22,11 @@ public abstract class HttpDataSource implements DataSource {
     public static final String USER_AGENT_PROPERTY = "User-Agent";
     public static final String USER_AGENT_MOZILLA = "Mozilla/5.0";
     
-    BufferedReader getReader(String url) {
+    protected BufferedReader getReader(String url) {
         return getReader(url, USER_AGENT_PROPERTY, USER_AGENT_MOZILLA);
     }
     
-    BufferedReader getReader(String url, String... httpProps) {
+    protected BufferedReader getReader(String url, String... httpProps) {
         HttpURLConnection conn;
         int retryCount = 0;
         while(retryCount < 3) {

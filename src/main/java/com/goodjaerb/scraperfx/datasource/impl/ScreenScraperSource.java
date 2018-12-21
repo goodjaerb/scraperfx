@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.xmappr.XmapprException;
 
 /**
  *
@@ -30,46 +29,6 @@ public class ScreenScraperSource extends XmlDataSource {
     public String getSourceName() {
         return "Screen Scraper (screenscraper.fr)";
     }
-    
-//    private Reader getGameXML(String systemName, String gameName) {
-//        HttpURLConnection conn;
-//        int retryCount = 0;
-//        while(retryCount < 3) {
-//            try {
-//                String url = API_BASE_URL + API_GAME_INFO;
-//
-//                Integer sysId = ScreenScraperSystemIdMap.getSystemId(systemName);
-//                if(sysId == null) {
-//                    return null;
-//                }
-//                url = url.replaceAll("#DEVID", ScraperFX.getKeysValue("ScreenScraper.ID"));
-//                url = url.replaceAll("#DEVPASS", ScraperFX.getKeysValue("ScreenScraper.KEY"));
-//                url = url.replaceAll("#SYSTEMID", Integer.toString(sysId));
-//                url = url.replaceAll("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("\\$", "%24").replaceAll("!", "%21"));
-//                
-//                Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.INFO, "Connecting to ''{0}''.", url);
-//                
-//                conn = (HttpURLConnection)new URL(url).openConnection();
-//                conn.setRequestMethod("GET");
-//                conn.setRequestProperty(PROP_USER_AGENT, VAL_USER_AGENT);
-//
-//                return new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//            }
-//            catch(MalformedURLException ex) {
-//                Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.SEVERE, null, ex);
-//                break;
-//            }
-//            catch(IOException ex) {
-//                if(++retryCount < 3) {
-//                    Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.WARNING, "Connection error with screenscraper.fr. Retrying...");
-//                }
-//            }
-//            catch(Exception ex) {
-//                Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
-//        return null;
-//    }
     
     private ScreenScraperXmlGameData getXmlData(String systemName, String gameName) {
         String url = API_BASE_URL + API_GAME_INFO;

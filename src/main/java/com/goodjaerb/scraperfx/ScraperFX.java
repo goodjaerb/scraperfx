@@ -105,7 +105,6 @@ import java.util.function.Predicate;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
@@ -746,26 +745,6 @@ public class ScraperFX extends Application {
     
     @Override
     public void start(Stage primaryStage) {
-        new Thread(() -> {
-            try {
-                List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemNames();
-                Platform.runLater(() -> {
-                    consoleSelectComboBox.getItems().clear();
-                    consoleSelectComboBox.getItems().addAll(consoles);
-                    com.goodjaerb.scraperfx.settings.System currentSystem = getCurrentSettings();
-                    if(currentSystem != null && !currentSystem.scrapeAsArcade) {
-                        consoleSelectComboBox.getSelectionModel().select(currentSystem.scrapeAs);
-                    }
-                    else {
-                        consoleSelectComboBox.getSelectionModel().select(0);
-                    }
-                });
-            }
-            catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }).start();
-        
         try {
             readGameData();
             readSettings();
@@ -792,6 +771,26 @@ public class ScraperFX extends Application {
                 }
             }
         });
+        
+        new Thread(() -> {
+            try {
+                List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemNames();
+                Platform.runLater(() -> {
+                    consoleSelectComboBox.getItems().clear();
+                    consoleSelectComboBox.getItems().addAll(consoles);
+                    com.goodjaerb.scraperfx.settings.System currentSystem = getCurrentSettings();
+                    if(currentSystem != null && !currentSystem.scrapeAsArcade) {
+                        consoleSelectComboBox.getSelectionModel().select(currentSystem.scrapeAs);
+                    }
+                    else {
+                        consoleSelectComboBox.getSelectionModel().select(0);
+                    }
+                });
+            }
+            catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }).start();
         
         primaryStage.setTitle("ScraperFX");
         primaryStage.setScene(rootScene);

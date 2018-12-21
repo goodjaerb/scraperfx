@@ -14,6 +14,7 @@ public class DataSourceFactory {
         ARCADE_ITALIA("com.goodjaerb.scraperfx.datasource.impl.ArcadeItaliaSource"),
         MAMEDB("com.goodjaerb.scraperfx.datasource.impl.MameDbSource"),
         SCREEN_SCRAPER("com.goodjaerb.scraperfx.datasource.impl.ScreenScraperSource"),
+//        THEGAMESDB("com.goodjaerb.scraperfx.datasource.impl.GamesDbSource"),
         THEGAMESDB_LEGACY("com.goodjaerb.scraperfx.datasource.impl.GamesDbLegacySource");
         
         private final String className;

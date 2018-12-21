@@ -37,10 +37,10 @@ public class ScreenScraperSource extends XmlDataSource {
         if(sysId == null) {
             return null;
         }
-        url = url.replaceAll("#DEVID", ScraperFX.getKeysValue("ScreenScraper.ID"));
-        url = url.replaceAll("#DEVPASS", ScraperFX.getKeysValue("ScreenScraper.KEY"));
-        url = url.replaceAll("#SYSTEMID", Integer.toString(sysId));
-        url = url.replaceAll("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("\\$", "%24").replaceAll("!", "%21"));
+        url = url.replace("#DEVID", ScraperFX.getKeysValue("ScreenScraper.ID"));
+        url = url.replace("#DEVPASS", ScraperFX.getKeysValue("ScreenScraper.KEY"));
+        url = url.replace("#SYSTEMID", Integer.toString(sysId));
+        url = url.replace("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("\\$", "%24").replaceAll("!", "%21"));
         
         try {
             return getXml(ScreenScraperXmlGameData.class, url);

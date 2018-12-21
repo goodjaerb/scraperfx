@@ -15,6 +15,7 @@ import com.goodjaerb.scraperfx.settings.MetaData;
  */
 public interface DataSource {
     
+    public String getSourceName();
     public List<String> getSystemNames();
     public List<String> getSystemGameNames(String systemName);
     public MetaData getMetaData(String systemName, Game game);

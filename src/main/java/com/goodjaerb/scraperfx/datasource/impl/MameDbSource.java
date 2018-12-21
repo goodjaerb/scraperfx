@@ -31,6 +31,11 @@ public class MameDbSource implements DataSource {
     private static final String BASE_URL = "http://mamedb.blu-ferret.co.uk/";
     
     @Override
+    public String getSourceName() {
+        return "MameDB (mamedb.org)";
+    }
+    
+    @Override
     public List<String> getSystemNames() {
         throw new UnsupportedOperationException("Not supported.");
     }

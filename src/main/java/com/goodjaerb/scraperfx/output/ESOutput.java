@@ -202,7 +202,7 @@ public class ESOutput {
                 startButton.setDisable(true);
                 messageArea.start();
                 Thread t = new Thread(task);
-                t.setDaemon(true);
+//                t.setDaemon(true);
                 t.start();
             });
             

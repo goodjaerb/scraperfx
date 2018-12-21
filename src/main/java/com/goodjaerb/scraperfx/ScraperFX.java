@@ -2144,10 +2144,12 @@ public class ScraperFX extends Application {
                 scanTask.setStatusUpdater(message -> messageArea.queueMessage(message));
                 scanTask.setOnSucceeded(ev -> {
                     messageArea.queueMessage("Scan complete!");
+                    cancelButton.setText("Close");
                 });
 
                 scanTask.setOnCancelled(ev -> {
                     messageArea.queueMessage("Scan cancelled!");
+                    cancelButton.setText("Close");
                 });
 
                 progressBar.progressProperty().bind(scanTask.progressProperty());

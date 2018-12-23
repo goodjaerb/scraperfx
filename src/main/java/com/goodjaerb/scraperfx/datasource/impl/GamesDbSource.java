@@ -20,9 +20,10 @@ import java.util.logging.Logger;
  * @author goodjaerb
  */
 public class GamesDbSource extends JsonDataSource {
+    public static final String GAMESDB_LOCAL_DIR = "thegamesdb.net";
+    
     private static final String API_BASE_URL = "https://api.thegamesdb.net/";
     private static final String API_GET_PLATFORMS_LIST = "Platforms";
-    
     private static final String API_KEY = "?apikey=#APIKEY";
 
     @Override

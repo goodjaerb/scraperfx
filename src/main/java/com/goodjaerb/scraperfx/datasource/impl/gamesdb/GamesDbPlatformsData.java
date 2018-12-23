@@ -5,6 +5,7 @@
  */
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
+import com.google.gson.annotations.Expose;
 import java.util.Map;
 
 /**
@@ -13,7 +14,7 @@ import java.util.Map;
  */
 public class GamesDbPlatformsData {
     public static class Data {
-        public int count;
+        @Expose(serialize = false) public int count;
         public Map<String, Platform> platforms;
         
         public Data() {
@@ -45,11 +46,11 @@ public class GamesDbPlatformsData {
         }
     }
     
-    public int code;
-    public String status;
+    @Expose(serialize = false) public int code;
+    @Expose(serialize = false) public String status;
     public Data data;
-    public int remaining_monthly_allowance;
-    public int extra_allowance;
+    @Expose(serialize = false) public int remaining_monthly_allowance;
+    @Expose(serialize = false) public int extra_allowance;
     
     public GamesDbPlatformsData() {
         

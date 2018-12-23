@@ -105,7 +105,10 @@ import java.util.function.Predicate;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
 import javafx.stage.Window;
@@ -119,6 +122,7 @@ import org.ini4j.Ini;
  */
 public class ScraperFX extends Application {
     private static final Path   SETTINGS_DIR = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx");
+    private static final Path   LOCALDB_DIR = SETTINGS_DIR.resolve(".localdb");
     private static final String GAMEDATA_CONF = "gamedata.conf";
     private static final String SCRAPERFX_CONF = "scraperfx.conf";
     
@@ -197,6 +201,7 @@ public class ScraperFX extends Application {
     
     private final List<ImageLoadingTask>    imageTaskList = new ArrayList<>();
     private final GameData                  gamedata = new GameData();
+    private final MenuBar                   menuBar;
     private final Scene                     rootScene;
     
     private Game            currentGame;
@@ -738,9 +743,12 @@ public class ScraperFX extends Application {
         HBox mainBox = new HBox(box2, rightPane);
         mainBox.setSpacing(7.);
         
+        menuBar = new MenuBar();
+        BorderPane appPane = new BorderPane(mainBox, menuBar, null, null, null);
+        
         StackPane.setMargin(mainBox, new Insets(7.));
         
-        root.getChildren().add(mainBox);
+        root.getChildren().add(appPane);
     }
     
     @Override
@@ -754,21 +762,24 @@ public class ScraperFX extends Application {
             Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        /**
+         * Menu Bar
+         */
+        MenuItem exitMenuItem = new MenuItem("E_xit");
+        exitMenuItem.setAccelerator(KeyCombination.keyCombination("ctrl+x"));
+        exitMenuItem.setOnAction((event) -> {
+            if(exitCheck()) {
+                primaryStage.hide();
+            }
+        });
+        
+        Menu fileMenu = new Menu("_File", null, exitMenuItem);
+        
+        menuBar.getMenus().addAll(fileMenu);
+        
         primaryStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, (event) -> {
-            ButtonType saveThenQuitButton = new ButtonType("Save & Quit");
-            ButtonType dontQuitButton = new ButtonType("Wait, Don't Quit!");
-            ButtonType justQuitButton = new ButtonType("Just Quit, Thanks.");
-            
-            Alert closingAlert = new Alert(Alert.AlertType.CONFIRMATION, "ScraperFX is about to close. If you have made any new scans or settings changes you may want to save. Save now?", saveThenQuitButton, dontQuitButton, justQuitButton);
-            Optional<ButtonType> result = closingAlert.showAndWait();
-
-            if(result.isPresent()) {
-                if(result.get() == saveThenQuitButton) {
-                    saveAll();
-                }
-                else if(result.get() == dontQuitButton) {
-                    event.consume();
-                }
+            if(!exitCheck()) {
+                event.consume();
             }
         });
         
@@ -792,6 +803,7 @@ public class ScraperFX extends Application {
             }
         }).start();
         
+        
         primaryStage.setTitle("ScraperFX");
         primaryStage.setScene(rootScene);
         primaryStage.show();
@@ -799,6 +811,25 @@ public class ScraperFX extends Application {
     
     public static String getKeysValue(String name) {
         return KEYS_INI.get("Keys", name);
+    }
+    
+    private boolean exitCheck() {
+        ButtonType saveThenQuitButton = new ButtonType("Save & Quit");
+        ButtonType dontQuitButton = new ButtonType("Wait, Don't Quit!");
+        ButtonType justQuitButton = new ButtonType("Just Quit, Thanks.");
+
+        Alert closingAlert = new Alert(Alert.AlertType.CONFIRMATION, "ScraperFX is about to close. If you have made any new scans or settings changes you may want to save. Save now?", saveThenQuitButton, dontQuitButton, justQuitButton);
+        Optional<ButtonType> result = closingAlert.showAndWait();
+
+        if(result.isPresent()) {
+            if(result.get() == saveThenQuitButton) {
+                saveAll();
+            }
+            else if(result.get() == dontQuitButton) {
+                return false;
+            }
+        }
+        return true;
     }
     
     private final String[] numbers = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" };

@@ -208,7 +208,7 @@ public class ScraperFX extends Application {
     private ScanTaskBase    scanTask;
     
     public ScraperFX() {
-        StackPane root = new StackPane();
+        final StackPane root = new StackPane();
         rootScene = new Scene(root);
         
         scrapeAsConsoleButton.setToggleGroup(scrapeTypeGroup);
@@ -239,7 +239,7 @@ public class ScraperFX extends Application {
         */
         systemList.setPrefSize(175., 500.);
         systemList.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends String> c) -> {
-            String newSelection = systemList.getSelectionModel().getSelectedItem();
+            final String newSelection = systemList.getSelectionModel().getSelectedItem();
             if(newSelection != null && !newSelection.equals(currentSystemName)) {
                 currentSystemName = newSelection;
                 loadCurrentSettings();
@@ -249,14 +249,14 @@ public class ScraperFX extends Application {
             }
         });
                 
-        MenuItem renameItem = new MenuItem("Rename");
+        final MenuItem renameItem = new MenuItem("Rename");
         renameItem.setOnAction((e) -> {
-            TextInputDialog renameDialog = new TextInputDialog();
+            final TextInputDialog renameDialog = new TextInputDialog();
             renameDialog.setHeaderText("Rename system '" + currentSystemName + "'");
             renameDialog.setTitle("Rename System");
             renameDialog.setContentText("Name:");
             
-            Optional<String> result = renameDialog.showAndWait();
+            final Optional<String> result = renameDialog.showAndWait();
             if(result.isPresent()) {
                 settings.renameSystem(currentSystemName, result.get());
                 loadSystemList(result.get());
@@ -264,10 +264,10 @@ public class ScraperFX extends Application {
         });
         systemList.setContextMenu(new ContextMenu(renameItem));
         
-        Button addSystemButton = new Button("Add System");
+        final Button addSystemButton = new Button("Add System");
         addSystemButton.setOnAction((e) -> addSystemButtonActionPerformed() );
         
-        VBox box2 = new VBox(systemList, addSystemButton);
+        final VBox box2 = new VBox(systemList, addSystemButton);
         VBox.setVgrow(systemList, Priority.ALWAYS);
         box2.setSpacing(7.);
         // End System List
@@ -293,19 +293,19 @@ public class ScraperFX extends Application {
         });
         
         gameSourceBrowseButton.setOnAction((e) -> {
-            File dir = Chooser.getDir("Game Source Directory", rootScene.getWindow());
+            final File dir = Chooser.getDir("Game Source Directory", rootScene.getWindow());
             if(dir != null) {
                 gameSourceField.setText(dir.getPath());
                 getCurrentSettings().romsDir = dir.getPath();
                 getSystemGameData().clear();
                 
-                FileSystem fs = FileSystems.getDefault();
-                Path gamesPath = fs.getPath(gameSourceField.getText());
+                final FileSystem fs = FileSystems.getDefault();
+                final Path gamesPath = fs.getPath(gameSourceField.getText());
                 if(Files.exists(gamesPath)) {
                     final List<Path> paths = new ArrayList<>();
-                    DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
-                    try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
-                        for(Path p: stream) {
+                    final DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
+                    try(final DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+                        for(final Path p: stream) {
                             paths.add(p);
                         }
                     }
@@ -315,7 +315,7 @@ public class ScraperFX extends Application {
 
                     observableGamesList.clear();
                     paths.forEach((p) -> {
-                        Game g = new Game(p.getFileName().toString());
+                        final Game g = new Game(p.getFileName().toString());
                         getSystemGameData().add(g);
                         observableGamesList.add(g);
                     });
@@ -353,19 +353,19 @@ public class ScraperFX extends Application {
         refreshMetaDataCheckBox.setPadding(new Insets(7.));
         refreshMetaDataCheckBox.setDisable(false);
 
-        HBox box21 = new HBox();
+        final HBox box21 = new HBox();
         box21.setSpacing(7.);
         box21.setPadding(new Insets(7.));
         
         box21.getChildren().addAll(new Label("Scrap as:"), scrapeAsConsoleButton, scrapeAsArcadeButton, arcadeScraperBox);
         
-        HBox selectConsoleBox = new HBox();
+        final HBox selectConsoleBox = new HBox();
         selectConsoleBox.setSpacing(7.);
         selectConsoleBox.setPadding(new Insets(7.));
         selectConsoleBox.getChildren().add(new Label("Select Console:"));
         selectConsoleBox.getChildren().add(consoleSelectComboBox);
         
-        VBox settingsPane = new VBox();
+        final VBox settingsPane = new VBox();
         settingsPane.getChildren().addAll(
                 box21,
                 selectConsoleBox,
@@ -389,7 +389,7 @@ public class ScraperFX extends Application {
         gamesListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         gamesListView.setPrefSize(450., 425.);
         gamesListView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends Game> c) -> {
-            Game selected = gamesListView.getSelectionModel().getSelectedItem();
+            final Game selected = gamesListView.getSelectionModel().getSelectedItem();
             if(selected != null) {
                 currentGame = getGame(selected);
                 loadCurrentGameFields(currentGame);
@@ -401,7 +401,7 @@ public class ScraperFX extends Application {
                 filterField.setText("");
             }
             else if(e.getCode() == KeyCode.BACK_SPACE) {
-                String currentText = filterField.getText();
+                final String currentText = filterField.getText();
                 filterField.setText(currentText.substring(0, currentText.length() - 1));
             }
         });
@@ -410,9 +410,9 @@ public class ScraperFX extends Application {
             filterField.appendText(e.getCharacter());
         });
         
-        MenuItem lockGamesItem = new MenuItem("Lock");
+        final MenuItem lockGamesItem = new MenuItem("Lock");
         lockGamesItem.setOnAction((e) -> {
-            ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.forEach((g) -> {
                 getGame(g).strength = Game.MatchStrength.LOCKED;
             });
@@ -420,9 +420,9 @@ public class ScraperFX extends Application {
             loadCurrentGameFields(currentGame);
         });
         
-        MenuItem unlockGamesItem = new MenuItem("Unlock");
+        final MenuItem unlockGamesItem = new MenuItem("Unlock");
         unlockGamesItem.setOnAction((e) -> {
-            ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.forEach((g) -> {
                 final Game realGame = getGame(g);
                 if(realGame.matchedName == null) {
@@ -436,9 +436,9 @@ public class ScraperFX extends Application {
             loadCurrentGameFields(currentGame);
         });
         
-        MenuItem ignoreItem = new MenuItem("Ignore");
+        final MenuItem ignoreItem = new MenuItem("Ignore");
         ignoreItem.setOnAction((e) -> {
-            ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.forEach((g) -> {
                 final Game realGame = getGame(g);
                 realGame.matchedName = null;
@@ -448,21 +448,21 @@ public class ScraperFX extends Application {
             gamesListView.refresh();
         });
         
-        MenuItem unignoreItem = new MenuItem("Unignore");
+        final MenuItem unignoreItem = new MenuItem("Unignore");
         unignoreItem.setOnAction((e) -> {
-            ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.forEach((g) -> {
                 getGame(g).strength = Game.MatchStrength.NO_MATCH;
             });
             gamesListView.refresh();
         });
         
-        MenuItem scanGamesItem = new MenuItem("Scan Selected Game(s)");
+        final MenuItem scanGamesItem = new MenuItem("Scan Selected Game(s)");
         scanGamesItem.setOnAction((e) -> {
             List<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             
-            FileSystem fs = FileSystems.getDefault();
-            Path gamesPath = fs.getPath(gameSourceField.getText());
+            final FileSystem fs = FileSystems.getDefault();
+            final Path gamesPath = fs.getPath(gameSourceField.getText());
             if(Files.exists(gamesPath)) {
                 if(scrapeAsArcadeButton.isSelected()) {
                     scanTask = new SequentialArcadeScanTask(gamesPath, selectedGames);
@@ -550,7 +550,7 @@ public class ScraperFX extends Application {
                 final SingleGameDownloadDialog d = new SingleGameDownloadDialog(getCurrentSettings().scrapeAs, matchedNameBrowseButton.getScene().getWindow());
                 d.showAndWait();
                 loadCurrentGameFields(currentGame);
-                Game updatedGame = observableGamesList.remove(observableGamesList.indexOf(currentGame));
+                final Game updatedGame = observableGamesList.remove(observableGamesList.indexOf(currentGame));
                 observableGamesList.add(updatedGame);
                 gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
             }
@@ -572,7 +572,7 @@ public class ScraperFX extends Application {
         });
         lockNameCheckBox.setOnAction((e) -> {
             lockMetaField(metaNameField, MetaDataId.NAME, currentGame.metadata, lockNameCheckBox.isSelected());
-            Game updatedGame = observableGamesList.remove(observableGamesList.indexOf(currentGame));
+            final Game updatedGame = observableGamesList.remove(observableGamesList.indexOf(currentGame));
             observableGamesList.add(updatedGame);
             gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
         });
@@ -588,7 +588,7 @@ public class ScraperFX extends Application {
         lockVideoDownloadCheckBox.setOnAction((e) -> lockMetaField(videoDownloadField, MetaDataId.VIDEO_DOWNLOAD, currentGame.metadata, lockVideoDownloadCheckBox.isSelected()));
         favoriteCheckBox.setOnAction((e) -> {       currentGame.metadata.favorite = favoriteCheckBox.isSelected(); gamesListView.refresh(); });
         
-        VBox metaBox = new VBox();
+        final VBox metaBox = new VBox();
         metaBox.getChildren().addAll(
                 createMetaFieldPane("Matched Game:", matchedNameField, matchedNameClearButton, matchedNameBrowseButton, lockMatchedNameCheckBox),
                 createMetaFieldPane("Name:", metaNameField, lockNameCheckBox),
@@ -605,24 +605,24 @@ public class ScraperFX extends Application {
         
         imagesScroll.setPrefSize(200., 475.);
         
-        VBox imagesBox = new VBox();
+        final VBox imagesBox = new VBox();
         imagesBox.setPadding(new Insets(7.));
         imagesBox.setSpacing(7.);
         imagesBox.getChildren().addAll(favoriteCheckBox, lockImagesCheckBox, imagesScroll);
         
-        VBox sortByBox = new VBox();
+        final VBox sortByBox = new VBox();
         sortByBox.setSpacing(7.);
         sortByBox.getChildren().addAll(sortByMetaNameRadioButton, sortByFileNameRadioButton, filterField);
         
-        VBox filterBox = new VBox();
+        final VBox filterBox = new VBox();
         filterBox.setSpacing(7.);
         filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, hideLockedCheckBox, showOnlyLockedCheckBox);
         
-        HBox topBox = new HBox();
+        final HBox topBox = new HBox();
         topBox.setSpacing(7.);
         topBox.getChildren().addAll(sortByBox, filterBox);
         
-        VBox leftBox = new VBox(7., topBox, gamesListView);
+        final VBox leftBox = new VBox(7., topBox, gamesListView);
         VBox.setVgrow(gamesListView, Priority.ALWAYS);
         
         gamesPane.setPadding(new Insets(7.));
@@ -656,13 +656,13 @@ public class ScraperFX extends Application {
         });
         
         applyDatFileButton.setOnAction((e) -> {
-            File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
+            final File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
             if(datFile != null) {
                 try {
-                    Datafile dat = readDatFile(datFile.toPath());
+                    final Datafile dat = readDatFile(datFile.toPath());
 
                     observableGamesList.forEach((game) -> {
-                        String filename = game.fileName;
+                        final String filename = game.fileName;
                         
                         if(dat.getElements().stream().noneMatch((element) -> {
                             return filename.equals(element.getName() + ".zip");
@@ -679,13 +679,13 @@ public class ScraperFX extends Application {
         });
         
         refreshFileListButton.setOnAction((e) -> {
-            FileSystem fs = FileSystems.getDefault();
-            Path gamesPath = fs.getPath(gameSourceField.getText());
+            final FileSystem fs = FileSystems.getDefault();
+            final Path gamesPath = fs.getPath(gameSourceField.getText());
             if(Files.exists(gamesPath)) {
                 final List<Path> paths = new ArrayList<>();
-                DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
-                try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
-                    for(Path p : stream) {
+                final DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
+                try(final DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+                    for(final Path p : stream) {
                         paths.add(p);
                     }
                 }
@@ -694,7 +694,7 @@ public class ScraperFX extends Application {
                 }
                 
                 paths.forEach((p) -> {
-                    Game g = new Game(p.getFileName().toString());
+                    final Game g = new Game(p.getFileName().toString());
                     if(!observableGamesList.contains(g)) {
                         getSystemGameData().add(g);
                         observableGamesList.add(g);
@@ -705,7 +705,7 @@ public class ScraperFX extends Application {
         
         outputToGamelistButton.setOnAction((e) -> {
             Collections.sort(getSystemGameData(), Game.GAME_NAME_COMPARATOR);
-            Window parentWindow = outputToGamelistButton.getScene().getWindow();
+            final Window parentWindow = outputToGamelistButton.getScene().getWindow();
             if(outputMediaToUserDirButton.isSelected()) {
                 new ESOutput().output(
                         getSystemGameData(),
@@ -728,7 +728,7 @@ public class ScraperFX extends Application {
         
         deleteSystemButton.setOnAction((e) -> deleteSystemButtonOnActionPerformed() );
         
-        FlowPane settingsButtonPane = new FlowPane(saveButton, applyDatFileButton, deleteSystemButton, refreshFileListButton, outputToGamelistButton);
+        final FlowPane settingsButtonPane = new FlowPane(saveButton, applyDatFileButton, deleteSystemButton, refreshFileListButton, outputToGamelistButton);
         settingsButtonPane.setHgap(7.);
         settingsButtonPane.setAlignment(Pos.CENTER);
         
@@ -736,15 +736,15 @@ public class ScraperFX extends Application {
         tabPane.getTabs().add(gamesTab);
         tabPane.getSelectionModel().select(0);
         
-        BorderPane rightPane = new BorderPane();
+        final BorderPane rightPane = new BorderPane();
         rightPane.setCenter(tabPane);
         rightPane.setBottom(settingsButtonPane);
 
-        HBox mainBox = new HBox(box2, rightPane);
+        final HBox mainBox = new HBox(box2, rightPane);
         mainBox.setSpacing(7.);
         
         menuBar = new MenuBar();
-        BorderPane appPane = new BorderPane(mainBox, menuBar, null, null, null);
+        final BorderPane appPane = new BorderPane(mainBox, menuBar, null, null, null);
         
         StackPane.setMargin(mainBox, new Insets(7.));
         
@@ -765,7 +765,7 @@ public class ScraperFX extends Application {
         /**
          * Menu Bar
          */
-        MenuItem exitMenuItem = new MenuItem("E_xit");
+        final MenuItem exitMenuItem = new MenuItem("E_xit");
         exitMenuItem.setAccelerator(KeyCombination.keyCombination("ctrl+x"));
         exitMenuItem.setOnAction((event) -> {
             if(exitCheck()) {
@@ -773,7 +773,7 @@ public class ScraperFX extends Application {
             }
         });
         
-        Menu fileMenu = new Menu("_File", null, exitMenuItem);
+        final Menu fileMenu = new Menu("_File", null, exitMenuItem);
         
         menuBar.getMenus().addAll(fileMenu);
         
@@ -785,7 +785,7 @@ public class ScraperFX extends Application {
         
         new Thread(() -> {
             try {
-                List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemNames();
+                final List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemNames();
                 Platform.runLater(() -> {
                     consoleSelectComboBox.getItems().clear();
                     consoleSelectComboBox.getItems().addAll(consoles);
@@ -814,12 +814,12 @@ public class ScraperFX extends Application {
     }
     
     private boolean exitCheck() {
-        ButtonType saveThenQuitButton = new ButtonType("Save & Quit");
-        ButtonType dontQuitButton = new ButtonType("Wait, Don't Quit!");
-        ButtonType justQuitButton = new ButtonType("Just Quit, Thanks.");
+        final ButtonType saveThenQuitButton = new ButtonType("Save & Quit");
+        final ButtonType dontQuitButton = new ButtonType("Wait, Don't Quit!");
+        final ButtonType justQuitButton = new ButtonType("Just Quit, Thanks.");
 
-        Alert closingAlert = new Alert(Alert.AlertType.CONFIRMATION, "ScraperFX is about to close. If you have made any new scans or settings changes you may want to save. Save now?", saveThenQuitButton, dontQuitButton, justQuitButton);
-        Optional<ButtonType> result = closingAlert.showAndWait();
+        final Alert closingAlert = new Alert(Alert.AlertType.CONFIRMATION, "ScraperFX is about to close. If you have made any new scans or settings changes you may want to save. Save now?", saveThenQuitButton, dontQuitButton, justQuitButton);
+        final Optional<ButtonType> result = closingAlert.showAndWait();
 
         if(result.isPresent()) {
             if(result.get() == saveThenQuitButton) {
@@ -943,10 +943,10 @@ public class ScraperFX extends Application {
         int retry = 0;
         while(retry < 3) {
             try {
-                URLConnection connection = new URL(url).openConnection();
+                final URLConnection connection = new URL(url).openConnection();
                 connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 
-                BufferedImage img = ImageIO.read(connection.getInputStream());
+                final BufferedImage img = ImageIO.read(connection.getInputStream());
                 return SwingFXUtils.toFXImage(img, null);
             }
             catch(MalformedURLException ex) {
@@ -971,7 +971,7 @@ public class ScraperFX extends Application {
             Files.createDirectories(path);
         }
         
-        File outputFile = new File(path.toString() + File.separator + filename);
+        final File outputFile = new File(path.toString() + File.separator + filename);
         if(outputFile.exists()) {
             return true;
         }
@@ -1001,7 +1001,7 @@ public class ScraperFX extends Application {
             Files.createDirectories(path);
         }
                     
-        File outputFile = new File(path.toString() + File.separator + imageFileName + "." + imageOutputType);
+        final File outputFile = new File(path.toString() + File.separator + imageFileName + "." + imageOutputType);
         if(outputFile.exists()) {
             return true;
         }
@@ -1009,17 +1009,17 @@ public class ScraperFX extends Application {
             int retry = 0;
             while(retry < 3) {
                 try {
-                    URLConnection connection = new URL(url).openConnection();
+                    final URLConnection connection = new URL(url).openConnection();
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-                    BufferedImage img = ImageIO.read(connection.getInputStream());
+                    final BufferedImage img = ImageIO.read(connection.getInputStream());
                     
                     int width = 640;
                     if(img.getWidth() <= 640) {
                         width = img.getWidth();
                     }
                     
-                    java.awt.Image scaled = img.getScaledInstance(width, -1, java.awt.Image.SCALE_SMOOTH);
-                    BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                    final java.awt.Image scaled = img.getScaledInstance(width, -1, java.awt.Image.SCALE_SMOOTH);
+                    final BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
                     scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
                     ImageIO.write(scaledBuff, imageOutputType, outputFile);
                     return true;
@@ -1043,7 +1043,7 @@ public class ScraperFX extends Application {
     }
     
     private Pane createMetaFieldPane(String labelStr, TextInputControl field, Button clearButton, Button browseButton, CheckBox lockCheckBox) {
-        Label label = new Label(labelStr);
+        final Label label = new Label(labelStr);
         label.setPadding(new Insets(7., 7., 0., 7.));
         if(field instanceof TextField) {
             field.setPrefWidth(275.);
@@ -1052,7 +1052,7 @@ public class ScraperFX extends Application {
             field.setPrefSize(275., 125.);
         }
         
-        FlowPane pane = new FlowPane();
+        final FlowPane pane = new FlowPane();
         pane.getChildren().add(field);
         if(browseButton != null) {
             pane.getChildren().add(browseButton);
@@ -1067,7 +1067,7 @@ public class ScraperFX extends Application {
         pane.setHgap(7.);
         pane.setPadding(new Insets(0., 7., 0., 7.));
         
-        VBox box = new VBox(label, pane);
+        final VBox box = new VBox(label, pane);
         return box;
     }
     
@@ -1080,11 +1080,11 @@ public class ScraperFX extends Application {
     }
     
     private Pane createBrowseFieldPane(String labelStr, TextField field, Button clearButton, Button browseButton) {
-        Label label = new Label(labelStr);
+        final Label label = new Label(labelStr);
         label.setPadding(new Insets(7., 7., 0., 7.));
         field.setPrefWidth(275.);
         
-        FlowPane pane = new FlowPane();
+        final FlowPane pane = new FlowPane();
         pane.getChildren().add(field);
         if(browseButton != null) {
             pane.getChildren().add(browseButton);
@@ -1100,7 +1100,7 @@ public class ScraperFX extends Application {
         pane.setHgap(7.);
         pane.setPadding(new Insets(0., 7., 0., 7.));
         
-        VBox box = new VBox(label, pane);
+        final VBox box = new VBox(label, pane);
         return box;
     }
     
@@ -1129,7 +1129,7 @@ public class ScraperFX extends Application {
     
     //gets the reference to game out of the gamedata that this game is referring to... if that makes sense!
     private Game getGame(Game g) {
-        List<Game> games = getSystemGameData();
+        final List<Game> games = getSystemGameData();
         if(games == null) {
             return null;
         }
@@ -1215,12 +1215,12 @@ public class ScraperFX extends Application {
                         imageTaskList.clear();
 
                         if(g.metadata != null && g.metadata.images != null && !g.metadata.images.isEmpty()) {
-                            MetaImageViewBox box = new MetaImageViewBox();
+                            final MetaImageViewBox box = new MetaImageViewBox();
 
                             g.metadata.images.stream().filter((image) -> (image != null)).map((image) -> {
-                                MetaImageView metaImage = new MetaImageView(image);
+                                final MetaImageView metaImage = new MetaImageView(image);
                                 box.addView(metaImage);
-                                ImageLoadingTask task = new ImageLoadingTask(metaImage, image);
+                                final ImageLoadingTask task = new ImageLoadingTask(metaImage, image);
                                 return task;
                             }).map((task) -> {
                                 imageTaskList.add(task);
@@ -1301,14 +1301,14 @@ public class ScraperFX extends Application {
     }
     
     private void addSystemButtonActionPerformed() {
-        TextInputDialog dialog = new TextInputDialog();
+        final TextInputDialog dialog = new TextInputDialog();
         dialog.setHeaderText("Enter a name for your system.\n\nIf you are using EmulationStation, it is\nsuggested you name your systems to match\nyour rom folder names.");
         dialog.setContentText("Name:");
         dialog.setTitle("Name System");
-        Optional<String> result = dialog.showAndWait();
+        final Optional<String> result = dialog.showAndWait();
         
         if(result.isPresent() && result.get().trim().length() > 0) {
-            String name = result.get();
+            final String name = result.get();
             if(systemList.getItems().contains(name)) {
                 new Alert(Alert.AlertType.ERROR, "A system already exists with that name.", ButtonType.OK).showAndWait();
             }
@@ -1321,7 +1321,7 @@ public class ScraperFX extends Application {
     }
     
     private void deleteSystemButtonOnActionPerformed() {
-        Optional<ButtonType> result = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to remove '" + currentSystemName + "' from your systems?", ButtonType.YES, ButtonType.CANCEL).showAndWait();
+        final Optional<ButtonType> result = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to remove '" + currentSystemName + "' from your systems?", ButtonType.YES, ButtonType.CANCEL).showAndWait();
 
         if(result.isPresent() && result.get() == ButtonType.YES) {
             gamedata.remove(currentSystemName);
@@ -1394,15 +1394,15 @@ public class ScraperFX extends Application {
     }
     
     private void writeSettings() throws IOException {
-        Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "scraperfx.conf");
+        final Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "scraperfx.conf");
         if(!Files.exists(settingsPath)) {
             Files.createDirectories(settingsPath.getParent());
             Files.createFile(settingsPath);
         }
         
-        Xmappr xm = new Xmappr(SystemSettings.class);
+        final Xmappr xm = new Xmappr(SystemSettings.class);
         xm.setPrettyPrint(true);
-        try(BufferedWriter writer = Files.newBufferedWriter(settingsPath)) {
+        try(final BufferedWriter writer = Files.newBufferedWriter(settingsPath)) {
             xm.toXML(settings, writer);
         }
         catch(IOException ex) {
@@ -1411,15 +1411,15 @@ public class ScraperFX extends Application {
     }
     
     private void writeGameData() throws IOException {
-        Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "gamedata.conf");
+        final Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "gamedata.conf");
         if(!Files.exists(settingsPath)) {
             Files.createDirectories(settingsPath.getParent());
             Files.createFile(settingsPath);
         }
         
-        Xmappr xm = new Xmappr(GameData.class);
+        final Xmappr xm = new Xmappr(GameData.class);
         xm.setPrettyPrint(true);
-        try(BufferedWriter writer = Files.newBufferedWriter(settingsPath)) {
+        try(final BufferedWriter writer = Files.newBufferedWriter(settingsPath)) {
             xm.toXML(gamedata, writer);
         }
         catch(IOException ex) {
@@ -1542,8 +1542,8 @@ public class ScraperFX extends Application {
         
         public ScanTaskBase(Path gamesPath, List<Game> games) {
             // Don't know if this should be here or the start of call().
-            DirectoryStream.Filter<Path> filter = path -> Files.isRegularFile(path) && games.stream().anyMatch((game) -> path.getFileName().toString().equals(game.fileName));
-            try(DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+            final DirectoryStream.Filter<Path> filter = path -> Files.isRegularFile(path) && games.stream().anyMatch((game) -> path.getFileName().toString().equals(game.fileName));
+            try(final DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
                 stream.forEach(path -> paths.add(path));
             }
             catch(IOException ex) {
@@ -1565,12 +1565,12 @@ public class ScraperFX extends Application {
             /**
              * Step 1: Set up list of ScanTaskOperations.
              */
-            for(Path p : paths) {
+            for(final Path p : paths) {
                 if(isCancelled()) {
                     break;
                 }
                 
-                String filename = p.getFileName().toString();
+                final String filename = p.getFileName().toString();
                 Game localGame = getGame(new Game(filename));
                 if(localGame == null) {
                     localGame = new Game(filename);
@@ -1583,8 +1583,8 @@ public class ScraperFX extends Application {
                 else {
                     boolean ignore = false;
                     if(getCurrentSettings().ignoreRegex != null && !"".equals(getCurrentSettings().ignoreRegex)) {
-                        Pattern ignorePattern = Pattern.compile(".*" + getCurrentSettings().ignoreRegex + ".*");
-                        Matcher ignoreMatcher = ignorePattern.matcher(filename);
+                        final Pattern ignorePattern = Pattern.compile(".*" + getCurrentSettings().ignoreRegex + ".*");
+                        final Matcher ignoreMatcher = ignorePattern.matcher(filename);
                         if(ignoreMatcher.matches()) {
                             localGame.matchedName = null;
                             localGame.strength = Game.MatchStrength.IGNORE;
@@ -1679,7 +1679,7 @@ public class ScraperFX extends Application {
             final int totalFiles = ops.size();
             int completedCount = 0;
             
-            for(ScanTaskOperation op : ops) {
+            for(final ScanTaskOperation op : ops) {
                 if(isCancelled()) {
                     break;
                 }
@@ -1739,7 +1739,7 @@ public class ScraperFX extends Application {
                 getSystemGameData().add(localGame);
                 
                 Platform.runLater(() -> {
-                    int index = observableGamesList.indexOf(localGame);
+                    final int index = observableGamesList.indexOf(localGame);
                     if(index != -1) {
                         observableGamesList.remove(index);
                     }
@@ -1761,7 +1761,7 @@ public class ScraperFX extends Application {
             final int totalFiles = ops.size();
             int completedCount = 0;
             
-            for(ScanTaskOperation op : ops) {
+            for(final ScanTaskOperation op : ops) {
                 if(isCancelled()) {
                     break;
                 }
@@ -1777,8 +1777,8 @@ public class ScraperFX extends Application {
                 try {
                     if(!skipMatching) {
                         if(getCurrentSettings().substringRegex != null && !"".equals(getCurrentSettings().substringRegex)) {
-                            Pattern pattern = Pattern.compile(".*" + getCurrentSettings().substringRegex + ".*");
-                            Matcher m = pattern.matcher(noExtName);
+                            final Pattern pattern = Pattern.compile(".*" + getCurrentSettings().substringRegex + ".*");
+                            final Matcher m = pattern.matcher(noExtName);
                             if(m.matches()) {
                                 for(int i = 1; i <= m.groupCount(); i++) {
                                     noExtName = noExtName.replaceAll(m.group(i), "");
@@ -1793,14 +1793,14 @@ public class ScraperFX extends Application {
                         noExtName = noExtName.trim();
 
                         boolean hundredpercentmatch = false;
-                        List<String> hitNames = new ArrayList<>();
-                        List<Double> hitPercents = new ArrayList<>();
-                        List<Double> remoteHitPercents = new ArrayList<>();
+                        final List<String> hitNames = new ArrayList<>();
+                        final List<Double> hitPercents = new ArrayList<>();
+                        final List<Double> remoteHitPercents = new ArrayList<>();
                         int mostPartsHit = 0;
                         boolean hitPartIsNumber = false;
 
-                        List<String> allSysGames = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
-                        for(String gameName : allSysGames) {
+                        final List<String> allSysGames = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
+                        for(final String gameName : allSysGames) {
                             String lowerCaseName = gameName.toLowerCase().replaceAll(" - ", " ");//gameName.toLowerCase().replaceAll("'", "");
                             lowerCaseName = lowerCaseName.replaceAll("\\(.*\\)", "");
                             lowerCaseName = lowerCaseName.replaceAll("\\[.*\\]", "");
@@ -1817,12 +1817,12 @@ public class ScraperFX extends Application {
                             }
                             else {
                                 //find based on parts from both local filename and database names.
-                                String[] localParts = noExtName.split("\\s");
-                                String[] split = lowerCaseName.split("\\s");
+                                final String[] localParts = noExtName.split("\\s");
+                                final String[] split = lowerCaseName.split("\\s");
 
                                 int hits = 0;
                                 int hitLength = 0;
-                                for(String split1 : split) {
+                                for(final String split1 : split) {
                                     if(!"".equals(split1)) {
                                         for(int q = 0; q < localParts.length; q++) {
                                             if(!"".equals(localParts[q])) {
@@ -1886,7 +1886,7 @@ public class ScraperFX extends Application {
                             else {
                                 int index = -1;
                                 double highest = -1;
-                                List<String> tieNames = new ArrayList<>();
+                                final List<String> tieNames = new ArrayList<>();
 
                                 for(int i = 0; i < hitPercents.size(); i++) {
                                     if(hitPercents.get(i) > highest) {
@@ -1977,7 +1977,7 @@ public class ScraperFX extends Application {
                 
                 Game g = new Game(localGame);
                 Platform.runLater(() -> {
-                    int index = observableGamesList.indexOf(g);
+                    final int index = observableGamesList.indexOf(g);
                     if(index != -1) {
                         observableGamesList.remove(index);
                     }
@@ -2030,7 +2030,7 @@ public class ScraperFX extends Application {
             
             filterField.textProperty().addListener((observable, oldValue, newValue) -> {
                 filteredNamesList.setPredicate(name -> {
-                    String filterText = newValue.trim();
+                    final String filterText = newValue.trim();
                     if(filterText.isEmpty()) {
                         return true;
                     }
@@ -2050,7 +2050,7 @@ public class ScraperFX extends Application {
                     filterField.setText("");
                 }
                 else if(e.getCode() == KeyCode.BACK_SPACE) {
-                    String currentText = filterField.getText();
+                    final String currentText = filterField.getText();
                     filterField.setText(currentText.substring(0, currentText.length() - 1));
                 }
             });
@@ -2066,12 +2066,12 @@ public class ScraperFX extends Application {
             setOnShown(e -> onShown());
             setOnHidden(e -> workingTimer.cancel());
             
-            HBox box = new HBox();
+            final HBox box = new HBox();
             box.setSpacing(7.);
             box.setPadding(new Insets(7.));
             box.getChildren().addAll(okButton, cancelButton);
             
-            VBox vbox = new VBox();
+            final VBox vbox = new VBox();
             vbox.setSpacing(7.);
             vbox.setPadding(new Insets(7.));
             vbox.getChildren().add(new Label("Select game:"));
@@ -2079,7 +2079,7 @@ public class ScraperFX extends Application {
             vbox.getChildren().add(selectGameList);
             vbox.getChildren().add(box);
             
-            Scene scene = new Scene(vbox);
+            final Scene scene = new Scene(vbox);
 
             setTitle("Select Game");
             setResizable(false);
@@ -2097,7 +2097,7 @@ public class ScraperFX extends Application {
             new Thread(() -> {
                 try {
                     currentGame.matchedName = selectGameList.getSelectionModel().getSelectedItem();
-                    MetaData newMetaData = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
+                    final MetaData newMetaData = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
                     
                     if(newMetaData != null) {
                         if(currentGame.metadata != null && currentGame.metadata.favorite) {
@@ -2133,7 +2133,7 @@ public class ScraperFX extends Application {
         private void onShown() {
             new Thread(() -> {
                 try {
-                    List<String> gameList = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
+                    final List<String> gameList = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
                     Collections.sort(gameList);
                     
                     Platform.runLater(() -> {
@@ -2185,7 +2185,7 @@ public class ScraperFX extends Application {
                 progressBar.progressProperty().bind(scanTask.progressProperty());
 
                 messageArea.start();
-                Thread t = new Thread(scanTask);
+                final Thread t = new Thread(scanTask);
                 t.setDaemon(true);
                 t.start();
             });
@@ -2195,14 +2195,14 @@ public class ScraperFX extends Application {
                 scanTask.cancel();
             });
             
-            FlowPane p = new FlowPane(7., 7., progressBar, cancelButton);
+            final FlowPane p = new FlowPane(7., 7., progressBar, cancelButton);
             
-            VBox box = new VBox();
+            final VBox box = new VBox();
             box.setSpacing(7.);
             box.setPadding(new Insets(7.));
             box.getChildren().addAll(messageArea, p);
             
-            Scene scene = new Scene(box);
+            final Scene scene = new Scene(box);
             
             setTitle("Scanning in Progress");
             setResizable(false);
@@ -2271,7 +2271,7 @@ public class ScraperFX extends Application {
             DIR_CHOOSER.setTitle(title);
             DIR_CHOOSER.setInitialDirectory(new File(System.getProperty("user.home")));
 
-            File f = DIR_CHOOSER.showDialog(parentWindow);
+            final File f = DIR_CHOOSER.showDialog(parentWindow);
             return f;
         }
     }

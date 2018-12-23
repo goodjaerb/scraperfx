@@ -112,7 +112,6 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
 import javafx.stage.Window;
-import javafx.stage.WindowEvent;
 import org.apache.commons.io.FileUtils;
 import org.ini4j.Ini;
 
@@ -121,11 +120,11 @@ import org.ini4j.Ini;
  * @author goodjaerb
  */
 public class ScraperFX extends Application {
-    private static final Path   SETTINGS_DIR = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx");
-    private static final Path   LOCALDB_DIR = SETTINGS_DIR.resolve(".localdb");
+    public static final Path   SETTINGS_PATH = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx");
+    public static final Path   LOCALDB_PATH = SETTINGS_PATH.resolve(".localdb");
+    
     private static final String GAMEDATA_CONF = "gamedata.conf";
     private static final String SCRAPERFX_CONF = "scraperfx.conf";
-    
     private static final String KEYS_FILENAME = "keys.ini";
     private static final Ini    KEYS_INI = new Ini();
     
@@ -707,18 +706,16 @@ public class ScraperFX extends Application {
             Collections.sort(getSystemGameData(), Game.GAME_NAME_COMPARATOR);
             final Window parentWindow = outputToGamelistButton.getScene().getWindow();
             if(outputMediaToUserDirButton.isSelected()) {
-                new ESOutput().output(
-                        getSystemGameData(),
-                        SETTINGS_DIR.resolve(ESOutput.GAMELISTS_DIR).resolve(getCurrentSettings().name),
-                        SETTINGS_DIR.resolve("media").resolve(getCurrentSettings().name).resolve(ESOutput.IMAGES_DIR),
-                        SETTINGS_DIR.resolve("media").resolve(getCurrentSettings().name).resolve(ESOutput.VIDEOS_DIR),
+                new ESOutput().output(getSystemGameData(),
+                        SETTINGS_PATH.resolve(ESOutput.GAMELISTS_DIR).resolve(getCurrentSettings().name),
+                        SETTINGS_PATH.resolve("media").resolve(getCurrentSettings().name).resolve(ESOutput.IMAGES_DIR),
+                        SETTINGS_PATH.resolve("media").resolve(getCurrentSettings().name).resolve(ESOutput.VIDEOS_DIR),
                         getCurrentSettings().scrapeAsArcade,
                         parentWindow);
             }
             else {
-                new ESOutput().output(
-                        getSystemGameData(),
-                        SETTINGS_DIR.resolve(ESOutput.GAMELISTS_DIR).resolve(getCurrentSettings().name),
+                new ESOutput().output(getSystemGameData(),
+                        SETTINGS_PATH.resolve(ESOutput.GAMELISTS_DIR).resolve(getCurrentSettings().name),
                         Paths.get(getCurrentSettings().romsDir, ESOutput.IMAGES_DIR),
                         Paths.get(getCurrentSettings().romsDir, ESOutput.VIDEOS_DIR),
                         getCurrentSettings().scrapeAsArcade,
@@ -743,10 +740,10 @@ public class ScraperFX extends Application {
         final HBox mainBox = new HBox(box2, rightPane);
         mainBox.setSpacing(7.);
         
+        StackPane.setMargin(mainBox, new Insets(7.));
+        
         menuBar = new MenuBar();
         final BorderPane appPane = new BorderPane(mainBox, menuBar, null, null, null);
-        
-        StackPane.setMargin(mainBox, new Insets(7.));
         
         root.getChildren().add(appPane);
     }
@@ -756,7 +753,7 @@ public class ScraperFX extends Application {
         try {
             readGameData();
             readSettings();
-            KEYS_INI.load(SETTINGS_DIR.resolve(KEYS_FILENAME).toFile());
+            KEYS_INI.load(SETTINGS_PATH.resolve(KEYS_FILENAME).toFile());
         }
         catch(IOException ex) {
             Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
@@ -766,7 +763,6 @@ public class ScraperFX extends Application {
          * Menu Bar
          */
         final MenuItem exitMenuItem = new MenuItem("E_xit");
-        exitMenuItem.setAccelerator(KeyCombination.keyCombination("ctrl+x"));
         exitMenuItem.setOnAction((event) -> {
             if(exitCheck()) {
                 primaryStage.hide();
@@ -775,17 +771,29 @@ public class ScraperFX extends Application {
         
         final Menu fileMenu = new Menu("_File", null, exitMenuItem);
         
+//        final MenuItem updateConsolePlatforms = new MenuItem("Update _Platforms (Console)");
+//        updateConsolePlatforms.setOnAction((event) -> {
+//            // Show a warning about api key limit.
+//            // Connect and download the new Platforms list.
+//        });
+        
         menuBar.getMenus().addAll(fileMenu);
         
-        primaryStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, (event) -> {
+        primaryStage.setOnCloseRequest((event) -> {
             if(!exitCheck()) {
                 event.consume();
             }
         });
         
+        primaryStage.setOnShown((event) -> {
+            Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "primaryStage.shown()");
+            // check if local DB exists.
+            // 
+        });
+        
         new Thread(() -> {
             try {
-                final List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemNames();
+                final List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB).getSystemNames();
                 Platform.runLater(() -> {
                     consoleSelectComboBox.getItems().clear();
                     consoleSelectComboBox.getItems().addAll(consoles);
@@ -1352,7 +1360,7 @@ public class ScraperFX extends Application {
     }
     
     private void readSettings() throws IOException {
-        final Path scraperfxConfPath = SETTINGS_DIR.resolve(SCRAPERFX_CONF);
+        final Path scraperfxConfPath = SETTINGS_PATH.resolve(SCRAPERFX_CONF);
         if(Files.exists(scraperfxConfPath)) {
             final Xmappr xm = new Xmappr(SystemSettings.class);
             
@@ -1375,7 +1383,7 @@ public class ScraperFX extends Application {
     }
     
     private void readGameData() throws IOException {
-        final Path gamedataConfPath = SETTINGS_DIR.resolve(GAMEDATA_CONF);
+        final Path gamedataConfPath = SETTINGS_PATH.resolve(GAMEDATA_CONF);
         if(Files.exists(gamedataConfPath)) {
             final Xmappr xm = new Xmappr(GameData.class);
             

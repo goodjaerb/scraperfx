@@ -10,7 +10,15 @@ import com.goodjaerb.scraperfx.datasource.JsonDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatformsData;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,11 +28,14 @@ import java.util.logging.Logger;
  * @author goodjaerb
  */
 public class GamesDbSource extends JsonDataSource {
-    public static final String GAMESDB_LOCAL_DIR = "thegamesdb.net";
+    public static final String GAMESDB_LOCAL_DIR    = "thegamesdb.net";
+    public static final String PLATFORMS_FILE       = "platforms.json";
     
-    private static final String API_BASE_URL = "https://api.thegamesdb.net/";
-    private static final String API_GET_PLATFORMS_LIST = "Platforms";
-    private static final String API_KEY = "?apikey=#APIKEY";
+    private static final String API_BASE_URL            = "https://api.thegamesdb.net/";
+    private static final String API_GET_PLATFORMS_LIST  = "Platforms";
+    private static final String API_KEY                 = "?apikey=#APIKEY";
+    
+    private final GamesDbPlatformsData cachedPlatformsData = new GamesDbPlatformsData();
 
     @Override
     public String getSourceName() {
@@ -33,7 +44,61 @@ public class GamesDbSource extends JsonDataSource {
 
     @Override
     public List<String> getSystemNames() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(cachedPlatformsData.data == null || cachedPlatformsData.data.platforms.isEmpty()) {
+            Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Initializing local GamesDbPlatformsData...");
+            
+            final Path platformsFilePath = ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PLATFORMS_FILE);
+            if(!Files.exists(platformsFilePath)) {
+                Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Creating local file ''{0}''...", platformsFilePath.toString());
+                try {
+                    Files.createDirectories(platformsFilePath.getParent());
+                    Files.createFile(platformsFilePath);
+                } catch (IOException ex) {
+                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+            try {
+                GamesDbPlatformsData localData;
+                try(final BufferedReader reader = Files.newBufferedReader(platformsFilePath)) {
+                    localData = gson.fromJson(reader, GamesDbPlatformsData.class);
+                }
+                
+                
+                if(localData == null || localData.data.platforms.isEmpty()) {
+                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Retrieving Platforms data from remote source...");
+                    
+                    String url = API_BASE_URL + API_GET_PLATFORMS_LIST + API_KEY;
+                    url = url.replace("#APIKEY", ScraperFX.getKeysValue("GamesDb.Public"));
+                    
+                    localData = getJson(GamesDbPlatformsData.class, url);
+                    
+                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, localData.toString());
+                    
+                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "API requests remaining={0}", localData.remaining_monthly_allowance);
+                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Writing Platforms data to disk...");
+                    try(final BufferedWriter writer = Files.newBufferedWriter(platformsFilePath, Charset.forName("UTF-8"))) {
+                        gson.toJson(localData, GamesDbPlatformsData.class, writer);
+                        writer.flush();
+                    }
+                }
+                
+                cachedPlatformsData.data = localData.data;
+                Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Local GamesDbPlatformsData cache initialized.");
+            } catch (IOException ex) {
+                Logger.getLogger(GamesDbSource.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        if(cachedPlatformsData.data != null && !cachedPlatformsData.data.platforms.isEmpty()) {
+            final List<String> systemNames = new ArrayList<>();
+            cachedPlatformsData.data.platforms.values().forEach((platform) -> {
+                systemNames.add(platform.name);
+            });
+            return systemNames;
+        }
+        return null;
     }
 
     @Override
@@ -43,18 +108,18 @@ public class GamesDbSource extends JsonDataSource {
 
     @Override
     public MetaData getMetaData(String systemName, Game game) {
-        String url = API_BASE_URL + API_GET_PLATFORMS_LIST + API_KEY;
-        url = url.replace("#APIKEY", ScraperFX.getKeysValue("GamesDb.Public"));
-        
-        try {
-            final GamesDbPlatformsData data = getJson(GamesDbPlatformsData.class, url);
-            System.out.println(data);
-            
-            //just testing, don't return anything.
-        }
-        catch (IOException ex) {
-            Logger.getLogger(GamesDbSource.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        String url = API_BASE_URL + API_GET_PLATFORMS_LIST + API_KEY;
+//        url = url.replace("#APIKEY", ScraperFX.getKeysValue("GamesDb.Public"));
+//        
+//        try {
+//            final GamesDbPlatformsData data = getJson(GamesDbPlatformsData.class, url);
+//            System.out.println(data);
+//            
+//            //just testing, don't return anything.
+//        }
+//        catch (IOException ex) {
+//            Logger.getLogger(GamesDbSource.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         
         return null;
     }

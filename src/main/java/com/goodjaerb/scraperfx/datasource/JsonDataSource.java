@@ -18,10 +18,7 @@ public abstract class JsonDataSource extends HttpDataSource {
     protected <T> T getJson(Class<T> clazz, String url) throws IOException  {
         try(BufferedReader reader = getReader(url)) {
             if(reader != null) {
-                final String jsonString = reader.readLine();
-                
-                final Gson gson = new Gson();
-                return gson.fromJson(jsonString, clazz);
+                return new Gson().fromJson(reader, clazz);
             }
         }
         return null;

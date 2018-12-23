@@ -14,8 +14,8 @@ import java.util.Map;
  */
 public class GamesDbPlatformsData {
     public static class Data {
-        @Expose(serialize = false) public int count;
-        public Map<String, Platform> platforms;
+        @Expose(serialize = false, deserialize = true)  public int count;
+        @Expose(serialize = true, deserialize = true)   public Map<String, Platform> platforms;
         
         public Data() {
             
@@ -28,13 +28,13 @@ public class GamesDbPlatformsData {
     }
     
     public static class Platform {
-        public int id;
-        public String name;
-        public String alias;
-        public String icon;
-        public String console;
-        public String controller;
-        public String developer;
+        @Expose(serialize = true, deserialize = true) public int id;
+        @Expose(serialize = true, deserialize = true) public String name;
+        @Expose(serialize = true, deserialize = true) public String alias;
+        @Expose(serialize = true, deserialize = true) public String icon;
+        @Expose(serialize = true, deserialize = true) public String console;
+        @Expose(serialize = true, deserialize = true) public String controller;
+        @Expose(serialize = true, deserialize = true) public String developer;
         
         public Platform() {
             
@@ -46,11 +46,11 @@ public class GamesDbPlatformsData {
         }
     }
     
-    @Expose(serialize = false) public int code;
-    @Expose(serialize = false) public String status;
-    public Data data;
-    @Expose(serialize = false) public int remaining_monthly_allowance;
-    @Expose(serialize = false) public int extra_allowance;
+    @Expose(serialize = false, deserialize = true)  public int code;
+    @Expose(serialize = false, deserialize = true)  public String status;
+    @Expose(serialize = true, deserialize = true)   public Data data;
+    @Expose(serialize = false, deserialize = true)  public int remaining_monthly_allowance;
+    @Expose(serialize = false, deserialize = true)  public int extra_allowance;
     
     public GamesDbPlatformsData() {
         

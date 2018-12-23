@@ -34,8 +34,8 @@ public abstract class HttpDataSource implements DataSource {
                 Logger.getLogger(HttpDataSource.class.getName()).log(Level.INFO, "Connecting to ''{0}''.", url);
                 
                 conn = (HttpURLConnection)new URL(url).openConnection();
-                conn.setConnectTimeout(1500);
-                conn.setReadTimeout(1500);
+                conn.setConnectTimeout(3000);
+                conn.setReadTimeout(3000);
                 conn.setRequestMethod("GET");
                 if(httpProps != null && httpProps.length % 2 == 0) {
                     for(int i = 0; i < httpProps.length; i += 2) {

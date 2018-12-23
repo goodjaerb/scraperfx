@@ -127,20 +127,49 @@ public class MetaData {
         this.lockVideoDownload  = other.lockVideoDownload;
     }
     
+    public void reset() {
+        metaReleaseDate = null;
+        metaRating      = null;
+        metaPublisher   = null;
+        metaName        = null;
+        metaDeveloper   = null;
+        metaDesc        = null;
+        players         = null;
+        metaGenre       = null;
+        images          = null;
+        videodownload   = null;
+        videoembed      = null;
+        favorite        = false;
+        
+        lockDesc            = false;
+        lockDeveloper       = false;
+        lockGenre           = false;
+        lockImages          = false;
+        lockName            = false;
+        lockPlayers         = false;
+        lockPublisher       = false;
+        lockRating          = false;
+        lockReleasedate     = false;
+        lockVideoDownload   = false;
+        lockVideoEmbed      = false;
+    }
+    
     public void setMetaData(MetaData other) {
-        metaReleaseDate    = other.metaReleaseDate;
-        metaRating         = other.metaRating;
-        metaPublisher      = other.metaPublisher;
-        metaName           = other.metaName;
-        metaDeveloper      = other.metaDeveloper;
-        metaDesc           = other.metaDesc;
-        players            = other.players;
-        metaGenre          = other.metaGenre;
-        images             = other.images;
-        videodownload      = other.videodownload;
-        videoembed         = other.videoembed;
-        favorite           = other.favorite;
-        transferLocksFrom(other);
+        if(other != null) {
+            metaReleaseDate    = other.metaReleaseDate;
+            metaRating         = other.metaRating;
+            metaPublisher      = other.metaPublisher;
+            metaName           = other.metaName;
+            metaDeveloper      = other.metaDeveloper;
+            metaDesc           = other.metaDesc;
+            players            = other.players;
+            metaGenre          = other.metaGenre;
+            images             = other.images;
+            videodownload      = other.videodownload;
+            videoembed         = other.videoembed;
+            favorite           = other.favorite;
+            transferLocksFrom(other);
+        }
     }
     
     public void updateMetaData(MetaDataId id, String value) {

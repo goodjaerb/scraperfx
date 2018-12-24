@@ -740,10 +740,9 @@ public class ScraperFX extends Application {
         final HBox mainBox = new HBox(box2, rightPane);
         mainBox.setSpacing(7.);
         
-        StackPane.setMargin(mainBox, new Insets(7.));
-        
         menuBar = new MenuBar();
         final BorderPane appPane = new BorderPane(mainBox, menuBar, null, null, null);
+        BorderPane.setMargin(mainBox, new Insets(7.));
         
         root.getChildren().add(appPane);
     }

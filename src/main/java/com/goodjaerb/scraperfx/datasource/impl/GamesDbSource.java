@@ -108,18 +108,6 @@ public class GamesDbSource extends JsonDataSource {
 
     @Override
     public MetaData getMetaData(String systemName, Game game) {
-//        String url = API_BASE_URL + API_GET_PLATFORMS_LIST + API_KEY;
-//        url = url.replace("#APIKEY", ScraperFX.getKeysValue("GamesDb.Public"));
-//        
-//        try {
-//            final GamesDbPlatformsData data = getJson(GamesDbPlatformsData.class, url);
-//            System.out.println(data);
-//            
-//            //just testing, don't return anything.
-//        }
-//        catch (IOException ex) {
-//            Logger.getLogger(GamesDbSource.class.getName()).log(Level.SEVERE, null, ex);
-//        }
         
         return null;
     }

@@ -6,6 +6,9 @@
 package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
+//import com.goodjaerb.scraperfx.datasource.CachingDataSource;
+//import com.goodjaerb.scraperfx.datasource.cached.CachedDataPlan;
+//import com.goodjaerb.scraperfx.datasource.cached.JsonCachedDataPlan;
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatformsData;
 import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
@@ -20,8 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -31,41 +32,48 @@ import java.util.logging.Logger;
  *
  * @author goodjaerb
  */
-public class GamesDbSource extends CustomHttpDataSource {
-    public static final String GAMESDB_LOCAL_DIR = "thegamesdb.net";
-    public static final String PLATFORMS_FILE = "platforms.json";
-    
+public abstract class GamesDbSourceBase extends CustomHttpDataSource {// implements CachingDataSource {
+    private static final String                 GAMESDB_LOCAL_DIR = "thegamesdb.net";
+    private static final String                 PLATFORMS_FILE = "platforms.json";
     private static final String                 API_BASE_URL = "https://api.thegamesdb.net/";
     private static final String                 API_GET_PLATFORMS_LIST = "Platforms";
-    private static final Map<String, String>    DEFAULT_PARAMS;
+    private static final GamesDbPlatformsData   CACHED_PLATFORMS_DATA = new GamesDbPlatformsData();
+//    private static final CachedDataPlan         CACHED_DATA_PLAN = new JsonCachedDataPlan();
+//    
+//    static {
+//        final CachedDataPlan.OperationProperties<GamesDbPlatformsData> systemNamesProperties = CACHED_DATA_PLAN.new OperationProperties<>();
+//        systemNamesProperties.setCachePath(ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PLATFORMS_FILE));
+//        systemNamesProperties.setDataClass(GamesDbPlatformsData.class);
+//        systemNamesProperties.setUrl(API_BASE_URL + API_GET_PLATFORMS_LIST);
+//        
+//        CACHED_DATA_PLAN.registerCacheOperation(CachedDataPlan.Operation.SYSTEM_NAMES, systemNamesProperties);
+//    }
     
-    static {
-        final Map<String, String> initialParams = new HashMap<>();
-        initialParams.put("apikey", ScraperFX.getKeysValue("GamesDb.Public"));
-        
-        DEFAULT_PARAMS = Collections.unmodifiableMap(initialParams);
-    }
+    abstract Map<String, String> getDefaultParams();
     
-    private final GamesDbPlatformsData cachedPlatformsData = new GamesDbPlatformsData();
-
     @Override
     public String getSourceName() {
         return "TheGamesDB (thegamesdb.net)";
     }
-
+    
+//    @Override
+//    public CachedDataPlan getCachedDataPlan() {
+//        return null;
+//    }
+    
     @Override
     public List<String> getSystemNames() {
-        if(cachedPlatformsData.data == null || cachedPlatformsData.data.platforms.isEmpty()) {
-            Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Initializing local GamesDbPlatformsData...");
+        if(CACHED_PLATFORMS_DATA.data == null || CACHED_PLATFORMS_DATA.data.platforms.isEmpty()) {
+            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Initializing local GamesDbPlatformsData...");
             
             final Path platformsFilePath = ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PLATFORMS_FILE);
             if(!Files.exists(platformsFilePath)) {
-                Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Creating local file ''{0}''...", platformsFilePath.toString());
+                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Creating local file ''{0}''...", platformsFilePath.toString());
                 try {
                     Files.createDirectories(platformsFilePath.getParent());
                     Files.createFile(platformsFilePath);
                 } catch (IOException ex) {
-                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             
@@ -76,32 +84,31 @@ public class GamesDbSource extends CustomHttpDataSource {
                     localData = gson.fromJson(reader, GamesDbPlatformsData.class);
                 }
                 
-                
                 if(localData == null || localData.data.platforms.isEmpty()) {
-                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Retrieving Platforms data from remote source...");
+                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Retrieving Platforms data from remote source...");
                     
-                    localData = getData(new JsonDataSourcePlugin<>(GamesDbPlatformsData.class), API_BASE_URL + API_GET_PLATFORMS_LIST, DEFAULT_PARAMS);
+                    localData = getData(new JsonDataSourcePlugin<>(GamesDbPlatformsData.class), API_BASE_URL + API_GET_PLATFORMS_LIST, getDefaultParams());
                     
-                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, localData.toString());
+                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, localData.toString());
                     
-                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "API requests remaining={0}", localData.remaining_monthly_allowance);
-                    Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Writing Platforms data to disk...");
+                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining={0}", localData.remaining_monthly_allowance);
+                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing Platforms data to disk...");
                     try(final BufferedWriter writer = Files.newBufferedWriter(platformsFilePath, StandardCharsets.UTF_8)) {
                         gson.toJson(localData, GamesDbPlatformsData.class, writer);
                         writer.flush();
                     }
                 }
                 
-                cachedPlatformsData.data = localData.data;
-                Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Local GamesDbPlatformsData cache initialized.");
+                CACHED_PLATFORMS_DATA.data = localData.data;
+                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Local GamesDbPlatformsData cache initialized.");
             } catch (IOException ex) {
-                Logger.getLogger(GamesDbSource.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
-        if(cachedPlatformsData.data != null && !cachedPlatformsData.data.platforms.isEmpty()) {
+        if(CACHED_PLATFORMS_DATA.data != null && !CACHED_PLATFORMS_DATA.data.platforms.isEmpty()) {
             final List<String> systemNames = new ArrayList<>();
-            cachedPlatformsData.data.platforms.values().forEach((platform) -> {
+            CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> {
                 systemNames.add(platform.name);
             });
             return systemNames;

@@ -54,7 +54,7 @@ public class GamesDbLegacySource extends XmlDataSource {
         }
         
         try {
-            return getXml(dataHolderClass, url);
+            return getXml(dataHolderClass, url, null);
         }
         catch (IOException ex) {
             Logger.getLogger(GamesDbLegacySource.class.getName()).log(Level.SEVERE, null, ex);

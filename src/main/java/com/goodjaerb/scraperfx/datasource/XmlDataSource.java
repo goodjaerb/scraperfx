@@ -7,6 +7,7 @@ package com.goodjaerb.scraperfx.datasource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xmappr.Xmappr;
@@ -18,8 +19,8 @@ import org.xmappr.XmapprException;
  */
 public abstract class XmlDataSource extends HttpDataSource {
     
-    protected <T> T getXml(Class<T> dataHolderClass, String url) throws IOException {
-        try(BufferedReader reader = getReader(url)) {
+    protected <T> T getXml(Class<T> dataHolderClass, String url, Map<String, String> params) throws IOException {
+        try(BufferedReader reader = getReader(url, params)) {
             if(reader != null) {
                 try {
                     return dataHolderClass.cast(new Xmappr(dataHolderClass).fromXML(reader));

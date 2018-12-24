@@ -12,7 +12,10 @@ import com.goodjaerb.scraperfx.datasource.impl.screenscraper.ScreenScraperXmlGam
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,9 +24,18 @@ import java.util.logging.Logger;
  * @author goodjaerb
  */
 public class ScreenScraperSource extends XmlDataSource {
-    private static final String API_BASE_URL = "https://www.screenscraper.fr/api/";
-//    private static final String API_SYSTEMS_INFO = "systemesListe.php?devid=#DEVID&devpassword=#DEVPASS&softname=scraperfx&output=xml";
-    private static final String API_GAME_INFO = "jeuInfos.php?devid=#DEVID&devpassword=#DEVPASS&softname=scraperfx&output=xml&systemeid=#SYSTEMID&romnom=#GAMENAME";
+    private static final String                 API_BASE_URL = "https://www.screenscraper.fr/api/jeuInfos.php";
+    private static final Map<String, String>    DEFAULT_PARAMS;
+    
+    static {
+        final Map<String, String> initialParams = new HashMap<>();
+        initialParams.put("devid", ScraperFX.getKeysValue("ScreenScraper.ID"));
+        initialParams.put("devpassword", ScraperFX.getKeysValue("ScreenScraper.KEY"));
+        initialParams.put("softname", "scraperfx");
+        initialParams.put("output", "xml");
+        
+        DEFAULT_PARAMS = Collections.unmodifiableMap(initialParams);
+    }
     
     @Override
     public String getSourceName() {
@@ -31,19 +43,17 @@ public class ScreenScraperSource extends XmlDataSource {
     }
     
     private ScreenScraperXmlGameData getXmlData(String systemName, String gameName) {
-        String url = API_BASE_URL + API_GAME_INFO;
-
-        Integer sysId = ScreenScraperSystemIdMap.getSystemId(systemName);
+        final Integer sysId = ScreenScraperSystemIdMap.getSystemId(systemName);
         if(sysId == null) {
             return null;
         }
-        url = url.replace("#DEVID", ScraperFX.getKeysValue("ScreenScraper.ID"));
-        url = url.replace("#DEVPASS", ScraperFX.getKeysValue("ScreenScraper.KEY"));
-        url = url.replace("#SYSTEMID", Integer.toString(sysId));
-        url = url.replace("#GAMENAME", gameName.replaceAll(" ", "%20").replaceAll("&", "%26").replaceAll("\\$", "%24").replaceAll("!", "%21"));
+
+        final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
+        params.put("systemid", Integer.toString(sysId));
+        params.put("romnom", gameName);
         
         try {
-            return getXml(ScreenScraperXmlGameData.class, url);
+            return getXml(ScreenScraperXmlGameData.class, API_BASE_URL, params);
         }
         catch (IOException ex) {
             Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.SEVERE, null, ex);

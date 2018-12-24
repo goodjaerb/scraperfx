@@ -15,11 +15,13 @@ import com.google.gson.GsonBuilder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,7 +35,7 @@ public class GamesDbSource extends JsonDataSource {
     
     private static final String API_BASE_URL            = "https://api.thegamesdb.net/";
     private static final String API_GET_PLATFORMS_LIST  = "Platforms";
-    private static final String API_KEY                 = "?apikey=#APIKEY";
+    private static final String API_KEY_PARAM           = "apikey";
     
     private final GamesDbPlatformsData cachedPlatformsData = new GamesDbPlatformsData();
 
@@ -69,16 +71,18 @@ public class GamesDbSource extends JsonDataSource {
                 if(localData == null || localData.data.platforms.isEmpty()) {
                     Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Retrieving Platforms data from remote source...");
                     
-                    String url = API_BASE_URL + API_GET_PLATFORMS_LIST + API_KEY;
-                    url = url.replace("#APIKEY", ScraperFX.getKeysValue("GamesDb.Public"));
+                    String url = API_BASE_URL + API_GET_PLATFORMS_LIST;// + API_KEY;
+//                    url = url.replace("#APIKEY", ScraperFX.getKeysValue("GamesDb.Public"));
+                    final Map<String, String> params = new HashMap<>();
+                    params.put(API_KEY_PARAM, ScraperFX.getKeysValue("GamesDb.Public"));
                     
-                    localData = getJson(GamesDbPlatformsData.class, url);
+                    localData = getJson(GamesDbPlatformsData.class, url, params);
                     
                     Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, localData.toString());
                     
                     Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "API requests remaining={0}", localData.remaining_monthly_allowance);
                     Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Writing Platforms data to disk...");
-                    try(final BufferedWriter writer = Files.newBufferedWriter(platformsFilePath, Charset.forName("UTF-8"))) {
+                    try(final BufferedWriter writer = Files.newBufferedWriter(platformsFilePath, StandardCharsets.UTF_8)) {
                         gson.toJson(localData, GamesDbPlatformsData.class, writer);
                         writer.flush();
                     }

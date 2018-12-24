@@ -8,6 +8,7 @@ package com.goodjaerb.scraperfx.datasource;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  *
@@ -15,8 +16,8 @@ import java.io.IOException;
  */
 public abstract class JsonDataSource extends HttpDataSource {
     
-    protected <T> T getJson(Class<T> clazz, String url) throws IOException  {
-        try(BufferedReader reader = getReader(url)) {
+    protected <T> T getJson(Class<T> clazz, String url, Map<String, String> params) throws IOException  {
+        try(BufferedReader reader = getReader(url, params)) {
             if(reader != null) {
                 return new Gson().fromJson(reader, clazz);
             }

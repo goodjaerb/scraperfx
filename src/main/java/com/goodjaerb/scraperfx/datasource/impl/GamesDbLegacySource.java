@@ -5,12 +5,14 @@
  */
 package com.goodjaerb.scraperfx.datasource.impl;
 
+import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGame;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBListGame;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGameMetaData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBPlatform;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGameListData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBPlatformList;
+import com.goodjaerb.scraperfx.datasource.plugin.XmlDataSourcePlugin;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.goodjaerb.scraperfx.datasource.XmlDataSource;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
 
@@ -26,14 +27,13 @@ import com.goodjaerb.scraperfx.settings.MetaData;
  *
  * @author goodjaerb
  */
-public class GamesDbLegacySource extends XmlDataSource {
+public class GamesDbLegacySource extends CustomHttpDataSource {
+    public static final String IMAGE_BASE_URL = "http://legacy.thegamesdb.net/banners/";
 
     private static final String API_BASE_URL = "http://legacy.thegamesdb.net/api/";
     private static final String API_GET_PLATFORMS_LIST = "GetPlatformsList.php";
     private static final String API_GET_PLATFORM_GAMES = "GetPlatformGames.php";
     private static final String API_GET_GAME = "GetGame.php";
-
-    public static final String IMAGE_BASE_URL = "http://legacy.thegamesdb.net/banners/";
             
     private List<GamesDBPlatform> cachedPlatformList;
     private Map<Integer, List<GamesDBListGame>> cachedGameListMap;
@@ -54,7 +54,7 @@ public class GamesDbLegacySource extends XmlDataSource {
         }
         
         try {
-            return getXml(dataHolderClass, url, null);
+            return getData(new XmlDataSourcePlugin<>(dataHolderClass), url, null);
         }
         catch (IOException ex) {
             Logger.getLogger(GamesDbLegacySource.class.getName()).log(Level.SEVERE, null, ex);

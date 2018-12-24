@@ -5,21 +5,21 @@
  */
 package com.goodjaerb.scraperfx.datasource;
 
-import com.google.gson.Gson;
+import com.goodjaerb.scraperfx.datasource.plugin.DataSourcePlugin;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Map;
 
 /**
  *
- * @author goodjaerb
+ * @author goodjaerb <goodjaerb@gmail.com>
  */
-public abstract class JsonDataSource extends HttpDataSource {
+public abstract class CustomHttpDataSource extends HttpDataSource {
     
-    protected <T> T getJson(Class<T> clazz, String url, Map<String, String> params) throws IOException  {
-        try(BufferedReader reader = getReader(url, params)) {
+    public <T> T getData(DataSourcePlugin<T> plugin, String url, Map<String, String> params) throws IOException {
+        try(final BufferedReader reader = getReader(url, params)) {
             if(reader != null) {
-                return new Gson().fromJson(reader, clazz);
+                return plugin.convert(reader);
             }
         }
         return null;

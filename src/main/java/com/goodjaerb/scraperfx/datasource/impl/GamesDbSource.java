@@ -6,8 +6,9 @@
 package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
-import com.goodjaerb.scraperfx.datasource.JsonDataSource;
+import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatformsData;
+import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.google.gson.Gson;
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
  *
  * @author goodjaerb
  */
-public class GamesDbSource extends JsonDataSource {
+public class GamesDbSource extends CustomHttpDataSource {
     public static final String GAMESDB_LOCAL_DIR = "thegamesdb.net";
     public static final String PLATFORMS_FILE = "platforms.json";
     
@@ -79,7 +80,7 @@ public class GamesDbSource extends JsonDataSource {
                 if(localData == null || localData.data.platforms.isEmpty()) {
                     Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Retrieving Platforms data from remote source...");
                     
-                    localData = getJson(GamesDbPlatformsData.class, API_BASE_URL + API_GET_PLATFORMS_LIST, DEFAULT_PARAMS);
+                    localData = getData(new JsonDataSourcePlugin<>(GamesDbPlatformsData.class), API_BASE_URL + API_GET_PLATFORMS_LIST, DEFAULT_PARAMS);
                     
                     Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, localData.toString());
                     

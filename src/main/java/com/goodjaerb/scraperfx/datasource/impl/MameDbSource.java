@@ -45,9 +45,9 @@ public class MameDbSource extends HttpDataSource {
     public MetaData getMetaData(String systemName, Game game) {
         final MetaData data = new MetaData();
 
-        String url = BASE_URL + "game/" + game.matchedName;
+        final String url = BASE_URL + "game/" + game.matchedName;
         
-        try(BufferedReader reader = getReader(url)) {
+        try(final BufferedReader reader = getReader(url)) {
             if(reader != null) {
                 String result = "";
                 String line;

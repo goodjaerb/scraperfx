@@ -6,9 +6,10 @@
 package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
-import com.goodjaerb.scraperfx.datasource.XmlDataSource;
+import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.screenscraper.ScreenScraperSystemIdMap;
 import com.goodjaerb.scraperfx.datasource.impl.screenscraper.ScreenScraperXmlGameData;
+import com.goodjaerb.scraperfx.datasource.plugin.XmlDataSourcePlugin;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
  *
  * @author goodjaerb
  */
-public class ScreenScraperSource extends XmlDataSource {
+public class ScreenScraperSource extends CustomHttpDataSource {
     private static final String                 API_BASE_URL = "https://www.screenscraper.fr/api/jeuInfos.php";
     private static final Map<String, String>    DEFAULT_PARAMS;
     
@@ -53,7 +54,7 @@ public class ScreenScraperSource extends XmlDataSource {
         params.put("romnom", gameName);
         
         try {
-            return getXml(ScreenScraperXmlGameData.class, API_BASE_URL, params);
+            return getData(new XmlDataSourcePlugin<>(ScreenScraperXmlGameData.class), API_BASE_URL, params);
         }
         catch (IOException ex) {
             Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.SEVERE, null, ex);

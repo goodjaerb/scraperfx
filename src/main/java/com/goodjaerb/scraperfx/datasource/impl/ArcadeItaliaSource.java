@@ -5,7 +5,8 @@
  */
 package com.goodjaerb.scraperfx.datasource.impl;
 
-import com.goodjaerb.scraperfx.datasource.JsonDataSource;
+import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
+import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
 import com.goodjaerb.scraperfx.datasource.impl.arcadeitalia.ArcadeItaliaData;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
@@ -23,7 +24,10 @@ import java.util.logging.Logger;
  *
  * @author goodjaerb
  */
-public class ArcadeItaliaSource extends JsonDataSource {
+public class ArcadeItaliaSource extends CustomHttpDataSource {
+//    private static final String HTTP_CONTENT_LANGUAGE_PROP = "Accept-Language";
+//    private static final String HTTP_CONTENT_LANGUAGE_VALUE = "en";
+    
     private static final String                 API_URL = "http://adb.arcadeitalia.net/service_scraper.php";//?ajax=query_mame&lang=en&game_name=";
     private static final Map<String, String>    DEFAULT_PARAMS;
     private static final String                 GAME_NAME_PARAM = "game_name";
@@ -35,8 +39,6 @@ public class ArcadeItaliaSource extends JsonDataSource {
         
         DEFAULT_PARAMS = Collections.unmodifiableMap(initialMap);
     }
-//    private static final String PROP_CONTENT_LANGUAGE = "Accept-Language";
-//    private static final String VAL_CONTENT_LANGUAGE = "en";
     
 
     @Override
@@ -60,7 +62,7 @@ public class ArcadeItaliaSource extends JsonDataSource {
             final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
             params.put(GAME_NAME_PARAM, game.matchedName);
             
-            final ArcadeItaliaData data = getJson(ArcadeItaliaData.class, API_URL, params);
+            final ArcadeItaliaData data = getData(new JsonDataSourcePlugin<>(ArcadeItaliaData.class), API_URL, params);
             if(data != null && data.result != null && data.result.length > 0) {
                 final MetaData metadata = new MetaData();
                 metadata.metaName = data.result[0].title;

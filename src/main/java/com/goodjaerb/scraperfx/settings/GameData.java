@@ -30,7 +30,7 @@ public class GameData {
     }
     
     public List<Game> getSystemData(String systemName) {
-        for(GameList list : gamelist) {
+        for(final GameList list : gamelist) {
             if(systemName.equals(list.system)) {
                 return list.games;
             }

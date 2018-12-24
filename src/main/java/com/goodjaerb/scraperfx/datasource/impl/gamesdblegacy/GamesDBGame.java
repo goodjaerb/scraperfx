@@ -79,14 +79,14 @@ public class GamesDBGame {
         }
         if(images.fanarts != null) {
             int i = 0;
-            for(GamesDBFanArt fanart : images.fanarts) {
+            for(final GamesDBFanArt fanart : images.fanarts) {
                 i++;
                 imglist.add(new Image("fanart", fanart.data.width, fanart.data.height, GamesDbLegacySource.IMAGE_BASE_URL + fanart.data.path, (i == 1)));
             }
         }
         if(images.screenshots != null) {
             int i = 0;
-            for(GamesDBScreenshot screenshot : images.screenshots) {
+            for(final GamesDBScreenshot screenshot : images.screenshots) {
                 i++;
                 imglist.add(new Image("screenshot", screenshot.data.width, screenshot.data.height, GamesDbLegacySource.IMAGE_BASE_URL + screenshot.data.path, (i == 1)));
             }

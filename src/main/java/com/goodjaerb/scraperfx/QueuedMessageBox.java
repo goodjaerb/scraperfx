@@ -18,12 +18,11 @@ import javafx.scene.control.TextArea;
  */
 public class QueuedMessageBox extends TextArea {
     private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
-
-    private final AnimationTimer messageConsumer = new AnimationTimer() {
+    private final AnimationTimer        messageConsumer = new AnimationTimer() {
 
         @Override
         public void handle(long now) {
-            List<String> messages = new ArrayList<>();
+            final List<String> messages = new ArrayList<>();
             messageQueue.drainTo(messages);
             messages.forEach(msg -> appendText(msg + "\n"));
         }

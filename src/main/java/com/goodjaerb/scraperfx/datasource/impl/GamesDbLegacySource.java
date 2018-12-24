@@ -115,7 +115,7 @@ public class GamesDbLegacySource extends CustomHttpDataSource {
     private Integer getSystemId(String name) {
         populatePlatformList();
         
-        for(GamesDBPlatform p : cachedPlatformList) {
+        for(final GamesDBPlatform p : cachedPlatformList) {
             if(name.equals(p.name)) {
                 return p.id;
             }
@@ -142,7 +142,7 @@ public class GamesDbLegacySource extends CustomHttpDataSource {
     private Integer getGameId(String systemName, String gameName) {
         populateGameList(getSystemId(systemName));
         
-        for(GamesDBListGame g : cachedGameListMap.get(getSystemId(systemName))) {
+        for(final GamesDBListGame g : cachedGameListMap.get(getSystemId(systemName))) {
             if(gameName.equals(g.gameTitle)) {
                 return g.id;
             }

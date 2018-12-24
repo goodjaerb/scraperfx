@@ -101,7 +101,7 @@ public class Game {//implements Comparable<Game> {
     
     public String getImageUrlByType(String type) {
         if(metadata != null && metadata.images != null) {
-            for(Image img : metadata.images) {
+            for(final Image img : metadata.images) {
                 if(img.type.equals(type)) {
                     return img.url;
                 }

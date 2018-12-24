@@ -98,7 +98,7 @@ public class ESOutput {
     public static final String VIDEOS_DIR = "videos";
     
     public void output(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
-        OutputDialog d = new OutputDialog(games, outputPath, imagesPath, videoPath, arcade, parentWindow);
+        final OutputDialog d = new OutputDialog(games, outputPath, imagesPath, videoPath, arcade, parentWindow);
         d.showAndWait();
     }
    
@@ -119,17 +119,17 @@ public class ESOutput {
         public OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
             super();
             
-            VBox tagsBox = new VBox();
+            final VBox tagsBox = new VBox();
             tagsBox.setSpacing(7.);
             tagsBox.setPadding(new Insets(7.));
             tagsBox.getChildren().add(new Label("EmulationStation Image Tags"));
             
-            for(ESImageTag tag : ESImageTag.values()) {
+            for(final ESImageTag tag : ESImageTag.values()) {
                 esTags.add(tag.getTag());
-                TextField tagField = new TextField(tag.getTag());
+                final TextField tagField = new TextField(tag.getTag());
                 tagField.setEditable(false);
                 
-                CheckBox enableTagCheckBox = new CheckBox();
+                final CheckBox enableTagCheckBox = new CheckBox();
                 enableTagCheckBox.setSelected(true);
                 ComboBox<String> primaryTypeBox = new ComboBox<>();
                 ComboBox<String> secondaryTypeBox = new ComboBox<>();
@@ -142,7 +142,7 @@ public class ESOutput {
                 primaryTypeBox.getSelectionModel().select(0);
                 secondaryTypeBox.getItems().add("");
                 secondaryTypeBox.getSelectionModel().select(0);
-                for(Image.ImageType type : Image.ImageType.values()) {
+                for(final Image.ImageType type : Image.ImageType.values()) {
                     if(arcade == type.isArcadeImage()) {
                         primaryTypeBox.getItems().add(type.getName());
                         secondaryTypeBox.getItems().add(type.getName());
@@ -166,14 +166,14 @@ public class ESOutput {
                     }
                 }
                 
-                HBox box = new HBox();
+                final HBox box = new HBox();
                 box.setSpacing(7.);
                 box.getChildren().addAll(enableTagCheckBox, tagField, primaryTypeBox, secondaryTypeBox);
                 
                 tagsBox.getChildren().add(box);
             }
             
-            HBox buttonBox = new HBox();
+            final HBox buttonBox = new HBox();
             buttonBox.setSpacing(7.);
             buttonBox.getChildren().addAll(progressBar, startButton, cancelButton);
             
@@ -182,7 +182,7 @@ public class ESOutput {
             tagsBox.getChildren().add(messageArea);
             tagsBox.getChildren().add(buttonBox);
             
-            OutputTask task = new OutputTask(message -> messageArea.queueMessage(message), games, outputPath, imagesPath, videoPath);
+            final OutputTask task = new OutputTask(message -> messageArea.queueMessage(message), games, outputPath, imagesPath, videoPath);
 
             task.progressProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                 progressBar.setProgress((double)newValue);
@@ -201,7 +201,7 @@ public class ESOutput {
             startButton.setOnAction((e) -> {
                 startButton.setDisable(true);
                 messageArea.start();
-                Thread t = new Thread(task);
+                final Thread t = new Thread(task);
 //                t.setDaemon(true);
                 t.start();
             });
@@ -220,7 +220,7 @@ public class ESOutput {
                 task.cancel();
             });
 
-            Scene scene = new Scene(tagsBox);
+            final Scene scene = new Scene(tagsBox);
             
             setTitle("EmulationStation Output");
             setResizable(false);
@@ -248,7 +248,7 @@ public class ESOutput {
 
             @Override
             protected Void call()  {
-                AtomicBoolean isScanning = new AtomicBoolean(true);
+                final AtomicBoolean isScanning = new AtomicBoolean(true);
                 try {
                     Files.createDirectories(outputPath.getParent());
                     try {
@@ -262,7 +262,7 @@ public class ESOutput {
                         writer.append("<gameList>\n");
 
                         int fileCount = 0;
-                        for(Game g : games) {
+                        for(final Game g : games) {
                             if(isCancelled()) {
                                 break;
                             }
@@ -275,8 +275,8 @@ public class ESOutput {
                                 if(g.metadata == null) {
                                     String noMatchMetaName = g.fileName;
                                     if(ScraperFX.getCurrentSettings().substringRegex != null && !"".equals(ScraperFX.getCurrentSettings().substringRegex)) {
-                                        Pattern pattern = Pattern.compile(".*" + ScraperFX.getCurrentSettings().substringRegex + ".*");
-                                        Matcher m = pattern.matcher(noMatchMetaName);
+                                        final Pattern pattern = Pattern.compile(".*" + ScraperFX.getCurrentSettings().substringRegex + ".*");
+                                        final Matcher m = pattern.matcher(noMatchMetaName);
                                         if(m.matches()) {
                                             for(int i = 1; i <= m.groupCount(); i++) {
                                                 noMatchMetaName = noMatchMetaName.replaceAll(m.group(i), "");
@@ -313,10 +313,10 @@ public class ESOutput {
                                     if(g.metadata.images != null && !g.metadata.images.isEmpty()) {
                                         for(int i = 0; i < esTags.size(); i++) {
                                             if(enableTagCheckBoxes.get(i).isSelected()) {
-                                                String primary = primaryMetaDataTypes.get(i).getSelectionModel().getSelectedItem();
-                                                String secondary = secondaryMetaDataTypes.get(i).getSelectionModel().getSelectedItem();
-                                                String primaryPath = g.metadata.getSelectedImageUrl(primary);
-                                                String secondaryPath = g.metadata.getSelectedImageUrl(secondary);
+                                                final String primary = primaryMetaDataTypes.get(i).getSelectionModel().getSelectedItem();
+                                                final String secondary = secondaryMetaDataTypes.get(i).getSelectionModel().getSelectedItem();
+                                                final String primaryPath = g.metadata.getSelectedImageUrl(primary);
+                                                final String secondaryPath = g.metadata.getSelectedImageUrl(secondary);
                                                 
                                                 String primaryImageType = g.metadata.getSelectedImageType(primary);
                                                 String secondaryImageType = g.metadata.getSelectedImageType(secondary);
@@ -334,17 +334,17 @@ public class ESOutput {
                                                 
                                                 //hardcode flyer/marquee as last resorts because i can't be bothered to update the gui.
                                                 //for the life of me i don't know why i do this??
-                                                String flyerPath = g.metadata.getSelectedImageUrl("flyer");
-                                                String marqueePath = g.metadata.getSelectedImageUrl("marquee");
+                                                final String flyerPath = g.metadata.getSelectedImageUrl("flyer");
+                                                final String marqueePath = g.metadata.getSelectedImageUrl("marquee");
                                                 if(flyerPath != null && "image".equals(esTags.get(i))) {
-                                                    String flyerImageType = "png";//flyerPath.substring(flyerPath.lastIndexOf(".") + 1);
+                                                    final String flyerImageType = "png";//flyerPath.substring(flyerPath.lastIndexOf(".") + 1);
                                                     if(ScraperFX.writeImageToFile(imagesPath, g.fileName + "-flyer", flyerImageType, flyerPath)) {
                                                         writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-flyer" + "." + flyerImageType + "</" + esTags.get(i) + ">\n");
                                                         continue;
                                                     }
                                                 }
                                                 if(marqueePath != null && "bgImage".equals(esTags.get(i))) {
-                                                    String marqueeImageType = "png";//marqueePath.substring(marqueePath.lastIndexOf(".") + 1);
+                                                    final String marqueeImageType = "png";//marqueePath.substring(marqueePath.lastIndexOf(".") + 1);
                                                     if(ScraperFX.writeImageToFile(imagesPath, g.fileName + "-marquee", marqueeImageType, marqueePath)) {
                                                         writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-marquee" + "." + marqueeImageType + "</" + esTags.get(i) + ">\n");
                                                         continue;

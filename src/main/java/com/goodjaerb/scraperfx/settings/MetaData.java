@@ -90,7 +90,7 @@ public class MetaData {
     }
     
     public String getSelectedImageUrl(String type) {
-        for(Image image : images) {
+        for(final Image image : images) {
             if(type.equals(image.type) && image.selected) {
                 return image.url;
             }
@@ -99,7 +99,7 @@ public class MetaData {
     }
     
     public String getSelectedImageType(String type) {
-        for(Image image : images) {
+        for(final Image image : images) {
             if(type.equals(image.type) && image.selected) {
                 return image.targetImageType;
             }

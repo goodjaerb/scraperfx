@@ -26,7 +26,7 @@ public class DataSourceFactory {
         
         DataSource getDataSource() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
             if(dataSource == null) {
-                Class c = Class.forName(className);
+                final Class c = Class.forName(className);
                 dataSource = (DataSource)c.newInstance();
             }
             return dataSource;

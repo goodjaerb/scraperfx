@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,12 +31,19 @@ import java.util.logging.Logger;
  * @author goodjaerb
  */
 public class GamesDbSource extends JsonDataSource {
-    public static final String GAMESDB_LOCAL_DIR    = "thegamesdb.net";
-    public static final String PLATFORMS_FILE       = "platforms.json";
+    public static final String GAMESDB_LOCAL_DIR = "thegamesdb.net";
+    public static final String PLATFORMS_FILE = "platforms.json";
     
-    private static final String API_BASE_URL            = "https://api.thegamesdb.net/";
-    private static final String API_GET_PLATFORMS_LIST  = "Platforms";
-    private static final String API_KEY_PARAM           = "apikey";
+    private static final String                 API_BASE_URL = "https://api.thegamesdb.net/";
+    private static final String                 API_GET_PLATFORMS_LIST = "Platforms";
+    private static final Map<String, String>    DEFAULT_PARAMS;
+    
+    static {
+        final Map<String, String> initialParams = new HashMap<>();
+        initialParams.put("apikey", ScraperFX.getKeysValue("GamesDb.Public"));
+        
+        DEFAULT_PARAMS = Collections.unmodifiableMap(initialParams);
+    }
     
     private final GamesDbPlatformsData cachedPlatformsData = new GamesDbPlatformsData();
 
@@ -71,12 +79,7 @@ public class GamesDbSource extends JsonDataSource {
                 if(localData == null || localData.data.platforms.isEmpty()) {
                     Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, "Retrieving Platforms data from remote source...");
                     
-                    String url = API_BASE_URL + API_GET_PLATFORMS_LIST;// + API_KEY;
-//                    url = url.replace("#APIKEY", ScraperFX.getKeysValue("GamesDb.Public"));
-                    final Map<String, String> params = new HashMap<>();
-                    params.put(API_KEY_PARAM, ScraperFX.getKeysValue("GamesDb.Public"));
-                    
-                    localData = getJson(GamesDbPlatformsData.class, url, params);
+                    localData = getJson(GamesDbPlatformsData.class, API_BASE_URL + API_GET_PLATFORMS_LIST, DEFAULT_PARAMS);
                     
                     Logger.getLogger(GamesDbSource.class.getName()).log(Level.INFO, localData.toString());
                     

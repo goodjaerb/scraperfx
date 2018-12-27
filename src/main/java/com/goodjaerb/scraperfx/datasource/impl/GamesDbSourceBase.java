@@ -6,9 +6,6 @@
 package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
-//import com.goodjaerb.scraperfx.datasource.CachingDataSource;
-//import com.goodjaerb.scraperfx.datasource.cached.CachedDataPlan;
-//import com.goodjaerb.scraperfx.datasource.cached.JsonCachedDataPlan;
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatformsData;
 import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
@@ -32,22 +29,12 @@ import java.util.logging.Logger;
  *
  * @author goodjaerb
  */
-public abstract class GamesDbSourceBase extends CustomHttpDataSource {// implements CachingDataSource {
+public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     private static final String                 GAMESDB_LOCAL_DIR = "thegamesdb.net";
     private static final String                 PLATFORMS_FILE = "platforms.json";
     private static final String                 API_BASE_URL = "https://api.thegamesdb.net/";
     private static final String                 API_GET_PLATFORMS_LIST = "Platforms";
     private static final GamesDbPlatformsData   CACHED_PLATFORMS_DATA = new GamesDbPlatformsData();
-//    private static final CachedDataPlan         CACHED_DATA_PLAN = new JsonCachedDataPlan();
-//    
-//    static {
-//        final CachedDataPlan.OperationProperties<GamesDbPlatformsData> systemNamesProperties = CACHED_DATA_PLAN.new OperationProperties<>();
-//        systemNamesProperties.setCachePath(ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PLATFORMS_FILE));
-//        systemNamesProperties.setDataClass(GamesDbPlatformsData.class);
-//        systemNamesProperties.setUrl(API_BASE_URL + API_GET_PLATFORMS_LIST);
-//        
-//        CACHED_DATA_PLAN.registerCacheOperation(CachedDataPlan.Operation.SYSTEM_NAMES, systemNamesProperties);
-//    }
     
     abstract Map<String, String> getDefaultParams();
     
@@ -55,11 +42,6 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {// impleme
     public String getSourceName() {
         return "TheGamesDB (thegamesdb.net)";
     }
-    
-//    @Override
-//    public CachedDataPlan getCachedDataPlan() {
-//        return null;
-//    }
     
     @Override
     public List<String> getSystemNames() {

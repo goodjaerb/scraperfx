@@ -26,4 +26,9 @@ public class GamesDbResult<T extends GamesDbData<?>> {
     public boolean isDataAvailable() {
         return data != null && data.isDataAvailable();
     }
+
+    @Override
+    public String toString() {
+        return "GamesDbResult{" + "code=" + code + ", status=" + status + ", data=" + data + ", remaining_monthly_allowance=" + remaining_monthly_allowance + ", extra_allowance=" + extra_allowance + '}';
+    }
 }

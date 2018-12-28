@@ -24,4 +24,8 @@ public abstract class CustomHttpDataSource extends HttpDataSource {
         }
         return null;
     }
+    
+    public <T> T getData(DataSourcePlugin<T> plugin, String url) throws IOException {
+        return getData(plugin, url, null);
+    }
 }

@@ -5,18 +5,20 @@
  */
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
-import com.google.gson.annotations.Expose;
+import java.util.Collection;
 
 /**
  *
  * @author goodjaerb
  * @param <T>
  */
-public class GamesDbData<T> {
+public class GamesDbPaginatedData<T> extends GamesDbData<T> {
     
-    @Expose(serialize = false, deserialize = true) public int count;
-    
-    public boolean isDataAvailable() {
-        return false;
+    public void appendData(Collection<T> data) {
+        
     }
+    
+    public Collection<T> values() {
+        return null;
+    } 
 }

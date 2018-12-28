@@ -6,7 +6,6 @@
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
 import com.google.gson.annotations.Expose;
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -45,14 +44,11 @@ public class GamesDbPlatformsData extends GamesDbData<GamesDbPlatformsData.Platf
     
     @Override
     public boolean isDataAvailable() {
-        if(platforms == null || platforms.isEmpty()) {
-            return false;
-        }
-        return true;
+        return !(platforms == null || platforms.isEmpty());
     }
     
-    @Override
-    public Collection<Platform> values() {
-        return platforms.values();
-    }
+//    @Override
+//    public Collection<Platform> values() {
+//        return Collections.unmodifiableCollection(platforms.values());
+//    }
 }

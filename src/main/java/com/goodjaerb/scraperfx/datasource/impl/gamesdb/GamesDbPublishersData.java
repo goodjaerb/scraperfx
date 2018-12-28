@@ -6,7 +6,6 @@
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
 import com.google.gson.annotations.Expose;
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -41,14 +40,11 @@ public class GamesDbPublishersData extends GamesDbData<GamesDbPublishersData.Pub
     
     @Override
     public boolean isDataAvailable() {
-        if(publishers == null || publishers.isEmpty()) {
-            return false;
-        }
-        return true;
+        return !(publishers == null || publishers.isEmpty());
     }
     
-    @Override
-    public Collection<Publisher> values() {
-        return publishers.values();
-    }
+//    @Override
+//    public Collection<Publisher> values() {
+//        return Collections.unmodifiableCollection(publishers.values());
+//    }
 }

@@ -6,7 +6,6 @@
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
 import com.google.gson.annotations.Expose;
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -41,14 +40,11 @@ public class GamesDbGenresData extends GamesDbData<GamesDbGenresData.Genre> {
     
     @Override
     public boolean isDataAvailable() {
-        if(genres == null || genres.isEmpty()) {
-            return false;
-        }
-        return true;
+        return !(genres == null || genres.isEmpty());
     }
     
-    @Override
-    public Collection<Genre> values() {
-        return genres.values();
-    }
+//    @Override
+//    public Collection<Genre> values() {
+//        return Collections.unmodifiableCollection(genres.values());
+//    }
 }

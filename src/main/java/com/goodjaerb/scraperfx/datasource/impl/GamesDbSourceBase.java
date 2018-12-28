@@ -10,6 +10,8 @@ import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbDevelopersData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGenresData;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedData;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedResult;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatformsData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPublishersData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbResult;
@@ -105,7 +107,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
             try {
                 T localData = getCachedData(cachePath, typeOfT);
                 
-                if(localData == null || !localData.data.isDataAvailable()) {
+                if(localData == null || !localData.isDataAvailable()) {
                     Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Retrieving data from remote source...");
                     
                     localData = getData(new JsonDataSourcePlugin<>(typeOfT), url, params);
@@ -114,12 +116,62 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
                     }
                     else {
-                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining={0}", localData.remaining_monthly_allowance);
-                        if(localData.data.isDataAvailable()) {
+                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
+                        if(localData.isDataAvailable()) {
                             Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
                             writeCachedData(cachePath, localData);
                             
                             cache.data = localData.data;
+                        }
+                    }
+                }
+                else {
+                    cache.data = localData.data;
+                }
+                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Local {0} cache initialized.", dataClass.getName());
+            }
+            catch (IOException ex) {
+                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    private <E, D extends GamesDbPaginatedData<E>, T extends GamesDbPaginatedResult<D>> void populatePaginatedCache(T cache, Type typeOfT, Class<D> dataClass, Path cachePath, String url, Map<String, String> params) {
+        if(!cache.isDataAvailable()) {
+            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Initializing local {0} cache...", dataClass.getName());
+            try {
+                T localData = getCachedData(cachePath, typeOfT);
+                
+                if(localData == null || !localData.isDataAvailable()) {
+                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Retrieving data from remote source...");
+                    
+                    localData = getData(new JsonDataSourcePlugin<>(typeOfT), url, params);
+                    
+                    if(localData == null) {
+                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
+                    }
+                    else {
+                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
+
+                        if(localData.isDataAvailable()) {
+                            cache.data = localData.data;
+
+                            while(localData.hasNext()) {
+                                localData = getData(new JsonDataSourcePlugin<>(typeOfT), localData.pages.next);
+
+                                if(localData == null) {
+                                    //if it's still null something went wrong.
+                                    break;
+                                }
+                                
+                                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
+                                if(localData.isDataAvailable()) {
+                                    cache.data.appendData(localData.data.values());
+                                }
+                            }
+
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
+                            writeCachedData(cachePath, cache);
                         }
                     }
                 }

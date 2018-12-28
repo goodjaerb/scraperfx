@@ -7,18 +7,22 @@ package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbDevelopersData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGenresData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatformsData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPublishersData;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbResult;
 import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,10 +49,10 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     private static final String API_GET_DEVELOPERS_LIST = "Developers";
     private static final String API_GET_PUBLISHERS_LIST = "Publishers";
     
-    private static final GamesDbPlatformsData   CACHED_PLATFORMS_DATA = new GamesDbPlatformsData();
-    private static final GamesDbGenresData      CACHED_GENRES_DATA = new GamesDbGenresData();
-    private static final GamesDbDevelopersData  CACHED_DEVELOPERS_DATA = new GamesDbDevelopersData();
-    private static final GamesDbPublishersData  CACHED_PUBLISHERS_DATA = new GamesDbPublishersData();
+    private static final GamesDbResult<GamesDbPlatformsData>    CACHED_PLATFORMS_DATA = new GamesDbResult<>();
+    private static final GamesDbResult<GamesDbGenresData>       CACHED_GENRES_DATA = new GamesDbResult<>();
+    private static final GamesDbResult<GamesDbDevelopersData>   CACHED_DEVELOPERS_DATA = new GamesDbResult<>();
+    private static final GamesDbResult<GamesDbPublishersData>   CACHED_PUBLISHERS_DATA = new GamesDbResult<>();
     
     abstract Map<String, String> getDefaultParams();
     
@@ -61,7 +65,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         return new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
     }
     
-    private <T> T getCachedData(Path cacheFilePath, Class<T> dataClass) throws IOException {
+    private <T> T getCachedData(Path cacheFilePath, Type typeOfT) throws IOException {
         if(!Files.exists(cacheFilePath)) {
             Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Creating local file ''{0}''...", cacheFilePath.toString());
             Files.createDirectories(cacheFilePath.getParent());
@@ -71,48 +75,58 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
 
         T localData;
         try(final BufferedReader reader = Files.newBufferedReader(cacheFilePath)) {
-            localData = getGson().fromJson(reader, dataClass);
+            localData = getGson().fromJson(reader, typeOfT);
         }
         return localData;
     }
     
-    private <T> void writeCachedData(Path cacheFilePath, T dataHolder, Class<T> dataClass) throws IOException {
+    private <T> void writeCachedData(Path cacheFilePath, T dataHolder) throws IOException {
         try(final BufferedWriter writer = Files.newBufferedWriter(cacheFilePath, StandardCharsets.UTF_8)) {
-            getGson().toJson(dataHolder, dataClass, writer);
+            getGson().toJson(dataHolder, writer);
             writer.flush();
         }
     }
     
-    private void populatePlatformsData() {
-        if(CACHED_PLATFORMS_DATA.data == null || CACHED_PLATFORMS_DATA.data.platforms.isEmpty()) {
-            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Initializing local GamesDbPlatformsData...");
+    /**
+     * Class<D> dataClass required to alleviate unchecked cast warning.
+     * 
+     * @param <D>
+     * @param <T>
+     * @param cache
+     * @param typeOfT
+     * @param dataClass
+     * @param cachePath
+     * @param url
+     * @param params 
+     */
+    private <D extends GamesDbData<?>, T extends GamesDbResult<D>> void populateCache(T cache, Type typeOfT, Class<D> dataClass, Path cachePath, String url, Map<String, String> params) {
+        if(!cache.isDataAvailable()) {
+            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Initializing local {0} cache...", dataClass.getName());
             try {
-                final Path platformsFilePath = ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PLATFORMS_FILE);
-                GamesDbPlatformsData localData = getCachedData(platformsFilePath, GamesDbPlatformsData.class);
+                T localData = getCachedData(cachePath, typeOfT);
                 
-                if(localData == null || localData.data.platforms.isEmpty()) {
-                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Retrieving Platforms data from remote source...");
+                if(localData == null || !localData.data.isDataAvailable()) {
+                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Retrieving data from remote source...");
                     
-                    localData = getData(new JsonDataSourcePlugin<>(GamesDbPlatformsData.class), API_BASE_URL + API_GET_PLATFORMS_LIST, getDefaultParams());
+                    localData = getData(new JsonDataSourcePlugin<>(typeOfT), url, params);
                     
                     if(localData == null) {
-                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for Platforms.");
+                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
                     }
                     else {
-                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, localData.toString());
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining={0}", localData.remaining_monthly_allowance);
-                        if(!localData.data.platforms.isEmpty()) {
-                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing Platforms data to disk...");
-                            writeCachedData(platformsFilePath, localData, GamesDbPlatformsData.class);
+                        if(localData.data.isDataAvailable()) {
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
+                            writeCachedData(cachePath, localData);
                             
-                            CACHED_PLATFORMS_DATA.data = localData.data;
+                            cache.data = localData.data;
                         }
                     }
                 }
                 else {
-                    CACHED_PLATFORMS_DATA.data = localData.data;
+                    cache.data = localData.data;
                 }
-                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Local GamesDbPlatformsData cache initialized.");
+                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Local {0} cache initialized.", dataClass.getName());
             }
             catch (IOException ex) {
                 Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.SEVERE, null, ex);
@@ -120,11 +134,51 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         }
     }
     
+    private void populatePlatformsData() {
+        populateCache(
+                CACHED_PLATFORMS_DATA, 
+                new TypeToken<GamesDbResult<GamesDbPlatformsData>>(){}.getType(), 
+                GamesDbPlatformsData.class,
+                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PLATFORMS_FILE), 
+                API_BASE_URL + API_GET_PLATFORMS_LIST, 
+                getDefaultParams());
+    }
+    
+    private void populateGenresData() {
+        populateCache(
+                CACHED_GENRES_DATA,
+                new TypeToken<GamesDbResult<GamesDbGenresData>>(){}.getType(),
+                GamesDbGenresData.class,
+                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(GENRES_FILE),
+                API_BASE_URL + API_GET_GENRES_LIST,
+                getDefaultParams());
+    }
+    
+    private void populateDevelopersData() {
+        populateCache(
+                CACHED_DEVELOPERS_DATA,
+                new TypeToken<GamesDbResult<GamesDbDevelopersData>>(){}.getType(),
+                GamesDbDevelopersData.class,
+                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(DEVELOPERS_FILE),
+                API_BASE_URL + API_GET_DEVELOPERS_LIST,
+                getDefaultParams());
+    }
+    
+    private void populatePublishersData() {
+        populateCache(
+                CACHED_PUBLISHERS_DATA,
+                new TypeToken<GamesDbResult<GamesDbPublishersData>>(){}.getType(),
+                GamesDbPublishersData.class,
+                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PUBLISHERS_FILE),
+                API_BASE_URL + API_GET_PUBLISHERS_LIST,
+                getDefaultParams());
+    }
+    
     @Override
     public List<String> getSystemNames() {
         populatePlatformsData();
         
-        if(CACHED_PLATFORMS_DATA.data != null && !CACHED_PLATFORMS_DATA.data.platforms.isEmpty()) {
+        if(CACHED_PLATFORMS_DATA.isDataAvailable()) {
             final List<String> systemNames = new ArrayList<>();
             CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> {
                 systemNames.add(platform.name);
@@ -141,7 +195,6 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
 
     @Override
     public MetaData getMetaData(String systemName, Game game) {
-        
         return null;
     }
 }

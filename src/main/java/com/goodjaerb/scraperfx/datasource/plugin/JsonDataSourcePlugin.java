@@ -7,20 +7,22 @@ package com.goodjaerb.scraperfx.datasource.plugin;
 
 import com.google.gson.Gson;
 import java.io.BufferedReader;
+import java.lang.reflect.Type;
 
 /**
  *
  * @author goodjaerb
  * @param <T>
  */
-public class JsonDataSourcePlugin<T> extends DataSourcePlugin<T> {
+public class JsonDataSourcePlugin<T> implements DataSourcePlugin<T> {
+    private final Type typeOfT;
     
-    public JsonDataSourcePlugin(Class<T> dataClass) {
-        super(dataClass);
+    public JsonDataSourcePlugin(Type typeOfT) {
+        this.typeOfT = typeOfT;
     }
     
     @Override
     public T convert(BufferedReader reader) {
-        return new Gson().fromJson(reader, dataClass);
+        return new Gson().fromJson(reader, typeOfT);
     }
 }

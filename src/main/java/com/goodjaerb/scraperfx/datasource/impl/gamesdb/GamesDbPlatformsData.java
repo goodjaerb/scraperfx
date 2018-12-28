@@ -6,27 +6,16 @@
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
 import com.google.gson.annotations.Expose;
+import java.util.Collection;
 import java.util.Map;
 
 /**
  *
  * @author goodjaerb
  */
-public class GamesDbPlatformsData {
-    public static class Data {
-        @Expose(serialize = false, deserialize = true)  public int count;
-        @Expose(serialize = true, deserialize = true)   public Map<String, Platform> platforms;
+public class GamesDbPlatformsData extends GamesDbData<GamesDbPlatformsData.Platform> {
+    @Expose(serialize = true, deserialize = true) public Map<String, Platform> platforms;
         
-        public Data() {
-            
-        }
-
-        @Override
-        public String toString() {
-            return "Data{" + "count=" + count + ", platforms=" + platforms + '}';
-        }
-    }
-    
     public static class Platform {
         @Expose(serialize = true, deserialize = true) public int id;
         @Expose(serialize = true, deserialize = true) public String name;
@@ -46,18 +35,24 @@ public class GamesDbPlatformsData {
         }
     }
     
-    @Expose(serialize = false, deserialize = true)  public int code;
-    @Expose(serialize = false, deserialize = true)  public String status;
-    @Expose(serialize = true, deserialize = true)   public Data data;
-    @Expose(serialize = false, deserialize = true)  public int remaining_monthly_allowance;
-    @Expose(serialize = false, deserialize = true)  public int extra_allowance;
-    
     public GamesDbPlatformsData() {
-        
     }
 
     @Override
     public String toString() {
-        return "GamesDbPlatformsData{" + "code=" + code + ", status=" + status + ", data=" + data + ", remaining_monthly_allowance=" + remaining_monthly_allowance + ", extra_allowance=" + extra_allowance + '}';
+        return "GamesDbPlatformsData{" + "count=" + count + ", platforms=" + platforms + '}';
+    }
+    
+    @Override
+    public boolean isDataAvailable() {
+        if(platforms == null || platforms.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
+    public Collection<Platform> values() {
+        return platforms.values();
     }
 }

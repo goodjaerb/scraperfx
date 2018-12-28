@@ -6,26 +6,15 @@
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
 import com.google.gson.annotations.Expose;
+import java.util.Collection;
 import java.util.Map;
 
 /**
  *
  * @author goodjaerb <goodjaerb@gmail.com>
  */
-public class GamesDbGenresData {
-    public static class Data {
-        @Expose(serialize = false, deserialize = true)  public int count;
-        @Expose(serialize = true, deserialize = true)   public Map<String, Genre> genres;
-        
-        public Data() {
-            
-        }
-
-        @Override
-        public String toString() {
-            return "Data{" + "count=" + count + ", genres=" + genres + '}';
-        }
-    }
+public class GamesDbGenresData extends GamesDbData<GamesDbGenresData.Genre> {
+    @Expose(serialize = true, deserialize = true)   public Map<String, Genre> genres;
     
     public static class Genre {
         @Expose(serialize = true, deserialize = true) public int id;
@@ -41,18 +30,25 @@ public class GamesDbGenresData {
         }
     }
     
-    @Expose(serialize = false, deserialize = true)  public int code;
-    @Expose(serialize = false, deserialize = true)  public String status;
-    @Expose(serialize = true, deserialize = true)   public Data data;
-    @Expose(serialize = false, deserialize = true)  public int remaining_monthly_allowance;
-    @Expose(serialize = false, deserialize = true)  public int extra_allowance;
-    
     public GamesDbGenresData() {
         
     }
 
     @Override
     public String toString() {
-        return "GamesDbGenresData{" + "code=" + code + ", status=" + status + ", data=" + data + ", remaining_monthly_allowance=" + remaining_monthly_allowance + ", extra_allowance=" + extra_allowance + '}';
+        return "GamesDbGenresData{" + "count=" + count + ", genres=" + genres + '}';
+    }
+    
+    @Override
+    public boolean isDataAvailable() {
+        if(genres == null || genres.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
+    public Collection<Genre> values() {
+        return genres.values();
     }
 }

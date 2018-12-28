@@ -6,26 +6,15 @@
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
 import com.google.gson.annotations.Expose;
+import java.util.Collection;
 import java.util.Map;
 
 /**
  *
  * @author goodjaerb <goodjaerb@gmail.com>
  */
-public class GamesDbDevelopersData {
-    public static class Data {
-        @Expose(serialize = false, deserialize = true)  public int count;
-        @Expose(serialize = true, deserialize = true)   public Map<String, Developer> developers;
-        
-        public Data() {
-            
-        }
-
-        @Override
-        public String toString() {
-            return "Data{" + "count=" + count + ", genres=" + developers + '}';
-        }
-    }
+public class GamesDbDevelopersData extends GamesDbData<GamesDbDevelopersData.Developer> {
+    @Expose(serialize = true, deserialize = true)   public Map<String, Developer> developers;
     
     public static class Developer {
         @Expose(serialize = true, deserialize = true) public int id;
@@ -41,18 +30,25 @@ public class GamesDbDevelopersData {
         }
     }
     
-    @Expose(serialize = false, deserialize = true)  public int code;
-    @Expose(serialize = false, deserialize = true)  public String status;
-    @Expose(serialize = true, deserialize = true)   public Data data;
-    @Expose(serialize = false, deserialize = true)  public int remaining_monthly_allowance;
-    @Expose(serialize = false, deserialize = true)  public int extra_allowance;
-    
     public GamesDbDevelopersData() {
         
     }
 
     @Override
     public String toString() {
-        return "GamesDbGenresData{" + "code=" + code + ", status=" + status + ", data=" + data + ", remaining_monthly_allowance=" + remaining_monthly_allowance + ", extra_allowance=" + extra_allowance + '}';
+        return "GamesDbGenresData{" + "count=" + count + ", developers=" + developers + '}';
+    }
+    
+    @Override
+    public boolean isDataAvailable() {
+        if(developers == null || developers.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
+    public Collection<Developer> values() {
+        return developers.values();
     }
 }

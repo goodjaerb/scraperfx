@@ -16,10 +16,11 @@ import org.xmappr.XmapprException;
  * @author goodjaerb
  * @param <T>
  */
-public class XmlDataSourcePlugin<T> extends DataSourcePlugin<T> {
+public class XmlDataSourcePlugin<T> implements DataSourcePlugin<T> {
+    private final Class<T> dataClass;
     
     public XmlDataSourcePlugin(Class<T> dataClass) {
-        super(dataClass);
+        this.dataClass = dataClass;
     }
     
     @Override

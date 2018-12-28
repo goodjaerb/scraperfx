@@ -12,12 +12,7 @@ import java.io.BufferedReader;
  * @author goodjaerb <goodjaerb@gmail.com>
  * @param <T>
  */
-public abstract class DataSourcePlugin<T> {
-    protected final Class<T> dataClass;
-    
-    public DataSourcePlugin(Class<T> dataClass) {
-        this.dataClass = dataClass;
-    }
+public interface DataSourcePlugin<T> {
     
     public abstract T convert(BufferedReader reader);
 }

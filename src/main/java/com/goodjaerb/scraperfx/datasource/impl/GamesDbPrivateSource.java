@@ -6,6 +6,9 @@
 package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGamesByPlatformData;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedResult;
+import com.google.gson.reflect.TypeToken;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,9 +31,17 @@ public class GamesDbPrivateSource extends GamesDbSourceBase {
     public Map<String, String> getDefaultParams() {
         return DEFAULT_PARAMS;
     }
-
-    @Override
-    public void populateGamesByPlatform(String platformId) {
-        super.populateGamesByPlatform(platformId);
+    
+    private void populateGamesByPlatform(String platformId) {
+        final Map<String, String> params = new HashMap<>(getDefaultParams());
+        params.put("id", platformId);
+        
+        populatePaginatedCache(
+                CACHED_GAMES_BY_PLATFORM_DATA, 
+                new TypeToken<GamesDbPaginatedResult<GamesDbGamesByPlatformData>>(){}.getType(),
+                GamesDbGamesByPlatformData.class, 
+                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(GAMES_BY_PLATFORM_DIR).resolve(platformId + ".json"), 
+                API_BASE_URL + API_GAMES_BY_PLATFORM_ID, 
+                params);
     }
 }

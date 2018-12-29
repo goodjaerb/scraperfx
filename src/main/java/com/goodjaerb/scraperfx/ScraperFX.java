@@ -88,6 +88,8 @@ import javax.imageio.ImageIO;
 import org.xmappr.Xmappr;
 import com.goodjaerb.scraperfx.datasource.DataSourceFactory;
 import com.goodjaerb.scraperfx.datasource.DataSourceFactory.SourceAgent;
+import com.goodjaerb.scraperfx.datasource.impl.GamesDbPublicSource;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatform;
 import com.goodjaerb.scraperfx.output.ESOutput;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.GameData;
@@ -105,6 +107,7 @@ import java.util.function.Predicate;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.input.KeyCode;
@@ -389,6 +392,7 @@ public class ScraperFX extends Application {
         gamesListView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends Game> c) -> {
             final Game selected = gamesListView.getSelectionModel().getSelectedItem();
             if(selected != null) {
+                System.out.println(selected.fileName);
                 currentGame = getGame(selected);
                 loadCurrentGameFields(currentGame);
             }
@@ -774,8 +778,29 @@ public class ScraperFX extends Application {
 //            // Show a warning about api key limit.
 //            // Connect and download the new Platforms list.
 //        });
-        
+
         menuBar.getMenus().addAll(fileMenu);
+
+        if(ScraperFX.getKeysValue("GamesDb.Private") != null) {
+            final MenuItem downloadGamesByPlatformMenuItem = new MenuItem("Download Games by Platform");
+            downloadGamesByPlatformMenuItem.setOnAction((event) -> {
+                try {
+                    final List<GamesDbPlatform> platforms = DataSourceFactory.get(SourceAgent.THEGAMESDB, GamesDbPublicSource.class).getPlatforms();
+                    final ChoiceDialog<GamesDbPlatform> choiceDialog = new ChoiceDialog<>(platforms.get(0), platforms);
+                    choiceDialog.setContentText("This operation will use a portion of your one-time-use private key to TheGamesDB.\nDo not perform this operation for a platform you already have a local backup of.");
+                    
+                    final Optional<GamesDbPlatform> result = choiceDialog.showAndWait();
+                    if(result.isPresent()) {
+                        // use SourceAgent.THEGAMESDB_PRIVATE to download GamesByPlatform
+                    }
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            
+            menuBar.getMenus().add(new Menu("Admin", null, downloadGamesByPlatformMenuItem));
+        }
+        
         
         primaryStage.setOnCloseRequest((event) -> {
             if(!exitCheck()) {
@@ -783,15 +808,15 @@ public class ScraperFX extends Application {
             }
         });
         
-        primaryStage.setOnShown((event) -> {
-            Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "primaryStage.shown()");
-            // check if local DB exists.
-            // 
-        });
+//        primaryStage.setOnShown((event) -> {
+//            Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "primaryStage.shown()");
+//            // check if local DB exists.
+//            // 
+//        });
         
         new Thread(() -> {
             try {
-                final List<String> consoles = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB).getSystemNames();
+                final List<String> consoles = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemNames();
                 Platform.runLater(() -> {
                     consoleSelectComboBox.getItems().clear();
                     consoleSelectComboBox.getItems().addAll(consoles);
@@ -1704,7 +1729,7 @@ public class ScraperFX extends Application {
 
                 if(refreshMatchedGame || startedUnmatched) {
                     try {
-                        MetaData newMetaData = DataSourceFactory.getDataSource(arcadeScraperBox.getValue()).getMetaData(null, localGame);
+                        MetaData newMetaData = DataSourceFactory.get(arcadeScraperBox.getValue()).getMetaData(null, localGame);
 
                         if(newMetaData != null) {
                             if(!skipMatching) {
@@ -1805,7 +1830,7 @@ public class ScraperFX extends Application {
                         int mostPartsHit = 0;
                         boolean hitPartIsNumber = false;
 
-                        final List<String> allSysGames = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
+                        final List<String> allSysGames = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
                         for(final String gameName : allSysGames) {
                             String lowerCaseName = gameName.toLowerCase().replaceAll(" - ", " ");//gameName.toLowerCase().replaceAll("'", "");
                             lowerCaseName = lowerCaseName.replaceAll("\\(.*\\)", "");
@@ -1942,7 +1967,7 @@ public class ScraperFX extends Application {
                     if(localGame.matchedName != null) {
                         if(!skipMatching || refreshMatchedGame || startedUnmatched) {
                             //matched a game, get the rest of the data.
-                            MetaData newMetaData = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
+                            MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
 
                             if(newMetaData == null && localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
                                 newMetaData = new MetaData();
@@ -1956,7 +1981,7 @@ public class ScraperFX extends Application {
                                     newMetaData.favorite = true;
                                 }
 
-                                final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
+                                final String[] videoLinks = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
                                 if(videoLinks != null) {
                                     newMetaData.videodownload = videoLinks[0];
                                     newMetaData.videoembed = videoLinks[1];
@@ -2103,14 +2128,14 @@ public class ScraperFX extends Application {
             new Thread(() -> {
                 try {
                     currentGame.matchedName = selectGameList.getSelectionModel().getSelectedItem();
-                    final MetaData newMetaData = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
+                    final MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
                     
                     if(newMetaData != null) {
                         if(currentGame.metadata != null && currentGame.metadata.favorite) {
                             newMetaData.favorite = true;
                         }
 
-                        final String[] videoLinks = DataSourceFactory.getDataSource(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, currentGame);
+                        final String[] videoLinks = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, currentGame);
                         if(videoLinks != null) {
                             newMetaData.videodownload = videoLinks[0];
                             newMetaData.videoembed = videoLinks[1];
@@ -2139,7 +2164,7 @@ public class ScraperFX extends Application {
         private void onShown() {
             new Thread(() -> {
                 try {
-                    final List<String> gameList = DataSourceFactory.getDataSource(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
+                    final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
                     Collections.sort(gameList);
                     
                     Platform.runLater(() -> {

@@ -13,6 +13,7 @@ import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGamesByPlatformDat
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGenresData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedResult;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatform;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatformsData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPublishersData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbResult;
@@ -30,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -41,26 +41,26 @@ import java.util.logging.Logger;
  * @author goodjaerb
  */
 public abstract class GamesDbSourceBase extends CustomHttpDataSource {
-    private static final String GAMESDB_LOCAL_DIR = "thegamesdb.net";
-    private static final String GAMES_BY_PLATFORM_DIR = "GamesByPlatformId";
+    protected static final String GAMESDB_LOCAL_DIR = "thegamesdb.net";
+    protected static final String GAMES_BY_PLATFORM_DIR = "GamesByPlatformId";
     private static final String PLATFORMS_FILE = "platforms.json";
     private static final String GENRES_FILE = "genres.json";
     private static final String DEVELOPERS_FILE = "developers.json";
     private static final String PUBLISHERS_FILE = "publishers.json";
     
-    private static final String API_BASE_URL = "https://api.thegamesdb.net/";
+    protected static final String API_BASE_URL = "https://api.thegamesdb.net/v1.1/";
     private static final String API_GET_PLATFORMS_LIST = "Platforms";
     private static final String API_GET_GENRES_LIST = "Genres";
     private static final String API_GET_DEVELOPERS_LIST = "Developers";
     private static final String API_GET_PUBLISHERS_LIST = "Publishers";
-    private static final String API_GAMES_BY_PLATFORM_ID = "Games/ByPlatformID";
+    protected static final String API_GAMES_BY_PLATFORM_ID = "Games/ByPlatformID";
     
     private static final GamesDbResult<GamesDbPlatformsData>    CACHED_PLATFORMS_DATA = new GamesDbResult<>();
     private static final GamesDbResult<GamesDbGenresData>       CACHED_GENRES_DATA = new GamesDbResult<>();
     private static final GamesDbResult<GamesDbDevelopersData>   CACHED_DEVELOPERS_DATA = new GamesDbResult<>();
     private static final GamesDbResult<GamesDbPublishersData>   CACHED_PUBLISHERS_DATA = new GamesDbResult<>();
     
-    private static final GamesDbPaginatedResult<GamesDbGamesByPlatformData> CACHED_GAMES_BY_PLATFORM_DATA = new GamesDbPaginatedResult<>();
+    protected static final GamesDbPaginatedResult<GamesDbGamesByPlatformData> CACHED_GAMES_BY_PLATFORM_DATA = new GamesDbPaginatedResult<>();
     
     abstract Map<String, String> getDefaultParams();
     
@@ -122,6 +122,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
                     }
                     else {
+                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
                         if(localData.isDataAvailable()) {
                             Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
@@ -142,7 +143,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         }
     }
     
-    private <E, D extends GamesDbPaginatedData<E>, T extends GamesDbPaginatedResult<D>> void populatePaginatedCache(T cache, Type typeOfT, Class<D> dataClass, Path cachePath, String url, Map<String, String> params) {
+    protected <E, D extends GamesDbPaginatedData<E>, T extends GamesDbPaginatedResult<D>> void populatePaginatedCache(T cache, Type typeOfT, Class<D> dataClass, Path cachePath, String url, Map<String, String> params) {
         if(!cache.isDataAvailable()) {
             Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Initializing local {0} cache...", dataClass.getName());
             try {
@@ -157,8 +158,11 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
                     }
                     else {
+                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
-
+                        
+                        int totalCount = localData.data.count;
+                        
                         if(localData.isDataAvailable()) {
                             cache.data = localData.data;
 
@@ -170,12 +174,16 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                                     break;
                                 }
                                 
+                                totalCount += localData.data.count;
+                                
+                                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
                                 Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
                                 if(localData.isDataAvailable()) {
                                     cache.data.appendData(localData.data.values());
                                 }
                             }
 
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Total results returned={0}.", totalCount);
                             Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
                             writeCachedData(cachePath, cache);
                         }
@@ -232,19 +240,6 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                 getDefaultParams());
     }
     
-    protected void populateGamesByPlatform(String platformId) {
-        final Map<String, String> params = new HashMap<>(getDefaultParams());
-        params.put("id", platformId);
-        
-        populatePaginatedCache(
-                CACHED_GAMES_BY_PLATFORM_DATA, 
-                new TypeToken<GamesDbPaginatedResult<GamesDbGamesByPlatformData>>(){}.getType(),
-                GamesDbGamesByPlatformData.class, 
-                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(GAMES_BY_PLATFORM_DIR).resolve(platformId + ".json"), 
-                API_BASE_URL + API_GAMES_BY_PLATFORM_ID, 
-                params);
-    }
-    
     @Override
     public List<String> getSystemNames() {
         populatePlatformsData();
@@ -257,6 +252,36 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
             return systemNames;
         }
         return null;
+    }
+    
+    public List<GamesDbPlatform> getPlatforms() {
+        populatePlatformsData();
+        
+        if(CACHED_PLATFORMS_DATA.isDataAvailable()) {
+            final List<GamesDbPlatform> platforms = new ArrayList<>();
+            CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> {
+                platforms.add(new GamesDbPlatform(platform));
+            });
+            return platforms;
+        }
+        return null;
+    }
+    
+    public void loadGamesByPlatformCache(String platformId) {
+        if(!CACHED_GAMES_BY_PLATFORM_DATA.isDataAvailable()) {
+            GamesDbPaginatedResult<GamesDbGamesByPlatformData> localData;
+            try {
+                localData = getCachedData(
+                        ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(GAMES_BY_PLATFORM_DIR).resolve(platformId + ".json"),
+                        new TypeToken<GamesDbPaginatedResult<GamesDbGamesByPlatformData>>(){}.getType());
+                
+                if(localData != null && localData.isDataAvailable()) {
+                    CACHED_GAMES_BY_PLATFORM_DATA.data = localData.data;
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Override

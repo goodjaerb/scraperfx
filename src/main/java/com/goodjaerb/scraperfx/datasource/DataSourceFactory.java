@@ -32,9 +32,21 @@ public class DataSourceFactory {
             }
             return dataSource;
         }
+        
+        <T extends DataSource> T getDataSource(Class<T> clazz) throws InstantiationException, ClassNotFoundException, IllegalAccessException {
+            if(dataSource == null) {
+                final Class c = Class.forName(className);
+                dataSource = (DataSource)c.newInstance();
+            }
+            return clazz.cast(dataSource);
+        }
     }
     
-    public static DataSource getDataSource(SourceAgent sa) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public static DataSource get(SourceAgent sa) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         return sa.getDataSource();
+    }
+    
+    public static <T extends DataSource> T get(SourceAgent sa, Class<T> clazz) throws InstantiationException, ClassNotFoundException, IllegalAccessException {
+        return sa.getDataSource(clazz);
     }
 }

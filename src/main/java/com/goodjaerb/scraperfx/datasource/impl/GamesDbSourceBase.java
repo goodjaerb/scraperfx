@@ -9,6 +9,7 @@ import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbDevelopersData;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGamesByPlatformData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGenresData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedResult;
@@ -29,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -40,6 +42,7 @@ import java.util.logging.Logger;
  */
 public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     private static final String GAMESDB_LOCAL_DIR = "thegamesdb.net";
+    private static final String GAMES_BY_PLATFORM_DIR = "GamesByPlatformId";
     private static final String PLATFORMS_FILE = "platforms.json";
     private static final String GENRES_FILE = "genres.json";
     private static final String DEVELOPERS_FILE = "developers.json";
@@ -50,11 +53,14 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     private static final String API_GET_GENRES_LIST = "Genres";
     private static final String API_GET_DEVELOPERS_LIST = "Developers";
     private static final String API_GET_PUBLISHERS_LIST = "Publishers";
+    private static final String API_GAMES_BY_PLATFORM_ID = "Games/ByPlatformID";
     
     private static final GamesDbResult<GamesDbPlatformsData>    CACHED_PLATFORMS_DATA = new GamesDbResult<>();
     private static final GamesDbResult<GamesDbGenresData>       CACHED_GENRES_DATA = new GamesDbResult<>();
     private static final GamesDbResult<GamesDbDevelopersData>   CACHED_DEVELOPERS_DATA = new GamesDbResult<>();
     private static final GamesDbResult<GamesDbPublishersData>   CACHED_PUBLISHERS_DATA = new GamesDbResult<>();
+    
+    private static final GamesDbPaginatedResult<GamesDbGamesByPlatformData> CACHED_GAMES_BY_PLATFORM_DATA = new GamesDbPaginatedResult<>();
     
     abstract Map<String, String> getDefaultParams();
     
@@ -158,7 +164,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
 
                             while(localData.hasNext()) {
                                 localData = getData(new JsonDataSourcePlugin<>(typeOfT), localData.pages.next);
-
+                                
                                 if(localData == null) {
                                     //if it's still null something went wrong.
                                     break;
@@ -224,6 +230,19 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                 ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PUBLISHERS_FILE),
                 API_BASE_URL + API_GET_PUBLISHERS_LIST,
                 getDefaultParams());
+    }
+    
+    protected void populateGamesByPlatform(String platformId) {
+        final Map<String, String> params = new HashMap<>(getDefaultParams());
+        params.put("id", platformId);
+        
+        populatePaginatedCache(
+                CACHED_GAMES_BY_PLATFORM_DATA, 
+                new TypeToken<GamesDbPaginatedResult<GamesDbGamesByPlatformData>>(){}.getType(),
+                GamesDbGamesByPlatformData.class, 
+                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(GAMES_BY_PLATFORM_DIR).resolve(platformId + ".json"), 
+                API_BASE_URL + API_GAMES_BY_PLATFORM_ID, 
+                params);
     }
     
     @Override

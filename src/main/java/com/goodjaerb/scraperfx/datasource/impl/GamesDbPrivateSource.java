@@ -28,4 +28,9 @@ public class GamesDbPrivateSource extends GamesDbSourceBase {
     public Map<String, String> getDefaultParams() {
         return DEFAULT_PARAMS;
     }
+
+    @Override
+    public void populateGamesByPlatform(String platformId) {
+        super.populateGamesByPlatform(platformId);
+    }
 }

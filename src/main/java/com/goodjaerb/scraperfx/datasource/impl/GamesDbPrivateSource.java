@@ -32,16 +32,24 @@ public class GamesDbPrivateSource extends GamesDbSourceBase {
         return DEFAULT_PARAMS;
     }
     
-    private void populateGamesByPlatform(String platformId) {
+    public void populateGamesByPlatform(String platformId) {
         final Map<String, String> params = new HashMap<>(getDefaultParams());
         params.put("id", platformId);
+        params.put("fields", "players,publishers,genres,overview,last_updated,rating,platform,coop,youtube,os,processor,ram,hdd,video,sound,alternates");
         
+        if(CACHED_GAMES_BY_PLATFORM_DATA.get(platformId) == null) {
+            CACHED_GAMES_BY_PLATFORM_DATA.put(platformId, new GamesDbPaginatedResult<>());
+        }
         populatePaginatedCache(
-                CACHED_GAMES_BY_PLATFORM_DATA, 
+                CACHED_GAMES_BY_PLATFORM_DATA.get(platformId), 
                 new TypeToken<GamesDbPaginatedResult<GamesDbGamesByPlatformData>>(){}.getType(),
                 GamesDbGamesByPlatformData.class, 
                 ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(GAMES_BY_PLATFORM_DIR).resolve(platformId + ".json"), 
                 API_BASE_URL + API_GAMES_BY_PLATFORM_ID, 
                 params);
+        
+        System.out.println("FROM GamesDbPrivateSource!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println(CACHED_GAMES_BY_PLATFORM_DATA.get(platformId));
+        System.out.println("END FROM GamesDbPrivateSource!!!!!!!!!!!!!!!!!!");
     }
 }

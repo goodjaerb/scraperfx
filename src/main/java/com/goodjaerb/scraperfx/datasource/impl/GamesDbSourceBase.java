@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -48,7 +49,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     private static final String DEVELOPERS_FILE = "developers.json";
     private static final String PUBLISHERS_FILE = "publishers.json";
     
-    protected static final String API_BASE_URL = "https://api.thegamesdb.net/v1.1/";
+    protected static final String API_BASE_URL = "https://api.thegamesdb.net/";
     private static final String API_GET_PLATFORMS_LIST = "Platforms";
     private static final String API_GET_GENRES_LIST = "Genres";
     private static final String API_GET_DEVELOPERS_LIST = "Developers";
@@ -60,7 +61,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     private static final GamesDbResult<GamesDbDevelopersData>   CACHED_DEVELOPERS_DATA = new GamesDbResult<>();
     private static final GamesDbResult<GamesDbPublishersData>   CACHED_PUBLISHERS_DATA = new GamesDbResult<>();
     
-    protected static final GamesDbPaginatedResult<GamesDbGamesByPlatformData> CACHED_GAMES_BY_PLATFORM_DATA = new GamesDbPaginatedResult<>();
+    protected static final Map<String, GamesDbPaginatedResult<GamesDbGamesByPlatformData>> CACHED_GAMES_BY_PLATFORM_DATA = new HashMap<>();
     
     abstract Map<String, String> getDefaultParams();
     
@@ -157,36 +158,34 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                     if(localData == null) {
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
                     }
-                    else {
+                    else if(localData.isDataAvailable()) {
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
                         
                         int totalCount = localData.data.count;
                         
-                        if(localData.isDataAvailable()) {
-                            cache.data = localData.data;
+                        cache.data = localData.data;
+                        
+                        while(localData.hasNext()) {
+                            localData = getData(new JsonDataSourcePlugin<>(typeOfT), localData.pages.next);
 
-                            while(localData.hasNext()) {
-                                localData = getData(new JsonDataSourcePlugin<>(typeOfT), localData.pages.next);
-                                
-                                if(localData == null) {
-                                    //if it's still null something went wrong.
-                                    break;
-                                }
-                                
-                                totalCount += localData.data.count;
-                                
-                                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
-                                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
-                                if(localData.isDataAvailable()) {
-                                    cache.data.appendData(localData.data.values());
-                                }
+                            if(localData == null) {
+                                //if it's still null something went wrong.
+                                break;
                             }
 
-                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Total results returned={0}.", totalCount);
-                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
-                            writeCachedData(cachePath, cache);
+                            totalCount += localData.data.count;
+
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
+                            if(localData.isDataAvailable()) {
+                                cache.data.appendData(localData.data.values());
+                            }
                         }
+
+                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Total results returned={0}.", totalCount);
+                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
+                        writeCachedData(cachePath, cache);
                     }
                 }
                 else {
@@ -268,25 +267,51 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     }
     
     public void loadGamesByPlatformCache(String platformId) {
-        if(!CACHED_GAMES_BY_PLATFORM_DATA.isDataAvailable()) {
-            GamesDbPaginatedResult<GamesDbGamesByPlatformData> localData;
+        GamesDbPaginatedResult<GamesDbGamesByPlatformData> cachedData = CACHED_GAMES_BY_PLATFORM_DATA.get(platformId);
+        if(cachedData == null || !cachedData.isDataAvailable()) {
             try {
-                localData = getCachedData(
+                cachedData = getCachedData(
                         ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(GAMES_BY_PLATFORM_DIR).resolve(platformId + ".json"),
                         new TypeToken<GamesDbPaginatedResult<GamesDbGamesByPlatformData>>(){}.getType());
                 
-                if(localData != null && localData.isDataAvailable()) {
-                    CACHED_GAMES_BY_PLATFORM_DATA.data = localData.data;
+                if(cachedData != null && cachedData.isDataAvailable()) {
+                    CACHED_GAMES_BY_PLATFORM_DATA.put(platformId, cachedData);
                 }
             } catch (IOException ex) {
                 Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        
+        System.out.println("FROM GamesDbPublicSource!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println(CACHED_GAMES_BY_PLATFORM_DATA.get(platformId));
+        System.out.println("END FROM GamesDbPublicSource!!!!!!!!!!!!!!!!!!");
+    }
+    
+    private String getPlatformIdForName(String platformName) {
+        for(final GamesDbPlatform platform : getPlatforms()) {
+            if(platformName.equals(platform.name)) {
+                return Integer.toString(platform.id);
+            }
+        }
+        return null;
     }
 
     @Override
     public List<String> getSystemGameNames(String systemName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final String platformId = getPlatformIdForName(systemName);
+        if(platformId != null) {
+            loadGamesByPlatformCache(platformId);
+            
+            final GamesDbPaginatedResult<GamesDbGamesByPlatformData> cachedData = CACHED_GAMES_BY_PLATFORM_DATA.get(platformId);
+            if(cachedData != null && cachedData.isDataAvailable()) {
+                final List<String> gameNames = new ArrayList<>();
+                cachedData.data.games.forEach((game) -> {
+                    gameNames.add(game.game_title);
+                });
+                return gameNames;
+            }
+        }
+        return null;
     }
 
     @Override

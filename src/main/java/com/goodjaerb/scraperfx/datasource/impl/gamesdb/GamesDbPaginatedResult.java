@@ -36,7 +36,7 @@ public class GamesDbPaginatedResult<T extends GamesDbPaginatedData<?>> extends G
 
     @Override
     public String toString() {
-        return "GamesDbPaginatedResult{" + "pages=" + pages + '}';
+        return "GamesDbPaginatedResult{" + "code=" + code + ", status=" + status + ", data=" + data + ", pages=" + pages + ", remaining_monthly_allowance=" + remaining_monthly_allowance + ", extra_allowance=" + extra_allowance + '}';
     }
     
     public boolean hasNext() {

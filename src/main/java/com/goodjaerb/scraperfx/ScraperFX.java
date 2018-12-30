@@ -88,7 +88,9 @@ import javax.imageio.ImageIO;
 import org.xmappr.Xmappr;
 import com.goodjaerb.scraperfx.datasource.DataSourceFactory;
 import com.goodjaerb.scraperfx.datasource.DataSourceFactory.SourceAgent;
+import com.goodjaerb.scraperfx.datasource.impl.GamesDbPrivateSource;
 import com.goodjaerb.scraperfx.datasource.impl.GamesDbPublicSource;
+import com.goodjaerb.scraperfx.datasource.impl.ScreenScraperSource;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatform;
 import com.goodjaerb.scraperfx.output.ESOutput;
 import com.goodjaerb.scraperfx.settings.Game;
@@ -792,6 +794,10 @@ public class ScraperFX extends Application {
                     final Optional<GamesDbPlatform> result = choiceDialog.showAndWait();
                     if(result.isPresent()) {
                         // use SourceAgent.THEGAMESDB_PRIVATE to download GamesByPlatform
+                        DataSourceFactory.get(SourceAgent.THEGAMESDB_PRIVATE, GamesDbPrivateSource.class).populateGamesByPlatform(Integer.toString(result.get().id));
+                        System.out.println("FROM ScraperFX!!!!!!!!!!!!!!!!!!!!!!!!!");
+                        System.out.println(DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(result.get().name));
+                        System.out.println("END FROM ScraperFX!!!!!!!!!!!!!!!!!!!!!!!!!");
                     }
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
@@ -1240,7 +1246,7 @@ public class ScraperFX extends Application {
                 lockImagesCheckBox.setSelected(g.metadata.lockImages);
                 favoriteCheckBox.setSelected(g.metadata.favorite);
 
-                if(!scanTask.isRunning()) {
+                if(scanTask == null || !scanTask.isRunning()) {
                     Platform.runLater(() -> {
                         imageTaskList.forEach(task -> task.cancel());
                         imageTaskList.clear();
@@ -1981,7 +1987,9 @@ public class ScraperFX extends Application {
                                     newMetaData.favorite = true;
                                 }
 
-                                final String[] videoLinks = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, localGame);
+                                final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, localGame.fileName);
+                                final String[] videoLinks = 
+                                        DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getVideoLinks(getCurrentSettings().scrapeAs, localGame, filePath);
                                 if(videoLinks != null) {
                                     newMetaData.videodownload = videoLinks[0];
                                     newMetaData.videoembed = videoLinks[1];
@@ -2135,7 +2143,8 @@ public class ScraperFX extends Application {
                             newMetaData.favorite = true;
                         }
 
-                        final String[] videoLinks = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER).getVideoLinks(getCurrentSettings().scrapeAs, currentGame);
+                        final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, currentGame.fileName);
+                        final String[] videoLinks = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getVideoLinks(getCurrentSettings().scrapeAs, currentGame, filePath);
                         if(videoLinks != null) {
                             newMetaData.videodownload = videoLinks[0];
                             newMetaData.videoembed = videoLinks[1];
@@ -2165,6 +2174,7 @@ public class ScraperFX extends Application {
             new Thread(() -> {
                 try {
                     final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
+//                    final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(systemName);
                     Collections.sort(gameList);
                     
                     Platform.runLater(() -> {

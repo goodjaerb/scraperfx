@@ -12,13 +12,19 @@ import com.goodjaerb.scraperfx.datasource.impl.screenscraper.ScreenScraperXmlGam
 import com.goodjaerb.scraperfx.datasource.plugin.XmlDataSourcePlugin;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
 
 /**
  *
@@ -43,7 +49,20 @@ public class ScreenScraperSource extends CustomHttpDataSource {
         return "Screen Scraper (screenscraper.fr)";
     }
     
-    private ScreenScraperXmlGameData getXmlData(String systemName, String gameName) {
+    private long crcCalc(Path filePath) throws IOException {
+        try(final InputStream inputStream = new BufferedInputStream(Files.newInputStream(filePath))) {
+            final CRC32 crc = new CRC32();
+
+            int cnt;
+            while ((cnt = inputStream.read()) != -1) {
+                crc.update(cnt);
+            }
+            return crc.getValue();
+        }
+    }
+
+    
+    private ScreenScraperXmlGameData getXmlData(String systemName, String gameName, Path filePath) {
         final Integer sysId = ScreenScraperSystemIdMap.getSystemId(systemName);
         if(sysId == null) {
             return null;
@@ -52,6 +71,12 @@ public class ScreenScraperSource extends CustomHttpDataSource {
         final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
         params.put("systemid", Integer.toString(sysId));
         params.put("romnom", gameName);
+        try {
+            params.put("crc", Long.toHexString(crcCalc(filePath)));
+        }
+        catch (IOException ex) {
+            Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.WARNING, "Could not calculate CRC of file to assist in identifying on www.screenscraper.fr.", ex);
+        }
         
         try {
             return getData(new XmlDataSourcePlugin<>(ScreenScraperXmlGameData.class), API_BASE_URL, params);
@@ -62,9 +87,8 @@ public class ScreenScraperSource extends CustomHttpDataSource {
         return null;
     }
     
-    @Override
-    public String[] getVideoLinks(String systemName, Game game) {
-        final ScreenScraperXmlGameData data = getXmlData(systemName, game.matchedName);
+    public String[] getVideoLinks(String systemName, Game game, Path filePath) {
+        final ScreenScraperXmlGameData data = getXmlData(systemName, game.matchedName, filePath);
         if(data != null && data.game != null && data.game.medias != null && data.game.medias.videoDownloadUrl != null) {
             return new String[] { 
                 data.game.medias.videoDownloadUrl, 

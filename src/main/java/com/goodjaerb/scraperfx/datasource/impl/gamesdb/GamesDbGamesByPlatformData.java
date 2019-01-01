@@ -18,10 +18,10 @@ public class GamesDbGamesByPlatformData extends GamesDbPaginatedData<GamesDbGame
     @Expose(serialize = true, deserialize = true) public List<Game> games;
     
     public static class Game {
-        @Expose(serialize = true, deserialize = true) public int            id;
+        @Expose(serialize = true, deserialize = true) public Integer        id;
         @Expose(serialize = true, deserialize = true) public String         game_title;
         @Expose(serialize = true, deserialize = true) public String         release_date;
-        @Expose(serialize = true, deserialize = true) public int            platform;
+        @Expose(serialize = true, deserialize = true) public Integer        platform;
         @Expose(serialize = true, deserialize = true) public Integer        players;
         @Expose(serialize = true, deserialize = true) public String         overview;
         @Expose(serialize = true, deserialize = true) public String         last_updated;

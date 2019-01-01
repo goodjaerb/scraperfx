@@ -102,6 +102,7 @@ import com.goodjaerb.scraperfx.settings.SystemSettings;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
@@ -981,6 +982,8 @@ public class ScraperFX extends Application {
         while(retry < 3) {
             try {
                 final URLConnection connection = new URL(url).openConnection();
+                connection.setConnectTimeout(3000);
+                connection.setReadTimeout(3000);
                 connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 
                 final BufferedImage img = ImageIO.read(connection.getInputStream());
@@ -1047,6 +1050,8 @@ public class ScraperFX extends Application {
             while(retry < 3) {
                 try {
                     final URLConnection connection = new URL(url).openConnection();
+                    connection.setConnectTimeout(3000);
+                    connection.setReadTimeout(3000);
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0");
                     final BufferedImage img = ImageIO.read(connection.getInputStream());
                     
@@ -1836,7 +1841,8 @@ public class ScraperFX extends Application {
                         int mostPartsHit = 0;
                         boolean hitPartIsNumber = false;
 
-                        final List<String> allSysGames = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
+//                        final List<String> allSysGames = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
+                        final List<String> allSysGames = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(getCurrentSettings().scrapeAs);
                         for(final String gameName : allSysGames) {
                             String lowerCaseName = gameName.toLowerCase().replaceAll(" - ", " ");//gameName.toLowerCase().replaceAll("'", "");
                             lowerCaseName = lowerCaseName.replaceAll("\\(.*\\)", "");
@@ -1973,7 +1979,8 @@ public class ScraperFX extends Application {
                     if(localGame.matchedName != null) {
                         if(!skipMatching || refreshMatchedGame || startedUnmatched) {
                             //matched a game, get the rest of the data.
-                            MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
+//                            MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
+                            MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB).getMetaData(getCurrentSettings().scrapeAs, localGame);
 
                             if(newMetaData == null && localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
                                 newMetaData = new MetaData();
@@ -1988,12 +1995,39 @@ public class ScraperFX extends Application {
                                 }
 
                                 final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, localGame.fileName);
-                                final String[] videoLinks = 
-                                        DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getVideoLinks(getCurrentSettings().scrapeAs, localGame, filePath);
-                                if(videoLinks != null) {
-                                    newMetaData.videodownload = videoLinks[0];
-                                    newMetaData.videoembed = videoLinks[1];
+//                                final String[] videoLinks = 
+                                final Map<ScreenScraperSource.MetaDataKey, String> screenScraperData =
+                                        DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getExtraMetaData(getCurrentSettings().scrapeAs, localGame, filePath);
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
+                                    newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
                                 }
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
+                                    newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
+                                }
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
+                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
+                                    if(newMetaData.images == null) {
+                                        newMetaData.images = new ArrayList<>();
+                                    }
+                                    if(newMetaData.getSelectedImageUrl("screenshot") == null) {
+                                        image.selected = true;
+                                    }
+                                    newMetaData.images.add(image);
+                                }
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX) != null) {
+                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX), false);
+                                    if(newMetaData.images == null) {
+                                        newMetaData.images = new ArrayList<>();
+                                    }
+                                    if(newMetaData.getSelectedImageUrl("box-front") == null) {
+                                        image.selected = true;
+                                    }
+                                    newMetaData.images.add(image);
+                                }
+//                                if(videoLinks != null) {
+//                                    newMetaData.videodownload = videoLinks[0];
+//                                    newMetaData.videoembed = videoLinks[1];
+//                                }
 
                                 localGame.updateMetaData(newMetaData);
                                 status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
@@ -2136,7 +2170,8 @@ public class ScraperFX extends Application {
             new Thread(() -> {
                 try {
                     currentGame.matchedName = selectGameList.getSelectionModel().getSelectedItem();
-                    final MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
+//                    final MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
+                    final MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB).getMetaData(systemName, currentGame);
                     
                     if(newMetaData != null) {
                         if(currentGame.metadata != null && currentGame.metadata.favorite) {
@@ -2144,10 +2179,34 @@ public class ScraperFX extends Application {
                         }
 
                         final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, currentGame.fileName);
-                        final String[] videoLinks = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getVideoLinks(getCurrentSettings().scrapeAs, currentGame, filePath);
-                        if(videoLinks != null) {
-                            newMetaData.videodownload = videoLinks[0];
-                            newMetaData.videoembed = videoLinks[1];
+//                                final String[] videoLinks = 
+                        final Map<ScreenScraperSource.MetaDataKey, String> screenScraperData =
+                                DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getExtraMetaData(getCurrentSettings().scrapeAs, currentGame, filePath);
+                        if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
+                            newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
+                        }
+                        if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
+                            newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
+                        }
+                        if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
+                            com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
+                            if(newMetaData.images == null) {
+                                newMetaData.images = new ArrayList<>();
+                            }
+                            if(newMetaData.getSelectedImageUrl("screenshot") == null) {
+                                image.selected = true;
+                            }
+                            newMetaData.images.add(image);
+                        }
+                        if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX) != null) {
+                            com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX), false);
+                            if(newMetaData.images == null) {
+                                newMetaData.images = new ArrayList<>();
+                            }
+                            if(newMetaData.getSelectedImageUrl("box-front") == null) {
+                                image.selected = true;
+                            }
+                            newMetaData.images.add(image);
                         }
 
                         currentGame.updateMetaData(newMetaData);
@@ -2173,8 +2232,8 @@ public class ScraperFX extends Application {
         private void onShown() {
             new Thread(() -> {
                 try {
-                    final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
-//                    final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(systemName);
+//                    final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
+                    final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(systemName);
                     Collections.sort(gameList);
                     
                     Platform.runLater(() -> {

@@ -318,11 +318,12 @@ public class ESOutput {
                                                 final String primaryPath = g.metadata.getSelectedImageUrl(primary);
                                                 final String secondaryPath = g.metadata.getSelectedImageUrl(secondary);
                                                 
-                                                String primaryImageType = g.metadata.getSelectedImageType(primary);
-                                                String secondaryImageType = g.metadata.getSelectedImageType(secondary);
-                                                if(primaryImageType == null && primaryPath != null) primaryImageType = primaryPath.substring(primaryPath.lastIndexOf(".") + 1);//determineOutputType(primaryPath);
-                                                if(secondaryImageType == null && secondaryPath != null) secondaryImageType = secondaryPath.substring(secondaryPath.lastIndexOf(".") + 1);//determineOutputType(secondaryPath);
-
+//                                                String primaryImageType = g.metadata.getSelectedImageType(primary);
+//                                                String secondaryImageType = g.metadata.getSelectedImageType(secondary);
+//                                                if(primaryImageType == null && primaryPath != null) primaryImageType = primaryPath.substring(primaryPath.lastIndexOf(".") + 1);//determineOutputType(primaryPath);
+//                                                if(secondaryImageType == null && secondaryPath != null) secondaryImageType = secondaryPath.substring(secondaryPath.lastIndexOf(".") + 1);//determineOutputType(secondaryPath);
+                                                final String primaryImageType = "png";
+                                                final String secondaryImageType = "png";
                                                 if(!primary.equals("") && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-" + primary, primaryImageType, primaryPath)) {
                                                     writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-" + primary + "." + primaryImageType + "</" + esTags.get(i) + ">\n");
                                                     continue;

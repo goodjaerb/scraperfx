@@ -6,7 +6,9 @@
 package com.goodjaerb.scraperfx.datasource.impl.gamesdb;
 
 /**
- *
+ * This class is more appropriate for use in drop down comboboxes rather than
+ * the static inner class from GamesDbPlatformsData.
+ * 
  * @author goodjaerb <goodjaerb@gmail.com>
  */
 public class GamesDbPlatform {

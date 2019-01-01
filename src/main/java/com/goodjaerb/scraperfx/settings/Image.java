@@ -77,6 +77,10 @@ public class Image {
 //        this.path = path;
         this.selected = b;
     }
+    
+    public Image(String type, String url, boolean b) {
+        this(type, -1, -1, url, b);
+    }
 
     @Override
     public String toString() {

@@ -7,10 +7,14 @@ package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGamesByPlatformData;
+import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbImagesData;
 import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedResult;
+import com.goodjaerb.scraperfx.settings.Game;
+import com.goodjaerb.scraperfx.settings.MetaData;
 import com.google.gson.reflect.TypeToken;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +35,21 @@ public class GamesDbPrivateSource extends GamesDbSourceBase {
     public Map<String, String> getDefaultParams() {
         return DEFAULT_PARAMS;
     }
+
+    @Override
+    public List<String> getSystemNames() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<String> getSystemGameNames(String systemName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public MetaData getMetaData(String systemName, Game game) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
     public void populateGamesByPlatform(String platformId) {
         final Map<String, String> params = new HashMap<>(getDefaultParams());
@@ -48,8 +67,32 @@ public class GamesDbPrivateSource extends GamesDbSourceBase {
                 API_BASE_URL + API_GAMES_BY_PLATFORM_ID, 
                 params);
         
-        System.out.println("FROM GamesDbPrivateSource!!!!!!!!!!!!!!!!!!!!!!");
-        System.out.println(CACHED_GAMES_BY_PLATFORM_DATA.get(platformId));
-        System.out.println("END FROM GamesDbPrivateSource!!!!!!!!!!!!!!!!!!");
+        populateGamesImages(platformId);
+    }
+    
+    public void populateGamesImages(String platformId) {
+        loadGamesByPlatformCache(platformId);
+        
+        final GamesDbPaginatedResult<GamesDbGamesByPlatformData> cachedGameData = CACHED_GAMES_BY_PLATFORM_DATA.get(platformId);
+        if(cachedGameData != null && cachedGameData.isDataAvailable()) {
+            if(CACHED_GAMES_IMAGES_DATA.get(platformId) == null) {
+                CACHED_GAMES_IMAGES_DATA.put(platformId, new GamesDbPaginatedResult<>());
+            }
+            
+            final List<String> gameIds = getGameIdsForPlatform(platformId);
+            String idParam = "";
+            idParam = gameIds.stream().map((gameId) -> gameId + ",").reduce(idParam, String::concat);
+
+            final Map<String, String> params = new HashMap<>(getDefaultParams());
+            params.put("games_id", idParam);
+            
+            populatePaginatedCache(
+                    CACHED_GAMES_IMAGES_DATA.get(platformId),
+                    new TypeToken<GamesDbPaginatedResult<GamesDbImagesData>>(){}.getType(),
+                    GamesDbImagesData.class,
+                    ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(IMAGES_DIR).resolve(platformId + "_images.json"),
+                    API_BASE_URL + API_GAMES_IMAGES,
+                    params);
+        }
     }
 }

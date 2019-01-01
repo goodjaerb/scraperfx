@@ -17,10 +17,15 @@ public class ScreenScraperXmlGameMedias {
     
     @Element(name = "media_video")
     public String videoDownloadUrl;
+    
+    @Element(name = "media_screenshot")
+    public String screenshotUrl;
+    
+    @Element(name = "media_boxs")
+    public ScreenScraperXmlMediaBoxs boxes;
 
     @Override
     public String toString() {
-        return "ScreenScraperXmlGameMedias{" + "videoDownloadUrl=" + videoDownloadUrl + '}';
+        return "ScreenScraperXmlGameMedias{" + "videoDownloadUrl=" + videoDownloadUrl + ", screenshotUrl=" + screenshotUrl + ", boxes=" + boxes + '}';
     }
-    
 }

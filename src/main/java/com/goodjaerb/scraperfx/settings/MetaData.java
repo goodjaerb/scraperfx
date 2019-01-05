@@ -15,7 +15,7 @@ import org.xmappr.annotation.RootElement;
  */
 @RootElement(name = "metadata")
 public class MetaData {
-    public enum MetaDataId { NAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, VIDEO_EMBED, VIDEO_DOWNLOAD, IMAGES };
+    public enum MetaDataId { NAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, SCREEN_SCRAPER_ID, VIDEO_EMBED, VIDEO_DOWNLOAD, IMAGES };
     
     @Element(name = "favorite")
     public Boolean favorite = false;
@@ -37,6 +37,12 @@ public class MetaData {
     
     @Element(name = "lockImages")
     public Boolean lockImages = false;
+    
+    @Element(name = "screenscraperid")
+    public String screenScraperId;
+    
+    @Element(name = "lockscreenscraperid")
+    public Boolean lockScreenScraperId = false;
     
     @Element(name = "youtubeurl")
     public String videoembed;
@@ -123,6 +129,7 @@ public class MetaData {
         this.lockPublisher      = other.lockPublisher;
         this.lockRating         = other.lockRating;
         this.lockReleasedate    = other.lockReleasedate;
+        this.lockScreenScraperId = other.lockScreenScraperId;
         this.lockVideoEmbed     = other.lockVideoEmbed;
         this.lockVideoDownload  = other.lockVideoDownload;
     }
@@ -137,6 +144,7 @@ public class MetaData {
         players         = null;
         metaGenre       = null;
         images          = null;
+        screenScraperId = null;
         videodownload   = null;
         videoembed      = null;
         favorite        = false;
@@ -150,6 +158,7 @@ public class MetaData {
         lockPublisher       = false;
         lockRating          = false;
         lockReleasedate     = false;
+        lockScreenScraperId = false;
         lockVideoDownload   = false;
         lockVideoEmbed      = false;
     }
@@ -165,6 +174,7 @@ public class MetaData {
             players            = other.players;
             metaGenre          = other.metaGenre;
             images             = other.images;
+            screenScraperId    = other.screenScraperId;
             videodownload      = other.videodownload;
             videoembed         = other.videoembed;
             favorite           = other.favorite;
@@ -197,6 +207,9 @@ public class MetaData {
                 break;
             case RELEASE_DATE:
                 metaReleaseDate = value;
+                break;
+            case SCREEN_SCRAPER_ID:
+                screenScraperId = value;
                 break;
             case VIDEO_DOWNLOAD:
                 videodownload = value;
@@ -236,6 +249,9 @@ public class MetaData {
             case IMAGES:
                 lockImages = lock;
                 break;
+            case SCREEN_SCRAPER_ID:
+                lockScreenScraperId = lock;
+                break;
             case VIDEO_DOWNLOAD:
                 lockVideoDownload = lock;
                 break;
@@ -245,15 +261,8 @@ public class MetaData {
         }
     }
     
-//    @Override
-//    public String toString() {
-//        return "MetaData(name=" + metaName + ", description=" + metaDesc + 
-//                ", images(" + images + "), rating=" + metaRating + ", releaseData=" + metaReleaseDate + ", developer=" + metaDeveloper + ", publisher= " +
-//                metaPublisher + ", genre=" + metaGenre + ", players=" + players + ")";
-//    }
-
     @Override
     public String toString() {
-        return "MetaData{" + "favorite=" + favorite + ", metaName=" + metaName + ", lockName=" + lockName + ", metaDesc=" + metaDesc + ", lockDesc=" + lockDesc + ", images=" + images + ", lockImages=" + lockImages + ", videoembed=" + videoembed + ", lockVideoEmbed=" + lockVideoEmbed + ", videodownload=" + videodownload + ", lockVideoDownload=" + lockVideoDownload + ", metaRating=" + metaRating + ", lockRating=" + lockRating + ", metaReleaseDate=" + metaReleaseDate + ", lockReleasedate=" + lockReleasedate + ", metaDeveloper=" + metaDeveloper + ", lockDeveloper=" + lockDeveloper + ", metaPublisher=" + metaPublisher + ", lockPublisher=" + lockPublisher + ", metaGenre=" + metaGenre + ", lockGenre=" + lockGenre + ", players=" + players + ", lockPlayers=" + lockPlayers + '}';
+        return "MetaData{" + "favorite=" + favorite + ", metaName=" + metaName + ", lockName=" + lockName + ", metaDesc=" + metaDesc + ", lockDesc=" + lockDesc + ", images=" + images + ", lockImages=" + lockImages + ", screenScraperId=" + screenScraperId + ", lockScreenScraperId=" + lockScreenScraperId + ", videoembed=" + videoembed + ", lockVideoEmbed=" + lockVideoEmbed + ", videodownload=" + videodownload + ", lockVideoDownload=" + lockVideoDownload + ", metaRating=" + metaRating + ", lockRating=" + lockRating + ", metaReleaseDate=" + metaReleaseDate + ", lockReleasedate=" + lockReleasedate + ", metaDeveloper=" + metaDeveloper + ", lockDeveloper=" + lockDeveloper + ", metaPublisher=" + metaPublisher + ", lockPublisher=" + lockPublisher + ", metaGenre=" + metaGenre + ", lockGenre=" + lockGenre + ", players=" + players + ", lockPlayers=" + lockPlayers + '}';
     }
 }

@@ -35,6 +35,7 @@ public class ScreenScraperSource extends CustomHttpDataSource {
     private static final Map<String, String>    DEFAULT_PARAMS;
     
     public enum MetaDataKey {
+        ID,
         VIDEO_DOWNLOAD,
         VIDEO_EMBED,
         BOX,
@@ -71,7 +72,6 @@ public class ScreenScraperSource extends CustomHttpDataSource {
             return crcString;
         }
     }
-
     
     private ScreenScraperXmlGameData getXmlData(String systemName, String gameName, Path filePath) {
         final Integer sysId = ScreenScraperSystemIdMap.getSystemId(systemName);
@@ -98,27 +98,51 @@ public class ScreenScraperSource extends CustomHttpDataSource {
         return null;
     }
     
+    private ScreenScraperXmlGameData getXmlData(String gameId) {
+        final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
+        params.put("gameid", gameId);
+        
+        try {
+            return getData(new XmlDataSourcePlugin<>(ScreenScraperXmlGameData.class), API_BASE_URL, params);
+        }
+        catch(IOException ex) {
+            Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    private ScreenScraperXmlGameData getXmlData(String systemName, Game game, Path filePath) {
+        if(game.metadata != null && game.metadata.screenScraperId != null && !game.metadata.screenScraperId.isEmpty()) {
+            return getXmlData(game.metadata.screenScraperId);
+        }
+        return getXmlData(systemName, game.matchedName, filePath);
+    }
+    
     public Map<MetaDataKey, String> getExtraMetaData(String systemName, Game game, Path filePath) {
-        final ScreenScraperXmlGameData data = getXmlData(systemName, game.matchedName, filePath);
-        if(data != null && data.game != null && data.game.medias != null) {
+        final ScreenScraperXmlGameData data = getXmlData(systemName, game, filePath);
+        if(data != null && data.game != null) {
             final Map<MetaDataKey, String> metaDataMap = new HashMap<>();
             
-            ScreenScraperXmlGameMedias medias = data.game.medias;
-            if(medias.videoDownloadUrl != null) {
-                metaDataMap.put(MetaDataKey.VIDEO_DOWNLOAD, medias.videoDownloadUrl);
-                metaDataMap.put(MetaDataKey.VIDEO_EMBED, "https://www.screenscraper.fr/medias/" + ScreenScraperSystemIdMap.getSystemId(systemName) + "/" + data.game.id + "/video.mp4");
-//            return new String[] { 
-//                data.game.medias.videoDownloadUrl, 
-//                "https://www.screenscraper.fr/medias/" + ScreenScraperSystemIdMap.getSystemId(systemName) + "/" + data.game.id + "/video.mp4"
-//            };
-            }
+            metaDataMap.put(MetaDataKey.ID, Integer.toString(data.game.id));
             
-            if(medias.screenshotUrl != null) {
-                metaDataMap.put(MetaDataKey.SCREENSHOT, medias.screenshotUrl);
-            }
-            
-            if(medias.boxes != null && medias.boxes.boxes2d != null && medias.boxes.boxes2d.boxUrl != null) {
-                metaDataMap.put(MetaDataKey.BOX, medias.boxes.boxes2d.boxUrl);
+            if(data.game.medias != null) {
+                final ScreenScraperXmlGameMedias medias = data.game.medias;
+                if(medias.videoDownloadUrl != null) {
+                    metaDataMap.put(MetaDataKey.VIDEO_DOWNLOAD, medias.videoDownloadUrl);
+                    metaDataMap.put(MetaDataKey.VIDEO_EMBED, "https://www.screenscraper.fr/medias/" + ScreenScraperSystemIdMap.getSystemId(systemName) + "/" + data.game.id + "/video.mp4");
+    //            return new String[] { 
+    //                data.game.medias.videoDownloadUrl, 
+    //                "https://www.screenscraper.fr/medias/" + ScreenScraperSystemIdMap.getSystemId(systemName) + "/" + data.game.id + "/video.mp4"
+    //            };
+                }
+
+                if(medias.screenshotUrl != null) {
+                    metaDataMap.put(MetaDataKey.SCREENSHOT, medias.screenshotUrl);
+                }
+
+                if(medias.boxes != null && medias.boxes.boxes2d != null && medias.boxes.boxes2d.boxUrl != null) {
+                    metaDataMap.put(MetaDataKey.BOX, medias.boxes.boxes2d.boxUrl);
+                }
             }
             
             return metaDataMap;

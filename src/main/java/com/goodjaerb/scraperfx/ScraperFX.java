@@ -105,10 +105,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
@@ -169,6 +166,7 @@ public class ScraperFX extends Application {
     private final CheckBox              showOnlyNonMatchedCheckBox = new CheckBox("Show Only Non-Matched Items");
     private final CheckBox              hideLockedCheckBox = new CheckBox("Hide Locked Items");
     private final CheckBox              showOnlyLockedCheckBox = new CheckBox("Show Only Locked Items");
+    private final CheckBox              showOnlyMissingScreenScraperIdCheckBox = new CheckBox("Missing ScreenScraper ID");
     private final TextField             filterField = new TextField();
     private final ObservableList<Game>  observableGamesList = FXCollections.observableArrayList();
     private final SortedList<Game>      sortedGamesList = new SortedList<>(observableGamesList);
@@ -194,6 +192,8 @@ public class ScraperFX extends Application {
     private final CheckBox              lockGenreCheckBox = new CheckBox("Lock");
     private final TextField             playersField = new TextField();
     private final CheckBox              lockPlayersCheckBox = new CheckBox("Lock");
+    private final TextField             screenScraperIdField = new TextField();
+    private final CheckBox              lockScreenScraperIdCheckBox = new CheckBox("Lock");
     private final TextField             videoEmbedField = new TextField();
     private final CheckBox              lockVideoEmbedCheckBox = new CheckBox("Lock");
     private final TextField             videoDownloadField = new TextField();
@@ -535,6 +535,10 @@ public class ScraperFX extends Application {
             filteredGamesList.setPredicate(buildFilterPredicate());
         });
         
+        showOnlyMissingScreenScraperIdCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            filteredGamesList.setPredicate(buildFilterPredicate());
+        });
+        
         filterField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredGamesList.setPredicate(buildFilterPredicate());
         });
@@ -585,17 +589,18 @@ public class ScraperFX extends Application {
             observableGamesList.add(updatedGame);
             gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
         });
-        lockDescCheckBox.setOnAction((e) ->         lockMetaField(metaDescArea, MetaDataId.DESC, currentGame.metadata, lockDescCheckBox.isSelected()));
-        lockDeveloperCheckBox.setOnAction((e) ->    lockMetaField(metaDeveloperField, MetaDataId.DEVELOPER, currentGame.metadata, lockDeveloperCheckBox.isSelected()));
-        lockGenreCheckBox.setOnAction((e) ->        lockMetaField(metaGenreField, MetaDataId.GENRE, currentGame.metadata, lockGenreCheckBox.isSelected()));
-        lockPublisherCheckBox.setOnAction((e) ->    lockMetaField(metaPublisherField, MetaDataId.PUBLISHER, currentGame.metadata, lockPublisherCheckBox.isSelected()));
-        lockRatingCheckBox.setOnAction((e) ->       lockMetaField(metaRatingField, MetaDataId.RATING, currentGame.metadata, lockRatingCheckBox.isSelected()));
-        lockReleaseDateCheckBox.setOnAction((e) ->  lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, lockReleaseDateCheckBox.isSelected()));
-        lockPlayersCheckBox.setOnAction((e) ->      lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, lockPlayersCheckBox.isSelected()));
-        lockImagesCheckBox.setOnAction((e) -> {     currentGame.metadata.lockImages = lockImagesCheckBox.isSelected(); });
-        lockVideoEmbedCheckBox.setOnAction((e) ->   lockMetaField(videoEmbedField, MetaDataId.VIDEO_EMBED, currentGame.metadata, lockVideoEmbedCheckBox.isSelected()));
-        lockVideoDownloadCheckBox.setOnAction((e) -> lockMetaField(videoDownloadField, MetaDataId.VIDEO_DOWNLOAD, currentGame.metadata, lockVideoDownloadCheckBox.isSelected()));
-        favoriteCheckBox.setOnAction((e) -> {       currentGame.metadata.favorite = favoriteCheckBox.isSelected(); gamesListView.refresh(); });
+        lockDescCheckBox.setOnAction((e) ->             lockMetaField(metaDescArea, MetaDataId.DESC, currentGame.metadata, lockDescCheckBox.isSelected()));
+        lockDeveloperCheckBox.setOnAction((e) ->        lockMetaField(metaDeveloperField, MetaDataId.DEVELOPER, currentGame.metadata, lockDeveloperCheckBox.isSelected()));
+        lockGenreCheckBox.setOnAction((e) ->            lockMetaField(metaGenreField, MetaDataId.GENRE, currentGame.metadata, lockGenreCheckBox.isSelected()));
+        lockPublisherCheckBox.setOnAction((e) ->        lockMetaField(metaPublisherField, MetaDataId.PUBLISHER, currentGame.metadata, lockPublisherCheckBox.isSelected()));
+        lockRatingCheckBox.setOnAction((e) ->           lockMetaField(metaRatingField, MetaDataId.RATING, currentGame.metadata, lockRatingCheckBox.isSelected()));
+        lockReleaseDateCheckBox.setOnAction((e) ->      lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, lockReleaseDateCheckBox.isSelected()));
+        lockPlayersCheckBox.setOnAction((e) ->          lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, lockPlayersCheckBox.isSelected()));
+        lockImagesCheckBox.setOnAction((e) -> {         currentGame.metadata.lockImages = lockImagesCheckBox.isSelected(); });
+        lockScreenScraperIdCheckBox.setOnAction((e) ->  lockMetaField(screenScraperIdField, MetaDataId.SCREEN_SCRAPER_ID, currentGame.metadata, lockScreenScraperIdCheckBox.isSelected()));
+        lockVideoEmbedCheckBox.setOnAction((e) ->       lockMetaField(videoEmbedField, MetaDataId.VIDEO_EMBED, currentGame.metadata, lockVideoEmbedCheckBox.isSelected()));
+        lockVideoDownloadCheckBox.setOnAction((e) ->    lockMetaField(videoDownloadField, MetaDataId.VIDEO_DOWNLOAD, currentGame.metadata, lockVideoDownloadCheckBox.isSelected()));
+        favoriteCheckBox.setOnAction((e) -> {           currentGame.metadata.favorite = favoriteCheckBox.isSelected(); gamesListView.refresh(); });
         
         final VBox metaBox = new VBox();
         metaBox.getChildren().addAll(
@@ -608,6 +613,7 @@ public class ScraperFX extends Application {
                 createMetaFieldPane("Publisher:", metaPublisherField, lockPublisherCheckBox),
                 createMetaFieldPane("Genre:", metaGenreField, lockGenreCheckBox),
                 createMetaFieldPane("Players:", playersField, lockPlayersCheckBox),
+                createMetaFieldPane("ScreenScraper ID:", screenScraperIdField, lockScreenScraperIdCheckBox),
                 createMetaFieldPane("Video Embed URL:", videoEmbedField, lockVideoEmbedCheckBox),
                 createMetaFieldPane("Video Download URL:", videoDownloadField, lockVideoDownloadCheckBox)
         );
@@ -625,7 +631,7 @@ public class ScraperFX extends Application {
         
         final VBox filterBox = new VBox();
         filterBox.setSpacing(7.);
-        filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, hideLockedCheckBox, showOnlyLockedCheckBox);
+        filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, hideLockedCheckBox, showOnlyLockedCheckBox, showOnlyMissingScreenScraperIdCheckBox);
         
         final HBox topBox = new HBox();
         topBox.setSpacing(7.);
@@ -900,7 +906,8 @@ public class ScraperFX extends Application {
                 getShowOnlyNonMatchedPredicate()).and(
                 getFilterTextPredicate(filterField.getText())).and(
                 getHideLockedPredicate()).and(
-                getShowOnlyLockedPredicate());
+                getShowOnlyLockedPredicate()).and(
+                getShowOnlyMissingScreenScraperIdPredicate());
     }
     
     private Predicate<Game> getHideIgnoredPredicate() {
@@ -940,6 +947,17 @@ public class ScraperFX extends Application {
         if(showOnlyLockedCheckBox.isSelected()) {
             return (game) -> {
                 return game.strength == Game.MatchStrength.LOCKED;
+            };
+        }
+        return (game) -> {
+            return true;
+        };
+    }
+    
+    private Predicate<Game> getShowOnlyMissingScreenScraperIdPredicate() {
+        if(showOnlyMissingScreenScraperIdCheckBox.isSelected()) {
+            return (game) -> {
+                return game.metadata == null || game.metadata.screenScraperId == null || game.metadata.screenScraperId.isEmpty();
             };
         }
         return (game) -> {
@@ -1198,6 +1216,7 @@ public class ScraperFX extends Application {
         metaPublisherField.clear();
         metaGenreField.clear();
         playersField.clear();
+        screenScraperIdField.clear();
         videoEmbedField.clear();
         videoDownloadField.clear();
         imagesScroll.setContent(null);
@@ -1211,6 +1230,7 @@ public class ScraperFX extends Application {
         lockPublisherCheckBox.setSelected(false);
         lockGenreCheckBox.setSelected(false);
         lockPlayersCheckBox.setSelected(false);
+        lockScreenScraperIdCheckBox.setSelected(false);
         lockVideoEmbedCheckBox.setSelected(false);
         lockVideoDownloadCheckBox.setSelected(false);
     }
@@ -1230,6 +1250,7 @@ public class ScraperFX extends Application {
                 metaPublisherField.setText(g.metadata.metaPublisher);
                 metaGenreField.setText((g.metadata.metaGenre == null ? "" : g.metadata.metaGenre));
                 playersField.setText(g.metadata.players);
+                screenScraperIdField.setText(g.metadata.screenScraperId);
                 videoEmbedField.setText(g.metadata.videoembed);
                 videoDownloadField.setText(g.metadata.videodownload);
 
@@ -1249,6 +1270,8 @@ public class ScraperFX extends Application {
                 metaGenreField.setEditable(!g.metadata.lockGenre);
                 lockPlayersCheckBox.setSelected(g.metadata.lockPlayers);
                 playersField.setEditable(!g.metadata.lockPlayers);
+                lockScreenScraperIdCheckBox.setSelected(g.metadata.lockScreenScraperId);
+                screenScraperIdField.setEditable(!g.metadata.lockScreenScraperId);
                 lockVideoEmbedCheckBox.setSelected(g.metadata.lockVideoEmbed);
                 videoEmbedField.setEditable(!g.metadata.lockVideoEmbed);
                 lockVideoDownloadCheckBox.setSelected(g.metadata.lockVideoDownload);
@@ -1995,31 +2018,37 @@ public class ScraperFX extends Application {
 //                                final String[] videoLinks = 
                             final Map<ScreenScraperSource.MetaDataKey, String> screenScraperData =
                                     DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getExtraMetaData(getCurrentSettings().scrapeAs, localGame, filePath);
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
-                                newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
-                            }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
-                                newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
-                            }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
-                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
-                                if(newMetaData.images == null) {
-                                    newMetaData.images = new ArrayList<>();
+                            
+                            if(screenScraperData != null) {
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.ID) != null) {
+                                    newMetaData.screenScraperId = screenScraperData.get(ScreenScraperSource.MetaDataKey.ID);
                                 }
-                                if(newMetaData.getSelectedImageUrl("screenshot") == null) {
-                                    image.selected = true;
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
+                                    newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
                                 }
-                                newMetaData.images.add(image);
-                            }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX) != null) {
-                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX), false);
-                                if(newMetaData.images == null) {
-                                    newMetaData.images = new ArrayList<>();
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
+                                    newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
                                 }
-                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
-                                    image.selected = true;
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
+                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
+                                    if(newMetaData.images == null) {
+                                        newMetaData.images = new ArrayList<>();
+                                    }
+                                    if(newMetaData.getSelectedImageUrl("screenshot") == null) {
+                                        image.selected = true;
+                                    }
+                                    newMetaData.images.add(image);
                                 }
-                                newMetaData.images.add(image);
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX) != null) {
+                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX), false);
+                                    if(newMetaData.images == null) {
+                                        newMetaData.images = new ArrayList<>();
+                                    }
+                                    if(newMetaData.getSelectedImageUrl("box-front") == null) {
+                                        image.selected = true;
+                                    }
+                                    newMetaData.images.add(image);
+                                }
                             }
 //                                if(videoLinks != null) {
 //                                    newMetaData.videodownload = videoLinks[0];
@@ -2256,31 +2285,34 @@ public class ScraperFX extends Application {
 //                                final String[] videoLinks = 
                         final Map<ScreenScraperSource.MetaDataKey, String> screenScraperData =
                                 DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getExtraMetaData(getCurrentSettings().scrapeAs, currentGame, filePath);
-                        if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
-                            newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
-                        }
-                        if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
-                            newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
-                        }
-                        if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
-                            com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
-                            if(newMetaData.images == null) {
-                                newMetaData.images = new ArrayList<>();
+                        
+                        if(screenScraperData != null) {
+                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
+                                newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
                             }
-                            if(newMetaData.getSelectedImageUrl("screenshot") == null) {
-                                image.selected = true;
+                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
+                                newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
                             }
-                            newMetaData.images.add(image);
-                        }
-                        if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX) != null) {
-                            com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX), false);
-                            if(newMetaData.images == null) {
-                                newMetaData.images = new ArrayList<>();
+                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
+                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
+                                if(newMetaData.images == null) {
+                                    newMetaData.images = new ArrayList<>();
+                                }
+                                if(newMetaData.getSelectedImageUrl("screenshot") == null) {
+                                    image.selected = true;
+                                }
+                                newMetaData.images.add(image);
                             }
-                            if(newMetaData.getSelectedImageUrl("box-front") == null) {
-                                image.selected = true;
+                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX) != null) {
+                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX), false);
+                                if(newMetaData.images == null) {
+                                    newMetaData.images = new ArrayList<>();
+                                }
+                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
+                                    image.selected = true;
+                                }
+                                newMetaData.images.add(image);
                             }
-                            newMetaData.images.add(image);
                         }
 
                         currentGame.updateMetaData(newMetaData);

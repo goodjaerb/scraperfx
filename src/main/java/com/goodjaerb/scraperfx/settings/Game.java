@@ -94,6 +94,7 @@ public class Game {//implements Comparable<Game> {
         metadata.players            = metadata.lockPlayers          ? metadata.players              : newMetaData.players;
         metadata.metaGenre          = metadata.lockGenre            ? metadata.metaGenre            : newMetaData.metaGenre;
         metadata.images             = metadata.lockImages           ? metadata.images               : newMetaData.images;
+        metadata.screenScraperId    = metadata.lockScreenScraperId  ? metadata.screenScraperId      : newMetaData.screenScraperId;
         metadata.videodownload      = metadata.lockVideoDownload    ? metadata.videodownload        : newMetaData.videodownload;
         metadata.videoembed         = metadata.lockVideoEmbed       ? metadata.videoembed           : newMetaData.videoembed;
         metadata.favorite           = newMetaData.favorite;

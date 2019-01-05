@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,39 +155,100 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                 if(localData == null || !localData.isDataAvailable()) {
                     Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Retrieving data from remote source...");
                     
-                    localData = getData(new JsonDataSourcePlugin<>(typeOfT), url, params);
-                    
-                    if(localData == null) {
-                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
-                    }
-                    else if(localData.isDataAvailable()) {
-                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
-                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
+                    final String gameIds = params.get("games_id");
+                    if(gameIds != null) {
+                        // special case for calling GamesDB with a lot of Game ID's.
+                        // GamesDB api Games/Images only takes game id's and i try to attach all of a platforms id's but
+                        // it can be too many like for nintendo ds so i'll limit it to 500 because i know that is doable.
+                        final Map<String, String> localParams = new HashMap<>(params);
+                        final List<String> gameIdList = Arrays.asList(gameIds.split(","));
                         
-                        int totalCount = localData.data.count;
-                        
-                        cache.data = localData.data;
-                        
-                        while(localData.hasNext()) {
-                            localData = getData(new JsonDataSourcePlugin<>(typeOfT), localData.pages.next);
+                        int totalCount = 0;
+                        String shortenedGameIdParam = "";
+                        for(int i = 0; i < gameIdList.size(); i++) {
+                            shortenedGameIdParam += gameIdList.get(i) + ",";
+                            
+                            if(i == gameIdList.size() - 1 || (i + 1) % 500 == 0) {
+                                localParams.put("games_id", shortenedGameIdParam);
+                                localData = getData(new JsonDataSourcePlugin<>(typeOfT), url, localParams);
 
-                            if(localData == null) {
-                                //if it's still null something went wrong.
-                                break;
-                            }
+                                if(localData == null) {
+                                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
+                                }
+                                else if(localData.isDataAvailable()) {
+                                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
+                                    Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
 
-                            totalCount += localData.data.count;
+                                    totalCount += localData.data.count;
 
-                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
-                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
-                            if(localData.isDataAvailable()) {
-                                cache.data.appendData(localData.data.values());
+                                    if(cache.data == null) {
+                                        cache.data = localData.data;
+                                    }
+                                    else {
+                                        cache.data.appendData(localData.data.values());
+                                    }
+
+                                    while(localData.hasNext()) {
+                                        localData = getData(new JsonDataSourcePlugin<>(typeOfT), localData.pages.next);
+
+                                        if(localData == null) {
+                                            //if it's still null something went wrong.
+                                            break;
+                                        }
+
+                                        totalCount += localData.data.count;
+
+                                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
+                                        Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
+                                        if(localData.isDataAvailable()) {
+                                            cache.data.appendData(localData.data.values());
+                                        }
+                                    }
+                                }
+                                
+                                shortenedGameIdParam = "";
                             }
                         }
 
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Total results returned={0}.", totalCount);
                         Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
                         writeCachedData(cachePath, cache);
+                    }
+                    else {
+                        localData = getData(new JsonDataSourcePlugin<>(typeOfT), url, params);
+
+                        if(localData == null) {
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.WARNING, "No data returned for {0}.", dataClass.getName());
+                        }
+                        else if(localData.isDataAvailable()) {
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
+
+                            int totalCount = localData.data.count;
+
+                            cache.data = localData.data;
+
+                            while(localData.hasNext()) {
+                                localData = getData(new JsonDataSourcePlugin<>(typeOfT), localData.pages.next);
+
+                                if(localData == null) {
+                                    //if it's still null something went wrong.
+                                    break;
+                                }
+
+                                totalCount += localData.data.count;
+
+                                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Results returned={0}.", localData.data.count);
+                                Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "API requests remaining: monthly={0}, extra_allowance={1}.", new Object[]{localData.remaining_monthly_allowance, localData.extra_allowance});
+                                if(localData.isDataAvailable()) {
+                                    cache.data.appendData(localData.data.values());
+                                }
+                            }
+
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Total results returned={0}.", totalCount);
+                            Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Writing {0} data to disk...", dataClass.getName());
+                            writeCachedData(cachePath, cache);
+                        }
                     }
                 }
                 else {

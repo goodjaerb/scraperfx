@@ -2287,6 +2287,9 @@ public class ScraperFX extends Application {
                                 DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getExtraMetaData(getCurrentSettings().scrapeAs, currentGame, filePath);
                         
                         if(screenScraperData != null) {
+                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.ID) != null) {
+                                newMetaData.screenScraperId = screenScraperData.get(ScreenScraperSource.MetaDataKey.ID);
+                            }
                             if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
                                 newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
                             }

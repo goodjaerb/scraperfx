@@ -1003,6 +1003,7 @@ public class ScraperFX extends Application {
         int retry = 0;
         while(retry < 3) {
             try {
+                Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "Downloading image from {0}...", url);
                 final URLConnection connection = new URL(url).openConnection();
                 connection.setConnectTimeout(3000);
                 connection.setReadTimeout(3000);
@@ -1071,6 +1072,7 @@ public class ScraperFX extends Application {
             int retry = 0;
             while(retry < 3) {
                 try {
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "Downloading image from {0}...", url);
                     final URLConnection connection = new URL(url).openConnection();
                     connection.setConnectTimeout(3000);
                     connection.setReadTimeout(3000);

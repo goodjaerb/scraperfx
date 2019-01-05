@@ -197,7 +197,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
     //                        break;
                         case "boxart":
                             if("front".equals(image.side)) {
-                                images.add(new Image("boxart-front", cachedData.data.base_url.thumb + image.filename, (boxartCount == 0)));
+                                images.add(new Image("box-front", cachedData.data.base_url.thumb + image.filename, (boxartCount == 0)));
                                 boxartCount++;
                             }
                             break;

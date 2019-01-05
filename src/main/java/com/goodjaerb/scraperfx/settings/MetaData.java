@@ -6,6 +6,8 @@
 package com.goodjaerb.scraperfx.settings;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.xmappr.annotation.Element;
 import org.xmappr.annotation.RootElement;
 
@@ -96,6 +98,7 @@ public class MetaData {
     }
     
     public String getSelectedImageUrl(String type) {
+        Logger.getLogger(MetaData.class.getName()).log(Level.INFO, "Checking for selected image type {0} within {1}...", new Object[] { type, images });
         for(final Image image : images) {
             if(type.equals(image.type) && image.selected) {
                 return image.url;
@@ -120,18 +123,18 @@ public class MetaData {
     }
     
     public void transferLocksFrom(MetaData other) {
-        this.lockDesc           = other.lockDesc;
-        this.lockDeveloper      = other.lockDeveloper;
-        this.lockGenre          = other.lockGenre;
-        this.lockImages         = other.lockImages;
-        this.lockName           = other.lockName;
-        this.lockPlayers        = other.lockPlayers;
-        this.lockPublisher      = other.lockPublisher;
-        this.lockRating         = other.lockRating;
-        this.lockReleasedate    = other.lockReleasedate;
-        this.lockScreenScraperId = other.lockScreenScraperId;
-        this.lockVideoEmbed     = other.lockVideoEmbed;
-        this.lockVideoDownload  = other.lockVideoDownload;
+        this.lockDesc               = other.lockDesc;
+        this.lockDeveloper          = other.lockDeveloper;
+        this.lockGenre              = other.lockGenre;
+        this.lockImages             = other.lockImages;
+        this.lockName               = other.lockName;
+        this.lockPlayers            = other.lockPlayers;
+        this.lockPublisher          = other.lockPublisher;
+        this.lockRating             = other.lockRating;
+        this.lockReleasedate        = other.lockReleasedate;
+        this.lockScreenScraperId    = other.lockScreenScraperId;
+        this.lockVideoEmbed         = other.lockVideoEmbed;
+        this.lockVideoDownload      = other.lockVideoDownload;
     }
     
     public void reset() {

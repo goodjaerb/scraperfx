@@ -2041,8 +2041,18 @@ public class ScraperFX extends Application {
                                     }
                                     newMetaData.images.add(image);
                                 }
-                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX) != null) {
-                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX), false);
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US) != null) {
+                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US), false);
+                                    if(newMetaData.images == null) {
+                                        newMetaData.images = new ArrayList<>();
+                                    }
+                                    if(newMetaData.getSelectedImageUrl("box-front") == null) {
+                                        image.selected = true;
+                                    }
+                                    newMetaData.images.add(image);
+                                }
+                                if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD) != null) {
+                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD), false);
                                     if(newMetaData.images == null) {
                                         newMetaData.images = new ArrayList<>();
                                     }
@@ -2308,8 +2318,18 @@ public class ScraperFX extends Application {
                                 }
                                 newMetaData.images.add(image);
                             }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX) != null) {
-                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX), false);
+                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US) != null) {
+                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US), false);
+                                if(newMetaData.images == null) {
+                                    newMetaData.images = new ArrayList<>();
+                                }
+                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
+                                    image.selected = true;
+                                }
+                                newMetaData.images.add(image);
+                            }
+                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD) != null) {
+                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD), false);
                                 if(newMetaData.images == null) {
                                     newMetaData.images = new ArrayList<>();
                                 }

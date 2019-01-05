@@ -15,11 +15,14 @@ import org.xmappr.annotation.RootElement;
 @RootElement(name = "media_boxs2d")
 public class ScreenScraperXmlMediaBoxs2d {
     
-    @Element(name = "media_box2d_ss")
-    public String boxUrl;
+    @Element(name = "media_box2d_us")
+    public String boxUsUrl;
+    
+    @Element(name = "media_box2d_wor")
+    public String boxWorUrl;
 
     @Override
     public String toString() {
-        return "ScreenScraperXmlMediaBoxs2d{" + "boxUrl=" + boxUrl + '}';
+        return "ScreenScraperXmlMediaBoxs2d{" + "boxUsUrl=" + boxUsUrl + ", boxWorUrl=" + boxWorUrl + '}';
     }
 }

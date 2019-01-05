@@ -38,7 +38,8 @@ public class ScreenScraperSource extends CustomHttpDataSource {
         ID,
         VIDEO_DOWNLOAD,
         VIDEO_EMBED,
-        BOX,
+        BOX_US,
+        BOX_WORLD,
         SCREENSHOT;
     }
     
@@ -140,8 +141,12 @@ public class ScreenScraperSource extends CustomHttpDataSource {
                     metaDataMap.put(MetaDataKey.SCREENSHOT, medias.screenshotUrl);
                 }
 
-                if(medias.boxes != null && medias.boxes.boxes2d != null && medias.boxes.boxes2d.boxUrl != null) {
-                    metaDataMap.put(MetaDataKey.BOX, medias.boxes.boxes2d.boxUrl);
+                if(medias.boxes != null && medias.boxes.boxes2d != null && medias.boxes.boxes2d.boxUsUrl != null) {
+                    metaDataMap.put(MetaDataKey.BOX_US, medias.boxes.boxes2d.boxUsUrl);
+                }
+
+                if(medias.boxes != null && medias.boxes.boxes2d != null && medias.boxes.boxes2d.boxWorUrl != null) {
+                    metaDataMap.put(MetaDataKey.BOX_WORLD, medias.boxes.boxes2d.boxWorUrl);
                 }
             }
             

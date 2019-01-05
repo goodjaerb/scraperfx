@@ -98,7 +98,6 @@ public class MetaData {
     }
     
     public String getSelectedImageUrl(String type) {
-        Logger.getLogger(MetaData.class.getName()).log(Level.INFO, "Checking for selected image type {0} within {1}...", new Object[] { type, images });
         for(final Image image : images) {
             if(type.equals(image.type) && image.selected) {
                 return image.url;

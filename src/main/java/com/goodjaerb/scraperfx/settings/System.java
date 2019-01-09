@@ -38,6 +38,9 @@ public class System implements Comparable<System> {
     @Element
     public String ignoreRegex;
     
+    @Element
+    public String datFilter;
+    
     public System() {
         this("");
     }

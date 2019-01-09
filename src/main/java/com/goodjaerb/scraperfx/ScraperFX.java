@@ -148,6 +148,7 @@ public class ScraperFX extends Application {
     private final Button                                    gameSourceBrowseButton = new Button("...");
     private final TextField                                 filenameRegexField = new TextField();
     private final TextField                                 ignoreRegexField = new TextField();
+    private final TextField                                 datFilterField = new TextField();
     private final CheckBox                                  unmatchedOnlyCheckBox = new CheckBox("Don't Re-match matched files");
     private final CheckBox                                  refreshMetaDataCheckBox = new CheckBox("Refresh Matched Metadata");
     private final ToggleGroup                               outputMediaGroup = new ToggleGroup();
@@ -344,6 +345,13 @@ public class ScraperFX extends Application {
             }
         });
         
+        datFilterField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if(!newValue) {
+                //lost focus
+                getCurrentSettings().datFilter = datFilterField.getText();
+            }
+        });
+        
         unmatchedOnlyCheckBox.setPadding(new Insets(7.));
         unmatchedOnlyCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {//setOnAction((e) -> {
             getCurrentSettings().unmatchedOnly = unmatchedOnlyCheckBox.isSelected();
@@ -379,6 +387,7 @@ public class ScraperFX extends Application {
                 createBrowseFieldPane("Game Source Directory:", gameSourceField, gameSourceBrowseButton),
                 createBrowseFieldPane("Regex for Substring Removal (Advanced):", filenameRegexField),
                 createBrowseFieldPane("Regex for Files to Ignore (Advanced):", ignoreRegexField),
+                createBrowseFieldPane("DAT Filter (Advanced):", datFilterField),
                 unmatchedOnlyCheckBox,
                 refreshMetaDataCheckBox,
                 outputMediaToUserDirButton,
@@ -408,7 +417,7 @@ public class ScraperFX extends Application {
             if(e.getCode() == KeyCode.ESCAPE) {
                 filterField.setText("");
             }
-            else if(e.getCode() == KeyCode.BACK_SPACE) {
+            else if(e.getCode() == KeyCode.BACK_SPACE && !filterField.getText().isEmpty()) {
                 final String currentText = filterField.getText();
                 filterField.setText(currentText.substring(0, currentText.length() - 1));
             }
@@ -672,13 +681,16 @@ public class ScraperFX extends Application {
         
         applyDatFileButton.setOnAction((e) -> {
             final File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
+//            final List<File> files = Chooser.openFiles("Select DAT File(s)", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
             if(datFile != null) {
+//            if(files != null) {
+//                for(final File datFile : files) {
                 try {
                     final Datafile dat = readDatFile(datFile.toPath());
 
                     observableGamesList.forEach((game) -> {
                         final String filename = game.fileName;
-                        
+
                         if(dat.getElements().stream().noneMatch((element) -> {
                             return filename.equals(element.getName() + ".zip");
                         })) {
@@ -690,6 +702,7 @@ public class ScraperFX extends Application {
                 catch (IOException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                 }
+//                }
             }
         });
         
@@ -1336,6 +1349,7 @@ public class ScraperFX extends Application {
         gameSourceField.setText(getCurrentSettings().romsDir);
         filenameRegexField.setText(getCurrentSettings().substringRegex);
         ignoreRegexField.setText(getCurrentSettings().ignoreRegex);
+        datFilterField.setText(getCurrentSettings().datFilter);
         unmatchedOnlyCheckBox.setSelected(getCurrentSettings().unmatchedOnly);
         
         observableGamesList.clear();
@@ -1360,6 +1374,7 @@ public class ScraperFX extends Application {
         gameSourceField.clear();
         filenameRegexField.clear();
         ignoreRegexField.clear();
+        datFilterField.clear();
         unmatchedOnlyCheckBox.setSelected(false);
     }
     
@@ -2474,8 +2489,8 @@ public class ScraperFX extends Application {
 
         private static final FileChooser FILE_CHOOSER = new FileChooser();
         private static final DirectoryChooser DIR_CHOOSER = new DirectoryChooser();
-
-        public static File getFile(DialogType type, String title, Window parentWindow, String... fileExts) {
+        
+        private static void setup(String title, String[] fileExts) {
             FILE_CHOOSER.setTitle(title);
             FILE_CHOOSER.setInitialDirectory(new File(System.getProperty("user.home")));
             FILE_CHOOSER.getExtensionFilters().clear();
@@ -2485,7 +2500,16 @@ public class ScraperFX extends Application {
                     FILE_CHOOSER.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileExts[i], fileExts[i + 1]));
                 }
             }
+        }
+        
+//        public static List<File> openFiles(String title, Window parentWindow, String... fileExts) {
+//            setup(title, fileExts);
+//            return FILE_CHOOSER.showOpenMultipleDialog(parentWindow);
+//        }
 
+        public static File getFile(DialogType type, String title, Window parentWindow, String... fileExts) {
+            setup(title, fileExts);
+            
             File f = null;
             switch(type) {
                 case SAVE:

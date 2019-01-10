@@ -12,4 +12,5 @@ package com.goodjaerb.scraperfx.dat;
 public interface DatElement {
     
     public String getName();
+    public String getRomof();
 }

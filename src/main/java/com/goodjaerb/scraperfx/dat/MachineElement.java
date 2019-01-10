@@ -19,17 +19,26 @@ public class MachineElement implements DatElement {
     @Attribute(name = "name")
     public String name;
     
+    @Attribute(name = "romof")
+    public String romof;
+    
     public MachineElement() {
-        this("");
+        this("", "");
     }
     
-    public MachineElement(String name) {
+    public MachineElement(String name, String romof) {
         this.name = name;
+        this.romof = romof;
     }
 
     @Override
     public String getName() {
         return name;
+    }
+    
+    @Override
+    public String getRomof() {
+        return romof;
     }
     
     @Override

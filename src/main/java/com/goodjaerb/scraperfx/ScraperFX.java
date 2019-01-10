@@ -683,21 +683,26 @@ public class ScraperFX extends Application {
             final File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
 //            final List<File> files = Chooser.openFiles("Select DAT File(s)", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
             if(datFile != null) {
-//            if(files != null) {
-//                for(final File datFile : files) {
                 try {
                     final Datafile dat = readDatFile(datFile.toPath());
-
+    //            if(files != null) {
+    //                for(final File datFile : files) {
+                    final String datFilter = getCurrentSettings().datFilter;
                     observableGamesList.forEach((game) -> {
                         final String filename = game.fileName;
 
-                        if(dat.getElements().stream().noneMatch((element) -> {
+                        if(dat.getElements().stream().filter((element) -> {
+                            if(datFilter == null || datFilter.isEmpty()) {
+                                return true;
+                            }
+                            return !element.getRomof().isEmpty() && datFilter.contains(element.getRomof());
+                        }).noneMatch((element) -> {
                             return filename.equals(element.getName() + ".zip");
                         })) {
                             game.strength = Game.MatchStrength.IGNORE;
-                            gamesListView.refresh();
                         }
                     });
+                    gamesListView.refresh();
                 }
                 catch (IOException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);

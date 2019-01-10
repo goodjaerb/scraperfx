@@ -19,22 +19,31 @@ public class GameElement implements DatElement {
     @Attribute(name = "name")
     public String name;
     
+    @Attribute(name = "romof")
+    public String romof;
+    
     public GameElement() {
-        this("");
+        this("", "");
     }
     
-    public GameElement(String name) {
+    public GameElement(String name, String romof) {
         this.name = name;
+        this.romof = romof;
     }
     
     @Override
     public String getName() {
         return name;
     }
+    
+    @Override
+    public String getRomof() {
+        return romof;
+    }
 
     @Override
     public String toString() {
-        return "GameElement{" + "name=" + name + '}';
+        return "GameElement{" + "name=" + name + ", romof=" + romof + '}';
     }
 
     @Override

@@ -6,15 +6,15 @@
 package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbDevelopersData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGamesByPlatformData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGenresData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbImagesData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedResult;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatform;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPlatformsData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPublishersData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbResult;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbDevelopersData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbGamesByPlatformData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbGenresData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbImagesData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbPaginatedResult;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbPlatform;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbPlatformsData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbPublishersData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbResult;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
 import com.goodjaerb.scraperfx.settings.MetaData;

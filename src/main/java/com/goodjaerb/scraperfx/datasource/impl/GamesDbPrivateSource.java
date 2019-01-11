@@ -6,9 +6,9 @@
 package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbGamesByPlatformData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbImagesData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdb.GamesDbPaginatedResult;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbGamesByPlatformData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbImagesData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbPaginatedResult;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.google.gson.reflect.TypeToken;

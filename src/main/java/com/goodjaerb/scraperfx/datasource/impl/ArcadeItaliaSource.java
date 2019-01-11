@@ -7,7 +7,7 @@ package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
-import com.goodjaerb.scraperfx.datasource.impl.arcadeitalia.ArcadeItaliaData;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.arcadeitalia.ArcadeItaliaData;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
 import com.goodjaerb.scraperfx.settings.MetaData;

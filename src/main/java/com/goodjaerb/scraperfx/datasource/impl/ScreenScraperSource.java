@@ -7,9 +7,9 @@ package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
-import com.goodjaerb.scraperfx.datasource.impl.screenscraper.ScreenScraperSystemIdMap;
-import com.goodjaerb.scraperfx.datasource.impl.screenscraper.ScreenScraperXmlGameData;
-import com.goodjaerb.scraperfx.datasource.impl.screenscraper.ScreenScraperXmlGameMedias;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.screenscraper.ScreenScraperSystemIdMap;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.screenscraper.ScreenScraperXmlGameData;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.screenscraper.ScreenScraperXmlGameMedias;
 import com.goodjaerb.scraperfx.datasource.plugin.XmlDataSourcePlugin;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
@@ -81,7 +81,7 @@ public class ScreenScraperSource extends CustomHttpDataSource {
         }
 
         final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
-        params.put("systemid", Integer.toString(sysId));
+        params.put("systemeid", Integer.toString(sysId));
         params.put("romnom", gameName);
         try {
             params.put("crc", crcCalc(filePath));
@@ -131,10 +131,6 @@ public class ScreenScraperSource extends CustomHttpDataSource {
                 if(medias.videoDownloadUrl != null) {
                     metaDataMap.put(MetaDataKey.VIDEO_DOWNLOAD, medias.videoDownloadUrl);
                     metaDataMap.put(MetaDataKey.VIDEO_EMBED, "https://www.screenscraper.fr/medias/" + ScreenScraperSystemIdMap.getSystemId(systemName) + "/" + data.game.id + "/video.mp4");
-    //            return new String[] { 
-    //                data.game.medias.videoDownloadUrl, 
-    //                "https://www.screenscraper.fr/medias/" + ScreenScraperSystemIdMap.getSystemId(systemName) + "/" + data.game.id + "/video.mp4"
-    //            };
                 }
 
                 if(medias.screenshotUrl != null) {

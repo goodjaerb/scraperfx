@@ -6,8 +6,11 @@
 package com.goodjaerb.scraperfx.datasource.plugin;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import java.io.BufferedReader;
 import java.lang.reflect.Type;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -23,6 +26,12 @@ public class JsonDataSourcePlugin<T> implements DataSourcePlugin<T> {
     
     @Override
     public T convert(BufferedReader reader) {
-        return new Gson().fromJson(reader, typeOfT);
+        try {
+            return new Gson().fromJson(reader, typeOfT);
+        }
+        catch(JsonParseException ex) {
+            Logger.getLogger(JsonDataSourcePlugin.class.getName()).log(Level.WARNING, "Unable to parse JSON.", ex);
+        }
+        return null;
     }
 }

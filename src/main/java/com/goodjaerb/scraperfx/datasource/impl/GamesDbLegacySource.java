@@ -6,12 +6,12 @@
 package com.goodjaerb.scraperfx.datasource.impl;
 
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGame;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBListGame;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGameMetaData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBPlatform;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBGameListData;
-import com.goodjaerb.scraperfx.datasource.impl.gamesdblegacy.GamesDBPlatformList;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.gamesdblegacy.GamesDBGame;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.gamesdblegacy.GamesDBListGame;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.gamesdblegacy.GamesDBGameMetaData;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.gamesdblegacy.GamesDBPlatform;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.gamesdblegacy.GamesDBGameListData;
+import com.goodjaerb.scraperfx.datasource.impl.data.xml.gamesdblegacy.GamesDBPlatformList;
 import com.goodjaerb.scraperfx.datasource.plugin.XmlDataSourcePlugin;
 import java.io.IOException;
 import java.util.ArrayList;

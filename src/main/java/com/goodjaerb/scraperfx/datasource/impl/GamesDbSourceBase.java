@@ -41,6 +41,8 @@ import java.util.logging.Logger;
  * @author goodjaerb
  */
 public abstract class GamesDbSourceBase extends CustomHttpDataSource {
+    public static final String SOURCE_NAME = "TheGamesDB (thegamesdb.net)";
+    
     protected static final String   GAMESDB_LOCAL_DIR = "thegamesdb.net";
     protected static final String   GAMES_BY_PLATFORM_DIR = "GamesByPlatformId";
     protected static final String   IMAGES_DIR = "GamesImages";
@@ -69,7 +71,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     
     @Override
     public String getSourceName() {
-        return "TheGamesDB (thegamesdb.net)";
+        return SOURCE_NAME;
     }
     
     private Gson getGson() {

@@ -2038,85 +2038,8 @@ public class ScraperFX extends Application {
                                 newMetaData.favorite = true;
                             }
 
-                            final List<ScreenScraperGame> screenScraperResults = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraper2Source.class).getExtraMetaData(getCurrentSettings().scrapeAs, localGame);
-                            if(screenScraperResults != null && !screenScraperResults.isEmpty()) {
-                                ScreenScraperGame theGame = null;
-                                
-                                if(screenScraperResults.size() == 1) {
-                                    theGame = screenScraperResults.get(0);
-                                }
-                                else {
-//                                    final Object o = new Object();
-//                                    Platform.runLater(() -> {
-                                        final ChoiceDialog<ScreenScraperGame> choices = new ChoiceDialog<>(screenScraperResults.get(0), screenScraperResults);
-                                        choices.setTitle("Select ScreenScraper Result");
-                                        Optional<ScreenScraperGame> choice = choices.showAndWait();
-                                        if(choice.isPresent()) {
-                                            theGame = choice.get();
-//System.out.println("would've worked");
-                                        }
-//                                        o.notify();
-//                                    });
-//                                    try {
-//                                        o.wait();
-//                                    }
-//                                    catch (InterruptedException ex) {
-//                                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-//                                    }
-//                                    System.out.println("ajsdfsa");
-                                }
-                                
-                                if(theGame != null) {
-                                    newMetaData.screenScraperId = theGame.id;
-                                    if(theGame.medias != null && !theGame.medias.isEmpty()) {
-                                        final List<ScreenScraperGame.Media> medias = theGame.medias;
-                                        for(ScreenScraperGame.Media media : medias) {
-                                            switch(media.type) {
-                                                case "video":
-                                                    newMetaData.videodownload = media.url;
-                                                    newMetaData.videoembed = "https://www.screenscraper.fr/medias/" + theGame.systemeid + "/" + theGame.id + "/video.mp4";
-                                                    break;
-                                                case "ss":
-                                                    com.goodjaerb.scraperfx.settings.Image ssImage = new com.goodjaerb.scraperfx.settings.Image("screenshot", media.url, false);
-                                                    if(newMetaData.images == null) {
-                                                        newMetaData.images = new ArrayList<>();
-                                                    }
-                                                    if(newMetaData.getSelectedImageUrl("screenshot") == null) {
-                                                        ssImage.selected = true;
-                                                    }
-                                                    newMetaData.images.add(ssImage);
-                                                    break;
-                                                case "box-2D":
-                                                    switch(media.region) {
-                                                        case "us":
-                                                            com.goodjaerb.scraperfx.settings.Image usBoxImage = new com.goodjaerb.scraperfx.settings.Image("box-front", media.url, false);
-                                                            if(newMetaData.images == null) {
-                                                                newMetaData.images = new ArrayList<>();
-                                                            }
-                                                            if(newMetaData.getSelectedImageUrl("box-front") == null) {
-                                                                usBoxImage.selected = true;
-                                                            }
-                                                            newMetaData.images.add(usBoxImage);
-                                                            break;
-                                                        case "wor":
-                                                            com.goodjaerb.scraperfx.settings.Image worBoxImage = new com.goodjaerb.scraperfx.settings.Image("box-front", media.url, false);
-                                                            if(newMetaData.images == null) {
-                                                                newMetaData.images = new ArrayList<>();
-                                                            }
-                                                            if(newMetaData.getSelectedImageUrl("box-front") == null) {
-                                                                worBoxImage.selected = true;
-                                                            }
-                                                            newMetaData.images.add(worBoxImage);
-                                                            break;
-                                                        default:
-                                                    }
-                                                    break;
-                                                default:
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+//                            final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, localGame.fileName);
+                            getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, localGame);
 //                            final List<Map<ScreenScraper2Source.MetaDataKey, String>> screenScraperResultData =
 //                                    DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraper2Source.class).getExtraMetaData(getCurrentSettings().scrapeAs, localGame);
 //                            
@@ -2185,6 +2108,147 @@ public class ScraperFX extends Application {
             }
             
             return localGame;
+        }
+    }
+    
+    private void getExtraMetaData(MetaData newMetaData, String systemName, Game localGame) throws InstantiationException, ClassNotFoundException, IllegalAccessException {
+        final List<ScreenScraperGame> screenScraperResults = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraper2Source.class).getExtraMetaData(systemName, localGame);
+        if(screenScraperResults != null && !screenScraperResults.isEmpty()) {
+            ScreenScraperGame theGame = null;
+
+//                                if(screenScraperResults.size() == 1) {
+//                                    // only one screenscraper result. check for name match.
+//                                    if(screenScraperResults.get(0).noms.stream().anyMatch((nameData) -> {
+//                                        return nameData.text.equals(localGame.matchedName);
+//                                    })) {
+//                                        // exact name match, pick this game.
+//                                        theGame = screenScraperResults.get(0);
+//                                    }
+//                                }
+            // if already have a ScreenScraper ID, check that it showed up in the results.
+            if(localGame.metadata != null && localGame.metadata.screenScraperId != null && !localGame.metadata.screenScraperId.isEmpty()) {
+                for(ScreenScraperGame ssGame : screenScraperResults) {
+                    if(localGame.metadata.screenScraperId.equals(ssGame.id)) {
+                        theGame = ssGame;
+                        break;
+                    }
+                }
+            }
+            
+            // check for a name match.
+            if(theGame == null) {
+                for(ScreenScraperGame ssGame : screenScraperResults) {
+                    if(ssGame.noms.stream().anyMatch((ScreenScraperGame.NameData nameData) -> {
+                        final String name1 = nameData.text.replaceAll("\\p{Punct}", "").replaceAll("\\s{2,}", " ").toLowerCase().trim();
+                        final String name2 = localGame.matchedName.replaceAll("\\p{Punct}", "").replaceAll("\\s{2,}", " ").toLowerCase().trim();
+                        
+                        final boolean result = name1.equals(name2);
+                        Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "\"{0}\"==\"{1}\" {2}", new Object[]{name1, name2, result});
+                        return result;
+                    })) {
+                        // exact name match, pick this game.
+                        theGame = ssGame;
+                        break;
+                    }
+                }
+            }
+
+            if(theGame == null) {
+                final ScreenScraperResultHolder holder = new ScreenScraperResultHolder();
+                Platform.runLater(() -> {
+                    final ChoiceDialog<ScreenScraperGame> choices = new ChoiceDialog<>(screenScraperResults.get(0), screenScraperResults);
+                    choices.setTitle("Select ScreenScraper Result");
+                    choices.setContentText("Matched Game: " + localGame.matchedName);
+                    final Optional<ScreenScraperGame> choice = choices.showAndWait();
+
+                    synchronized(holder) {
+                        if(choice.isPresent()) {
+                            holder.setResult(choice);
+                        }
+                        holder.notify();
+                    }
+                });
+                try {
+                    synchronized(holder) {
+                        holder.wait();
+                    }
+                }
+                catch (InterruptedException ex) {
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                if(holder.get() != null && holder.get().isPresent()) {
+                    theGame = holder.get().get();
+                }
+            }
+            if(theGame == null) {
+                newMetaData.screenScraperId = null;
+                newMetaData.videodownload = null;
+                newMetaData.videoembed = null;
+                newMetaData.removeImagesFromSource(ScreenScraper2Source.SOURCE_NAME);
+            }
+            else {
+                newMetaData.screenScraperId = theGame.id;
+                if(theGame.medias != null && !theGame.medias.isEmpty()) {
+                    final List<ScreenScraperGame.Media> medias = theGame.medias;
+                    for(ScreenScraperGame.Media media : medias) {
+                        switch(media.type) {
+                            case "video":
+                                newMetaData.videodownload = media.url;
+                                newMetaData.videoembed = "https://www.screenscraper.fr/medias/" + theGame.systemeid + "/" + theGame.id + "/video.mp4";
+                                break;
+                            case "ss":
+                                com.goodjaerb.scraperfx.settings.Image ssImage = new com.goodjaerb.scraperfx.settings.Image("screenshot", ScreenScraper2Source.SOURCE_NAME, media.url, false);
+                                if(newMetaData.images == null) {
+                                    newMetaData.images = new ArrayList<>();
+                                }
+                                if(newMetaData.getSelectedImageUrl("screenshot") == null) {
+                                    ssImage.selected = true;
+                                }
+                                newMetaData.images.add(ssImage);
+                                break;
+                            case "box-2D":
+                                switch(media.region) {
+                                    case "us":
+                                        com.goodjaerb.scraperfx.settings.Image usBoxImage = new com.goodjaerb.scraperfx.settings.Image("box-front", ScreenScraper2Source.SOURCE_NAME, media.url, false);
+                                        if(newMetaData.images == null) {
+                                            newMetaData.images = new ArrayList<>();
+                                        }
+                                        if(newMetaData.getSelectedImageUrl("box-front") == null) {
+                                            usBoxImage.selected = true;
+                                        }
+                                        newMetaData.images.add(usBoxImage);
+                                        break;
+                                    case "wor":
+                                        com.goodjaerb.scraperfx.settings.Image worBoxImage = new com.goodjaerb.scraperfx.settings.Image("box-front", ScreenScraper2Source.SOURCE_NAME, media.url, false);
+                                        if(newMetaData.images == null) {
+                                            newMetaData.images = new ArrayList<>();
+                                        }
+                                        if(newMetaData.getSelectedImageUrl("box-front") == null) {
+                                            worBoxImage.selected = true;
+                                        }
+                                        newMetaData.images.add(worBoxImage);
+                                        break;
+                                    default:
+                                }
+                                break;
+                            default:
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private class ScreenScraperResultHolder {
+        private Optional<ScreenScraperGame> result;
+        
+        public void setResult(Optional<ScreenScraperGame> result) {
+            this.result = result;
+        }
+        
+        public Optional<ScreenScraperGame> get() {
+            return result;
         }
     }
     
@@ -2395,53 +2459,54 @@ public class ScraperFX extends Application {
                         if(currentGame.metadata != null && currentGame.metadata.favorite) {
                             newMetaData.favorite = true;
                         }
-
-                        final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, currentGame.fileName);
-//                                final String[] videoLinks = 
-                        final Map<ScreenScraperSource.MetaDataKey, String> screenScraperData =
-                                DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getExtraMetaData(getCurrentSettings().scrapeAs, currentGame, filePath);
                         
-                        if(screenScraperData != null) {
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.ID) != null) {
-                                newMetaData.screenScraperId = screenScraperData.get(ScreenScraperSource.MetaDataKey.ID);
-                            }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
-                                newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
-                            }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
-                                newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
-                            }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
-                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
-                                if(newMetaData.images == null) {
-                                    newMetaData.images = new ArrayList<>();
-                                }
-                                if(newMetaData.getSelectedImageUrl("screenshot") == null) {
-                                    image.selected = true;
-                                }
-                                newMetaData.images.add(image);
-                            }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US) != null) {
-                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US), false);
-                                if(newMetaData.images == null) {
-                                    newMetaData.images = new ArrayList<>();
-                                }
-                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
-                                    image.selected = true;
-                                }
-                                newMetaData.images.add(image);
-                            }
-                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD) != null) {
-                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD), false);
-                                if(newMetaData.images == null) {
-                                    newMetaData.images = new ArrayList<>();
-                                }
-                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
-                                    image.selected = true;
-                                }
-                                newMetaData.images.add(image);
-                            }
-                        }
+                        getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, currentGame);
+//                        final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, currentGame.fileName);
+////                                final String[] videoLinks = 
+//                        final Map<ScreenScraperSource.MetaDataKey, String> screenScraperData =
+//                                DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getExtraMetaData(getCurrentSettings().scrapeAs, currentGame, filePath);
+//                        
+//                        if(screenScraperData != null) {
+//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.ID) != null) {
+//                                newMetaData.screenScraperId = screenScraperData.get(ScreenScraperSource.MetaDataKey.ID);
+//                            }
+//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
+//                                newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
+//                            }
+//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
+//                                newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
+//                            }
+//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
+//                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", ScreenScraper2Source.SOURCE_NAME, screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
+//                                if(newMetaData.images == null) {
+//                                    newMetaData.images = new ArrayList<>();
+//                                }
+//                                if(newMetaData.getSelectedImageUrl("screenshot") == null) {
+//                                    image.selected = true;
+//                                }
+//                                newMetaData.images.add(image);
+//                            }
+//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US) != null) {
+//                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", ScreenScraper2Source.SOURCE_NAME, screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US), false);
+//                                if(newMetaData.images == null) {
+//                                    newMetaData.images = new ArrayList<>();
+//                                }
+//                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
+//                                    image.selected = true;
+//                                }
+//                                newMetaData.images.add(image);
+//                            }
+//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD) != null) {
+//                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", ScreenScraper2Source.SOURCE_NAME, screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD), false);
+//                                if(newMetaData.images == null) {
+//                                    newMetaData.images = new ArrayList<>();
+//                                }
+//                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
+//                                    image.selected = true;
+//                                }
+//                                newMetaData.images.add(image);
+//                            }
+//                        }
 
                         currentGame.updateMetaData(newMetaData);
                         currentGame.strength = Game.MatchStrength.LOCKED;

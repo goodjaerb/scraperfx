@@ -5,6 +5,7 @@
  */
 package com.goodjaerb.scraperfx.settings;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -119,6 +120,16 @@ public class MetaData {
         images.stream().filter((i) -> (i.type.equals(image.type))).forEach((i) -> {
             i.selected = i.url.equals(image.url);
         });
+    }
+    
+    public void removeImagesFromSource(String sourceName) {
+        final Iterator<Image> i = images.iterator();
+        while(i.hasNext()) {
+            final Image image = i.next();
+            if(sourceName.equals(image.source)) {
+                i.remove();
+            }
+        }
     }
     
     public void transferLocksFrom(MetaData other) {

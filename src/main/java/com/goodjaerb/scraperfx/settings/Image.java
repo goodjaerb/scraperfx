@@ -39,6 +39,9 @@ public class Image {
     @Attribute(name = "type")
     public String type;
     
+    @Attribute(name = "source")
+    public String source;
+    
     @Attribute(name = "width")
     public Integer width;
     
@@ -61,16 +64,18 @@ public class Image {
         selected = false;
     }
     
-    public Image(String type, String url, String targetImageType, boolean b) {
+    public Image(String type, String source, String url, String targetImageType, boolean b) {
         this.type = type;
+        this.source = source;
         this.url = url;
         this.targetImageType = targetImageType;
 //        this.path = path;
         this.selected = b;
     }
     
-    public Image(String type, Integer width, Integer height, String url, boolean b) {
+    public Image(String type, String source, Integer width, Integer height, String url, boolean b) {
         this.type = type;
+        this.source = source;
         this.width = width;
         this.height = height;
         this.url = url;
@@ -78,8 +83,8 @@ public class Image {
         this.selected = b;
     }
     
-    public Image(String type, String url, boolean b) {
-        this(type, -1, -1, url, b);
+    public Image(String type, String source, String url, boolean b) {
+        this(type, source, -1, -1, url, b);
     }
 
     @Override

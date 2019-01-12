@@ -190,23 +190,23 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
                 for(final GamesDbImagesData.Image image : cachedImages) {
                     switch(image.type) {
                         case "fanart":
-                            images.add(new Image("fanart", cachedData.data.base_url.thumb + image.filename, (fanartCount == 0)));
+                            images.add(new Image("fanart", SOURCE_NAME, cachedData.data.base_url.thumb + image.filename, (fanartCount == 0)));
                             fanartCount++;
                             break;
     //                    case "banner":
     //                        break;
                         case "boxart":
                             if("front".equals(image.side)) {
-                                images.add(new Image("box-front", cachedData.data.base_url.thumb + image.filename, (boxartCount == 0)));
+                                images.add(new Image("box-front", SOURCE_NAME, cachedData.data.base_url.thumb + image.filename, (boxartCount == 0)));
                                 boxartCount++;
                             }
                             break;
                         case "screenshot":
-                            images.add(new Image("screenshot", cachedData.data.base_url.thumb + image.filename, (screenshotCount == 0)));
+                            images.add(new Image("screenshot", SOURCE_NAME, cachedData.data.base_url.thumb + image.filename, (screenshotCount == 0)));
                             screenshotCount++;
                             break;
                         case "clearlogo":
-                            images.add(new Image("logo", cachedData.data.base_url.thumb + image.filename, (logoCount == 0)));
+                            images.add(new Image("logo", SOURCE_NAME, cachedData.data.base_url.thumb + image.filename, (logoCount == 0)));
                             logoCount++;
                             break;
                         default:

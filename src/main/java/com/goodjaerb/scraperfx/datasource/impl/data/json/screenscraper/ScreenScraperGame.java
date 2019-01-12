@@ -43,7 +43,7 @@ public class ScreenScraperGame {
     
     @Override
     public String toString() {
-        if(noms.isEmpty()) {
+        if(noms == null || noms.isEmpty()) {
             return id + " (" + systemenom + ")";
         }
         return noms.get(0).text + " (" + systemenom + ")";

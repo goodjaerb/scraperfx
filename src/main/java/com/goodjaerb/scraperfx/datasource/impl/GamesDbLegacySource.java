@@ -28,6 +28,7 @@ import com.goodjaerb.scraperfx.settings.MetaData;
  * @author goodjaerb
  */
 public class GamesDbLegacySource extends CustomHttpDataSource {
+    public static final String SOURCE_NAME = "TheGamesDB (legacy.thegamesdb.net)";
     public static final String IMAGE_BASE_URL = "http://legacy.thegamesdb.net/banners/";
 
     private static final String API_BASE_URL = "http://legacy.thegamesdb.net/api/";
@@ -41,7 +42,7 @@ public class GamesDbLegacySource extends CustomHttpDataSource {
     
     @Override
     public String getSourceName() {
-        return "TheGamesDB (legacy.thegamesdb.net)";
+        return SOURCE_NAME;
     }
     
     private <T> T getXmlData(Class<T> dataHolderClass, String api, String... params) {

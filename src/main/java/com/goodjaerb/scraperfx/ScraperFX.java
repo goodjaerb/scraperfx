@@ -1203,7 +1203,7 @@ public class ScraperFX extends Application {
     }
     
     private List<Game> getSystemGameData(String systemName) {
-        synchronized(gamedata) {
+//        synchronized(gamedata) {
             if(gamedata == null) {
                 return null;
             }
@@ -1212,7 +1212,7 @@ public class ScraperFX extends Application {
                 gamedata.gamelist.add(new GameList(systemName));
             }
             return gamedata.getSystemData(systemName);
-        }
+//        }
     }
     
     //gets the reference to game out of the gamedata that this game is referring to... if that makes sense!

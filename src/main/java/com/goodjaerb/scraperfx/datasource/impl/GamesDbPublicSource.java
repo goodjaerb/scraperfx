@@ -105,7 +105,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
         if(CACHED_PLATFORMS_DATA.isDataAvailable()) {
             final List<GamesDbPlatform> platforms = new ArrayList<>();
             CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> {
-                platforms.add(new GamesDbPlatform(platform));
+                platforms.add(platform);//new GamesDbPlatform(platform));
             });
             return platforms;
         }

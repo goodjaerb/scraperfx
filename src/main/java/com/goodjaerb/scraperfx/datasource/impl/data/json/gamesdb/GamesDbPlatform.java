@@ -5,29 +5,23 @@
  */
 package com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb;
 
+import com.google.gson.annotations.Expose;
+
 /**
- * This class is more appropriate for use in drop down comboboxes rather than
- * the static inner class from GamesDbPlatformsData.
  * 
  * @author goodjaerb <goodjaerb@gmail.com>
  */
 public class GamesDbPlatform {
-    public int id;
-    public String name;
-    public String alias;
-    public String icon;
-    public String console;
-    public String controller;
-    public String developer;
+        @Expose(serialize = true, deserialize = true) public int id;
+        @Expose(serialize = true, deserialize = true) public String name;
+        @Expose(serialize = true, deserialize = true) public String alias;
+        @Expose(serialize = true, deserialize = true) public String icon;
+        @Expose(serialize = true, deserialize = true) public String console;
+        @Expose(serialize = true, deserialize = true) public String controller;
+        @Expose(serialize = true, deserialize = true) public String developer;
 
-    public GamesDbPlatform(GamesDbPlatformsData.Platform platform) {
-        this.id = platform.id;
-        this.name = platform.name;
-        this.alias = platform.alias;
-        this.icon = platform.icon;
-        this.console = platform.console;
-        this.controller = platform.controller;
-        this.developer = platform.developer;
+    public GamesDbPlatform() {
+        
     }
 
     @Override

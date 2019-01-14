@@ -7,91 +7,39 @@ package com.goodjaerb.scraperfx.settings;
 
 import java.util.Iterator;
 import java.util.List;
-import org.xmappr.annotation.Element;
-import org.xmappr.annotation.RootElement;
 
 /**
  *
  * @author goodjaerb
  */
-@RootElement(name = "metadata")
 public class MetaData {
     public enum MetaDataId { NAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, SCREEN_SCRAPER_ID, VIDEO_EMBED, VIDEO_DOWNLOAD, IMAGES };
     
-    @Element(name = "favorite")
-    public Boolean favorite = false;
-    
-    @Element(name = "name")
-    public String metaName;
-    
-    @Element(name = "lockName")
-    public Boolean lockName = false;
-    
-    @Element(name = "description")
-    public String metaDesc;
-    
-    @Element(name = "lockDesc")
-    public Boolean lockDesc = false;
-    
-    @Element(name = "image")
-    public List<Image> images;
-    
-    @Element(name = "lockImages")
-    public Boolean lockImages = false;
-    
-    @Element(name = "screenscraperid")
-    public String screenScraperId;
-    
-    @Element(name = "lockscreenscraperid")
-    public Boolean lockScreenScraperId = false;
-    
-    @Element(name = "youtubeurl")
-    public String videoembed;
-    
-    @Element(name = "lockyoutubeurl")
-    public Boolean lockVideoEmbed = false;
-    
-    @Element(name = "videodownload")
-    public String videodownload;
-    
-    @Element(name = "lockvideodownload")
-    public Boolean lockVideoDownload = false;
-    
-    @Element(name = "rating")
-    public String metaRating;
-    
-    @Element(name = "lockRating")
-    public Boolean lockRating = false;
-    
-    @Element(name = "releasedate")
-    public String metaReleaseDate;
-    
-    @Element(name = "lockReleasedata")
-    public Boolean lockReleasedate = false;
-    
-    @Element(name = "developer")
-    public String metaDeveloper;
-    
-    @Element(name = "lockDeveloper")
-    public Boolean lockDeveloper = false;
-    
-    @Element(name = "publisher")
-    public String metaPublisher;
-    
-    @Element(name = "lockPublisher")
-    public Boolean lockPublisher = false;
-    
-    @Element(name = "genre")
-    public String metaGenre;
-    
-    @Element(name = "lockGenre")
-    public Boolean lockGenre = false;
-    
-    @Element(name = "players")
-    public String players;
-    
-    @Element(name = "lockPlayers")
-    public Boolean lockPlayers = false;
+    public Boolean      favorite = false;
+    public String       metaName;
+    public Boolean      lockName = false;
+    public String       metaDesc;
+    public Boolean      lockDesc = false;
+    public List<Image>  images;
+    public Boolean      lockImages = false;
+    public String       screenScraperId;
+    public Boolean      lockScreenScraperId = false;
+    public String       videoembed;
+    public Boolean      lockVideoEmbed = false;
+    public String       videodownload;
+    public Boolean      lockVideoDownload = false;
+    public String       metaRating;
+    public Boolean      lockRating = false;
+    public String       metaReleaseDate;
+    public Boolean      lockReleasedate = false;
+    public String       metaDeveloper;
+    public Boolean      lockDeveloper = false;
+    public String       metaPublisher;
+    public Boolean      lockPublisher = false;
+    public String       metaGenre;
+    public Boolean      lockGenre = false;
+    public String       players;
+    public Boolean      lockPlayers = false;
     
     public MetaData() {
     }

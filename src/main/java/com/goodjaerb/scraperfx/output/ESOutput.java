@@ -258,7 +258,7 @@ public class ESOutput {
                         // good!
                     }
 
-                    try(final BufferedWriter writer = Files.newBufferedWriter(outputPath)) {//new BufferedWriter(new FileWriter(outputFile))) {
+                    try(final BufferedWriter writer = Files.newBufferedWriter(outputPath)) {
                         writer.append("<gameList>\n");
 
                         int fileCount = 0;

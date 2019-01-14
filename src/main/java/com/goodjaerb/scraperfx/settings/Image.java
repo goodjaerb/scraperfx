@@ -6,14 +6,11 @@
 package com.goodjaerb.scraperfx.settings;
 
 import java.util.Objects;
-import org.xmappr.annotation.Attribute;
-import org.xmappr.annotation.RootElement;
 
 /**
  *
  * @author goodjaerb
  */
-@RootElement(name = "image")
 public class Image {
     public enum ImageType {
         LOGO("logo", false), BOX_FRONT("box-front", false), BOX_BACK("box-back", false), SCREENSHOT("screenshot", false), FANART("fanart", false),
@@ -36,20 +33,11 @@ public class Image {
         }
     }
     
-    @Attribute(name = "type")
-    public String type;
-    
-    @Attribute(name = "source")
-    public String source;
-    
-    @Attribute(name = "url")
-    public String url;
-    
-    @Attribute(name = "target-imagetype")
-    public String targetImageType;
-    
-    @Attribute(name = "selected")
-    public Boolean selected;
+    public String   type;
+    public String   source;
+    public String   url;
+    public String   targetImageType;
+    public Boolean  selected;
     
     public Image() {
         selected = false;

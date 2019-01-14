@@ -7,15 +7,11 @@ package com.goodjaerb.scraperfx.settings;
 
 import java.util.Comparator;
 import java.util.Objects;
-import org.xmappr.annotation.Attribute;
-import org.xmappr.annotation.Element;
-import org.xmappr.annotation.RootElement;
 
 /**
  *
  * @author goodjaerb
  */
-@RootElement(name = "game")
 public class Game {
     
     private enum CompareType { GAME_NAME, FILE_NAME };
@@ -53,17 +49,10 @@ public class Game {
         }
     };
     
-    @Attribute(name = "matchedname")
-    public String matchedName;
-    
-    @Attribute(name = "strength")
-    public MatchStrength strength;
-    
-    @Attribute(name = "filename")
-    public String fileName;
-    
-    @Element(name = "metadata")
-    public MetaData metadata;
+    public String           matchedName;
+    public MatchStrength    strength;
+    public String           fileName;
+    public MetaData         metadata;
     
     public Game() {
         this("");

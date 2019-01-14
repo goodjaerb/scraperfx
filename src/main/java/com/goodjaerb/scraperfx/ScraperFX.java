@@ -95,18 +95,22 @@ import com.goodjaerb.scraperfx.datasource.impl.data.json.gamesdb.GamesDbPlatform
 import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperGame;
 import com.goodjaerb.scraperfx.output.ESOutput;
 import com.goodjaerb.scraperfx.settings.Game;
-import com.goodjaerb.scraperfx.settings.GameData;
 import com.goodjaerb.scraperfx.settings.GameList;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -127,8 +131,8 @@ import org.ini4j.Ini;
 public class ScraperFX extends Application {
     public static final Path   SETTINGS_PATH = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx");
     public static final Path   LOCALDB_PATH = SETTINGS_PATH.resolve(".localdb");
+    public static final Path   GAMEDATA_PATH = SETTINGS_PATH.resolve(".gamedata");
     
-    private static final String GAMEDATA_CONF = "gamedata.conf";
     private static final String SCRAPERFX_CONF = "scraperfx.conf";
     private static final String KEYS_FILENAME = "keys.ini";
     private static final Ini    KEYS_INI = new Ini();
@@ -208,7 +212,7 @@ public class ScraperFX extends Application {
     private final Button outputToGamelistButton = new Button("Output to Gamelist.xml");
     
     private final List<ImageLoadingTask>    imageTaskList = new ArrayList<>();
-    private final GameData                  gamedata = new GameData();
+    private final Map<String, GameList>     gamedata = new HashMap<>();
     private final MenuBar                   menuBar;
     private final Scene                     rootScene;
     
@@ -1201,16 +1205,10 @@ public class ScraperFX extends Application {
     }
     
     private List<Game> getSystemGameData(String systemName) {
-//        synchronized(gamedata) {
-            if(gamedata == null) {
-                return null;
-            }
-
-            if(gamedata.getSystemData(systemName) == null) {
-                gamedata.gamelist.add(new GameList(systemName));
-            }
-            return gamedata.getSystemData(systemName);
-//        }
+        if(!gamedata.containsKey(systemName)) {
+            gamedata.put(systemName, new GameList(systemName));
+        }
+        return gamedata.get(systemName).games;
     }
     
     //gets the reference to game out of the gamedata that this game is referring to... if that makes sense!
@@ -1468,26 +1466,43 @@ public class ScraperFX extends Application {
     }
     
     private void readGameData() throws IOException {
-        final Path gamedataConfPath = SETTINGS_PATH.resolve(GAMEDATA_CONF);
-        if(Files.exists(gamedataConfPath)) {
-            final Xmappr xm = new Xmappr(GameData.class);
-            
-            final BufferedInputStream in = new BufferedInputStream(new FileInputStream(gamedataConfPath.toFile()));
-            final CharsetDecoder charsetDecoder = StandardCharsets.UTF_8.newDecoder();
-            charsetDecoder.onMalformedInput(CodingErrorAction.REPLACE);
-            charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-            
-            try(final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
-                gamedata.setTo((GameData)xm.fromXML(reader));
-            }
-            catch(IOException ex) {
-                throw ex;
+        final Gson gson = new Gson();
+        
+        try(final Stream<Path> stream = Files.list(GAMEDATA_PATH)) {
+            stream.forEach((path) -> {
+                try(BufferedReader reader = Files.newBufferedReader(path)) {
+                    final GameList gameList = gson.fromJson(reader, GameList.class);
+                    gamedata.put(gameList.system, gameList);
+                }
+                catch (IOException ex) {
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+        }
+    }
+    
+    private void writeGameData() throws IOException {
+//        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        final Gson gson = new Gson();
+        
+        for(final GameList gameList : gamedata.values()) {
+            if(!gameList.games.isEmpty()) {
+                final Path gamedataPath = GAMEDATA_PATH.resolve(gameList.system + ".json");
+                if(!Files.exists(gamedataPath)) {
+                    Files.createDirectories(gamedataPath.getParent());
+                    Files.createFile(gamedataPath);
+                }
+                
+                try(final BufferedWriter writer = Files.newBufferedWriter(gamedataPath)) {
+                    gson.toJson(gameList, writer);
+                    writer.flush();
+                }
             }
         }
     }
     
     private void writeSettings() throws IOException {
-        final Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "scraperfx.conf");
+        final Path settingsPath = SETTINGS_PATH.resolve(SCRAPERFX_CONF);
         if(!Files.exists(settingsPath)) {
             Files.createDirectories(settingsPath.getParent());
             Files.createFile(settingsPath);
@@ -1497,23 +1512,6 @@ public class ScraperFX extends Application {
         xm.setPrettyPrint(true);
         try(final BufferedWriter writer = Files.newBufferedWriter(settingsPath)) {
             xm.toXML(settings, writer);
-        }
-        catch(IOException ex) {
-            throw ex;
-        }
-    }
-    
-    private void writeGameData() throws IOException {
-        final Path settingsPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx", "gamedata.conf");
-        if(!Files.exists(settingsPath)) {
-            Files.createDirectories(settingsPath.getParent());
-            Files.createFile(settingsPath);
-        }
-        
-        final Xmappr xm = new Xmappr(GameData.class);
-        xm.setPrettyPrint(true);
-        try(final BufferedWriter writer = Files.newBufferedWriter(settingsPath)) {
-            xm.toXML(gamedata, writer);
         }
         catch(IOException ex) {
             throw ex;
@@ -1884,10 +1882,9 @@ public class ScraperFX extends Application {
                     int mostPartsHit = 0;
                     boolean hitPartIsNumber = false;
 
-//                        final List<String> allSysGames = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(getCurrentSettings().scrapeAs);
                     final List<String> allSysGames = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(getCurrentSettings().scrapeAs);
                     for(final String gameName : allSysGames) {
-                        String lowerCaseName = gameName.toLowerCase().replaceAll(" - ", " ");//gameName.toLowerCase().replaceAll("'", "");
+                        String lowerCaseName = gameName.toLowerCase().replaceAll(" - ", " ");
                         lowerCaseName = lowerCaseName.replaceAll("\\(.*\\)", "");
                         lowerCaseName = lowerCaseName.replaceAll("\\[.*\\]", "");
                         lowerCaseName = lowerCaseName.replaceAll(" and ", " ");
@@ -2022,7 +2019,6 @@ public class ScraperFX extends Application {
                 if(localGame.matchedName != null) {
                     if(!skipMatching || refreshMatchedGame || startedUnmatched) {
                         //matched a game, get the rest of the data.
-//                            MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getMetaData(getCurrentSettings().scrapeAs, localGame);
                         MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB).getMetaData(getCurrentSettings().scrapeAs, localGame);
                         if(newMetaData == null && localGame.strength == Game.MatchStrength.LOCKED && localGame.metadata != null) {
                             newMetaData = new MetaData();
@@ -2036,60 +2032,7 @@ public class ScraperFX extends Application {
                                 newMetaData.favorite = true;
                             }
 
-//                            final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, localGame.fileName);
                             getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, localGame);
-//                            final List<Map<ScreenScraper2Source.MetaDataKey, String>> screenScraperResultData =
-//                                    DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraper2Source.class).getExtraMetaData(getCurrentSettings().scrapeAs, localGame);
-//                            
-//                            if(screenScraperResultData != null && !screenScraperResultData.isEmpty()) {
-//                                Map<ScreenScraper2Source.MetaDataKey, String> screenScraperData;
-//                                if(screenScraperResultData.size() == 1) {
-//                                    screenScraperData = screenScraperResultData.get(0);
-//                                }
-//                                else {
-//                                    final ChoiceDialog choices = new ChoiceDialog(screenScraperResultData.get(0), screenScraperResultData);
-//                                }
-//                                
-//                                if(screenScraperData.get(ScreenScraper2Source.MetaDataKey.ID) != null) {
-//                                    newMetaData.screenScraperId = screenScraperData.get(ScreenScraper2Source.MetaDataKey.ID);
-//                                }
-//                                if(screenScraperData.get(ScreenScraper2Source.MetaDataKey.VIDEO_DOWNLOAD) != null) {
-//                                    newMetaData.videodownload = screenScraperData.get(ScreenScraper2Source.MetaDataKey.VIDEO_DOWNLOAD);
-//                                }
-//                                if(screenScraperData.get(ScreenScraper2Source.MetaDataKey.VIDEO_EMBED) != null) {
-//                                    newMetaData.videoembed = screenScraperData.get(ScreenScraper2Source.MetaDataKey.VIDEO_EMBED);
-//                                }
-//                                if(screenScraperData.get(ScreenScraper2Source.MetaDataKey.SCREENSHOT) != null) {
-//                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", screenScraperData.get(ScreenScraper2Source.MetaDataKey.SCREENSHOT), false);
-//                                    if(newMetaData.images == null) {
-//                                        newMetaData.images = new ArrayList<>();
-//                                    }
-//                                    if(newMetaData.getSelectedImageUrl("screenshot") == null) {
-//                                        image.selected = true;
-//                                    }
-//                                    newMetaData.images.add(image);
-//                                }
-//                                if(screenScraperData.get(ScreenScraper2Source.MetaDataKey.BOX_US) != null) {
-//                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraper2Source.MetaDataKey.BOX_US), false);
-//                                    if(newMetaData.images == null) {
-//                                        newMetaData.images = new ArrayList<>();
-//                                    }
-//                                    if(newMetaData.getSelectedImageUrl("box-front") == null) {
-//                                        image.selected = true;
-//                                    }
-//                                    newMetaData.images.add(image);
-//                                }
-//                                if(screenScraperData.get(ScreenScraper2Source.MetaDataKey.BOX_WORLD) != null) {
-//                                    com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", screenScraperData.get(ScreenScraper2Source.MetaDataKey.BOX_WORLD), false);
-//                                    if(newMetaData.images == null) {
-//                                        newMetaData.images = new ArrayList<>();
-//                                    }
-//                                    if(newMetaData.getSelectedImageUrl("box-front") == null) {
-//                                        image.selected = true;
-//                                    }
-//                                    newMetaData.images.add(image);
-//                                }
-//                            }
 
                             localGame.updateMetaData(newMetaData);
                             status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
@@ -2114,15 +2057,6 @@ public class ScraperFX extends Application {
         if(screenScraperResults != null && !screenScraperResults.isEmpty()) {
             ScreenScraperGame theGame = null;
 
-//                                if(screenScraperResults.size() == 1) {
-//                                    // only one screenscraper result. check for name match.
-//                                    if(screenScraperResults.get(0).noms.stream().anyMatch((nameData) -> {
-//                                        return nameData.text.equals(localGame.matchedName);
-//                                    })) {
-//                                        // exact name match, pick this game.
-//                                        theGame = screenScraperResults.get(0);
-//                                    }
-//                                }
             // if already have a ScreenScraper ID, check that it showed up in the results.
             if(localGame.metadata != null && localGame.metadata.screenScraperId != null && !localGame.metadata.screenScraperId.isEmpty()) {
                 for(ScreenScraperGame ssGame : screenScraperResults) {
@@ -2450,7 +2384,6 @@ public class ScraperFX extends Application {
             new Thread(() -> {
                 try {
                     currentGame.matchedName = selectGameList.getSelectionModel().getSelectedItem();
-//                    final MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getMetaData(systemName, currentGame);
                     final MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB).getMetaData(systemName, currentGame);
                     
                     if(newMetaData != null) {
@@ -2459,52 +2392,6 @@ public class ScraperFX extends Application {
                         }
                         
                         getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, currentGame);
-//                        final Path filePath = FileSystems.getDefault().getPath(getCurrentSettings().romsDir, currentGame.fileName);
-////                                final String[] videoLinks = 
-//                        final Map<ScreenScraperSource.MetaDataKey, String> screenScraperData =
-//                                DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraperSource.class).getExtraMetaData(getCurrentSettings().scrapeAs, currentGame, filePath);
-//                        
-//                        if(screenScraperData != null) {
-//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.ID) != null) {
-//                                newMetaData.screenScraperId = screenScraperData.get(ScreenScraperSource.MetaDataKey.ID);
-//                            }
-//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD) != null) {
-//                                newMetaData.videodownload = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_DOWNLOAD);
-//                            }
-//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED) != null) {
-//                                newMetaData.videoembed = screenScraperData.get(ScreenScraperSource.MetaDataKey.VIDEO_EMBED);
-//                            }
-//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT) != null) {
-//                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("screenshot", ScreenScraper2Source.SOURCE_NAME, screenScraperData.get(ScreenScraperSource.MetaDataKey.SCREENSHOT), false);
-//                                if(newMetaData.images == null) {
-//                                    newMetaData.images = new ArrayList<>();
-//                                }
-//                                if(newMetaData.getSelectedImageUrl("screenshot") == null) {
-//                                    image.selected = true;
-//                                }
-//                                newMetaData.images.add(image);
-//                            }
-//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US) != null) {
-//                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", ScreenScraper2Source.SOURCE_NAME, screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_US), false);
-//                                if(newMetaData.images == null) {
-//                                    newMetaData.images = new ArrayList<>();
-//                                }
-//                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
-//                                    image.selected = true;
-//                                }
-//                                newMetaData.images.add(image);
-//                            }
-//                            if(screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD) != null) {
-//                                com.goodjaerb.scraperfx.settings.Image image = new com.goodjaerb.scraperfx.settings.Image("box-front", ScreenScraper2Source.SOURCE_NAME, screenScraperData.get(ScreenScraperSource.MetaDataKey.BOX_WORLD), false);
-//                                if(newMetaData.images == null) {
-//                                    newMetaData.images = new ArrayList<>();
-//                                }
-//                                if(newMetaData.getSelectedImageUrl("box-front") == null) {
-//                                    image.selected = true;
-//                                }
-//                                newMetaData.images.add(image);
-//                            }
-//                        }
 
                         currentGame.updateMetaData(newMetaData);
                         currentGame.strength = Game.MatchStrength.LOCKED;
@@ -2529,7 +2416,6 @@ public class ScraperFX extends Application {
         private void onShown() {
             new Thread(() -> {
                 try {
-//                    final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB_LEGACY).getSystemGameNames(systemName);
                     final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(systemName);
                     Collections.sort(gameList);
                     

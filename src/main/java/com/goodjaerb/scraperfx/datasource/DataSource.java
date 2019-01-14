@@ -19,8 +19,4 @@ public interface DataSource {
     public List<String> getSystemNames();
     public List<String> getSystemGameNames(String systemName);
     public MetaData getMetaData(String systemName, Game game);
-    
-//    public default String[] getVideoLinks(String systemName, Game game) {
-//        return null;
-//    }
 }

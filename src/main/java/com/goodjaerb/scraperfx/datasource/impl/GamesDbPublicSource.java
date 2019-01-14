@@ -193,8 +193,6 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
                             images.add(new Image("fanart", SOURCE_NAME, cachedData.data.base_url.thumb + image.filename, (fanartCount == 0)));
                             fanartCount++;
                             break;
-    //                    case "banner":
-    //                        break;
                         case "boxart":
                             if("front".equals(image.side)) {
                                 images.add(new Image("box-front", SOURCE_NAME, cachedData.data.base_url.thumb + image.filename, (boxartCount == 0)));
@@ -210,7 +208,6 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
                             logoCount++;
                             break;
                         default:
-                            //don't care.
                     }
                 }
             }

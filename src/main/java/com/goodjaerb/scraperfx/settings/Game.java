@@ -16,7 +16,7 @@ import org.xmappr.annotation.RootElement;
  * @author goodjaerb
  */
 @RootElement(name = "game")
-public class Game {//implements Comparable<Game> {
+public class Game {
     
     private enum CompareType { GAME_NAME, FILE_NAME };
     
@@ -130,11 +130,6 @@ public class Game {//implements Comparable<Game> {
         return Objects.equals(this.fileName, other.fileName);
     }
     
-//    @Override
-//    public int compareTo(Game o) {
-//        return getCompareToValue().compareTo(o.getCompareToValue());
-//    }
-//    
     private String getCompareToValue(CompareType compareType) {
         if(compareType == CompareType.GAME_NAME) {
             if(metadata != null && metadata.metaName != null) {

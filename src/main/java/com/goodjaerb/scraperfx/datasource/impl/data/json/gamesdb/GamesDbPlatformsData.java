@@ -46,9 +46,4 @@ public class GamesDbPlatformsData extends GamesDbData<GamesDbPlatformsData.Platf
     public boolean isDataAvailable() {
         return !(platforms == null || platforms.isEmpty());
     }
-    
-//    @Override
-//    public Collection<Platform> values() {
-//        return Collections.unmodifiableCollection(platforms.values());
-//    }
 }

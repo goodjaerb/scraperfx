@@ -65,10 +65,7 @@ public class MachineElement implements DatElement {
             return false;
         }
         final MachineElement other = (MachineElement) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.name, other.name);
     }
     
 }

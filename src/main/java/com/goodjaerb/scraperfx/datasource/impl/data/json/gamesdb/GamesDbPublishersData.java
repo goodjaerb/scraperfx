@@ -42,9 +42,4 @@ public class GamesDbPublishersData extends GamesDbData<GamesDbPublishersData.Pub
     public boolean isDataAvailable() {
         return !(publishers == null || publishers.isEmpty());
     }
-    
-//    @Override
-//    public Collection<Publisher> values() {
-//        return Collections.unmodifiableCollection(publishers.values());
-//    }
 }

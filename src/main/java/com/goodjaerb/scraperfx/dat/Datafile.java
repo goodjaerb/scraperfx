@@ -42,5 +42,4 @@ public class Datafile {
     public String toString() {
         return "Datafile{" + "games=" + games + ", machines=" + machines + '}';
     }
-
 }

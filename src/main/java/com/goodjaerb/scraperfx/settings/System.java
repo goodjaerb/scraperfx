@@ -82,9 +82,6 @@ public class System implements Comparable<System> {
             return false;
         }
         final System other = (System) obj;
-        if(!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.name, other.name);
     }
 }

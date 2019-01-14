@@ -42,9 +42,4 @@ public class GamesDbDevelopersData extends GamesDbData<GamesDbDevelopersData.Dev
     public boolean isDataAvailable() {
         return !(developers == null || developers.isEmpty());
     }
-    
-//    @Override
-//    public Collection<Developer> values() {
-//        return Collections.unmodifiableCollection(developers.values());
-//    }
 }

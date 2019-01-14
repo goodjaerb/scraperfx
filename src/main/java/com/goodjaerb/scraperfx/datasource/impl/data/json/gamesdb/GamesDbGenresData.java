@@ -42,9 +42,4 @@ public class GamesDbGenresData extends GamesDbData<GamesDbGenresData.Genre> {
     public boolean isDataAvailable() {
         return !(genres == null || genres.isEmpty());
     }
-    
-//    @Override
-//    public Collection<Genre> values() {
-//        return Collections.unmodifiableCollection(genres.values());
-//    }
 }

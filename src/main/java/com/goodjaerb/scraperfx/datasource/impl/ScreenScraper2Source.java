@@ -9,7 +9,7 @@ import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperGame;
 import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperSearchResults;
-import com.goodjaerb.scraperfx.datasource.impl.data.xml.screenscraper.ScreenScraperSystemIdMap;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperSystemIdMap;
 import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
@@ -76,7 +76,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
     }
     
     private List<ScreenScraperGame> getSearchResults(String systemName, Game game) {
-        final Integer sysId = ScreenScraperSystemIdMap.getSystemId(systemName);
+        final Integer sysId = ScreenScraperSystemIdMap.getId(systemName);
         if(sysId == null) {
             return null;
         }

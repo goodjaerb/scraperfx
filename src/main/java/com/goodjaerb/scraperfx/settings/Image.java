@@ -17,7 +17,7 @@ import org.xmappr.annotation.RootElement;
 public class Image {
     public enum ImageType {
         LOGO("logo", false), BOX_FRONT("box-front", false), BOX_BACK("box-back", false), SCREENSHOT("screenshot", false), FANART("fanart", false),
-        GAME("game", true), /*DECAL("decal", true),*/ TITLE("title", true), FLYER("flyer", true), MARQUEE("marquee", true);
+        GAME("game", true), TITLE("title", true), FLYER("flyer", true), MARQUEE("marquee", true);
         
         private final String name;
         private final boolean arcadeImage;
@@ -42,15 +42,6 @@ public class Image {
     @Attribute(name = "source")
     public String source;
     
-    @Attribute(name = "width")
-    public Integer width;
-    
-    @Attribute(name = "height")
-    public Integer height;
-    
-//    @Attribute(name = "path")
-//    public String path;
-    
     @Attribute(name = "url")
     public String url;
     
@@ -69,27 +60,19 @@ public class Image {
         this.source = source;
         this.url = url;
         this.targetImageType = targetImageType;
-//        this.path = path;
-        this.selected = b;
-    }
-    
-    public Image(String type, String source, Integer width, Integer height, String url, boolean b) {
-        this.type = type;
-        this.source = source;
-        this.width = width;
-        this.height = height;
-        this.url = url;
-//        this.path = path;
         this.selected = b;
     }
     
     public Image(String type, String source, String url, boolean b) {
-        this(type, source, -1, -1, url, b);
+        this.type = type;
+        this.source = source;
+        this.url = url;
+        this.selected = b;
     }
 
     @Override
     public String toString() {
-        return "Image{" + "type=" + type + ", width=" + width + ", height=" + height + ", url=" + url + ", targetImageType=" + targetImageType + ", selected=" + selected + '}';
+        return "Image{" + "type=" + type + ", url=" + url + ", targetImageType=" + targetImageType + ", selected=" + selected + '}';
     }
 
     @Override
@@ -115,10 +98,6 @@ public class Image {
         if (!Objects.equals(this.type, other.type)) {
             return false;
         }
-        if (!Objects.equals(this.url, other.url)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.url, other.url);
     }
-    
 }

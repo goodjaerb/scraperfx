@@ -100,7 +100,6 @@ import com.goodjaerb.scraperfx.settings.MetaData;
 import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -133,6 +132,7 @@ public class ScraperFX extends Application {
     public static final Path   LOCALDB_PATH = SETTINGS_PATH.resolve(".localdb");
     public static final Path   GAMEDATA_PATH = SETTINGS_PATH.resolve(".gamedata");
     
+    private static final Insets STANDARD_INSETS = new Insets(7.);
     private static final String SCRAPERFX_CONF = "scraperfx.conf";
     private static final String KEYS_FILENAME = "keys.ini";
     private static final Ini    KEYS_INI = new Ini();
@@ -155,6 +155,7 @@ public class ScraperFX extends Application {
     private final TextField                                 datFilterField = new TextField();
     private final CheckBox                                  unmatchedOnlyCheckBox = new CheckBox("Don't Re-match matched files");
     private final CheckBox                                  refreshMetaDataCheckBox = new CheckBox("Refresh Matched Metadata");
+    private final CheckBox                                  askForScreenScraperMatchCheckBox = new CheckBox("Ask for ScreenScraper Game Match");
     private final ToggleGroup                               outputMediaGroup = new ToggleGroup();
     private final RadioButton                               outputMediaToUserDirButton = new RadioButton("Output media to User Dir");
     private final RadioButton                               outputMediaToRomsDirButton = new RadioButton("Output media to Roms Dir");
@@ -356,7 +357,7 @@ public class ScraperFX extends Application {
             }
         });
         
-        unmatchedOnlyCheckBox.setPadding(new Insets(7.));
+        unmatchedOnlyCheckBox.setPadding(STANDARD_INSETS);
         unmatchedOnlyCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {//setOnAction((e) -> {
             getCurrentSettings().unmatchedOnly = unmatchedOnlyCheckBox.isSelected();
             
@@ -369,18 +370,20 @@ public class ScraperFX extends Application {
             }
         });
         
-        refreshMetaDataCheckBox.setPadding(new Insets(7.));
+        refreshMetaDataCheckBox.setPadding(STANDARD_INSETS);
         refreshMetaDataCheckBox.setDisable(false);
+        
+        askForScreenScraperMatchCheckBox.setPadding(STANDARD_INSETS);
 
         final HBox box21 = new HBox();
         box21.setSpacing(7.);
-        box21.setPadding(new Insets(7.));
+        box21.setPadding(STANDARD_INSETS);
         
         box21.getChildren().addAll(new Label("Scrap as:"), scrapeAsConsoleButton, scrapeAsArcadeButton, arcadeScraperBox);
         
         final HBox selectConsoleBox = new HBox();
         selectConsoleBox.setSpacing(7.);
-        selectConsoleBox.setPadding(new Insets(7.));
+        selectConsoleBox.setPadding(STANDARD_INSETS);
         selectConsoleBox.getChildren().add(new Label("Select Console:"));
         selectConsoleBox.getChildren().add(consoleSelectComboBox);
         
@@ -394,6 +397,7 @@ public class ScraperFX extends Application {
                 createBrowseFieldPane("DAT Filter (Advanced):", datFilterField),
                 unmatchedOnlyCheckBox,
                 refreshMetaDataCheckBox,
+                askForScreenScraperMatchCheckBox,
                 outputMediaToUserDirButton,
                 outputMediaToRomsDirButton
         );
@@ -634,7 +638,7 @@ public class ScraperFX extends Application {
         imagesScroll.setPrefSize(200., 475.);
         
         final VBox imagesBox = new VBox();
-        imagesBox.setPadding(new Insets(7.));
+        imagesBox.setPadding(STANDARD_INSETS);
         imagesBox.setSpacing(7.);
         imagesBox.getChildren().addAll(favoriteCheckBox, lockImagesCheckBox, imagesScroll);
         
@@ -653,7 +657,7 @@ public class ScraperFX extends Application {
         final VBox leftBox = new VBox(7., topBox, gamesListView);
         VBox.setVgrow(gamesListView, Priority.ALWAYS);
         
-        gamesPane.setPadding(new Insets(7.));
+        gamesPane.setPadding(STANDARD_INSETS);
         gamesPane.setLeft(leftBox);
         gamesPane.setCenter(metaBox);
         gamesPane.setRight(imagesBox);
@@ -780,7 +784,7 @@ public class ScraperFX extends Application {
         
         menuBar = new MenuBar();
         final BorderPane appPane = new BorderPane(mainBox, menuBar, null, null, null);
-        BorderPane.setMargin(mainBox, new Insets(7.));
+        BorderPane.setMargin(mainBox, STANDARD_INSETS);
         
         root.getChildren().add(appPane);
     }
@@ -1541,7 +1545,7 @@ public class ScraperFX extends Application {
         public MetaImageViewBox() {
             super();
             setSpacing(7.);
-            setPadding(new Insets(7.));
+            setPadding(STANDARD_INSETS);
         }
         
         public void selectImage(com.goodjaerb.scraperfx.settings.Image image) {
@@ -2086,33 +2090,41 @@ public class ScraperFX extends Application {
             }
 
             if(theGame == null) {
-                final ScreenScraperResultHolder holder = new ScreenScraperResultHolder();
-                Platform.runLater(() -> {
-                    final ChoiceDialog<ScreenScraperGame> choices = new ChoiceDialog<>(screenScraperResults.get(0), screenScraperResults);
-                    choices.setTitle("Select ScreenScraper Result");
-                    choices.setContentText("Matched Game: " + localGame.matchedName);
-                    final Optional<ScreenScraperGame> choice = choices.showAndWait();
+                if(!askForScreenScraperMatchCheckBox.isSelected()) {
+                    // don't want to halt scanning to ask so i'll return here and not
+                    // alter any possible current values.
+                    return;
+                }
+                else {
+                    final ScreenScraperResultHolder holder = new ScreenScraperResultHolder();
+                    Platform.runLater(() -> {
+                        final ChoiceDialog<ScreenScraperGame> choices = new ChoiceDialog<>(screenScraperResults.get(0), screenScraperResults);
+                        choices.setTitle("Select ScreenScraper Result");
+                        choices.setContentText("Matched Game: " + localGame.matchedName);
+                        final Optional<ScreenScraperGame> choice = choices.showAndWait();
 
-                    synchronized(holder) {
-                        if(choice.isPresent()) {
-                            holder.setResult(choice);
+                        synchronized(holder) {
+                            if(choice.isPresent()) {
+                                holder.setResult(choice);
+                            }
+                            holder.notify();
                         }
-                        holder.notify();
+                    });
+                    try {
+                        synchronized(holder) {
+                            holder.wait();
+                        }
                     }
-                });
-                try {
-                    synchronized(holder) {
-                        holder.wait();
+                    catch (InterruptedException ex) {
+                        Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
-                catch (InterruptedException ex) {
-                    Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
-                if(holder.get() != null && holder.get().isPresent()) {
-                    theGame = holder.get().get();
+
+                    if(holder.get() != null && holder.get().isPresent()) {
+                        theGame = holder.get().get();
+                    }
                 }
             }
+            
             if(theGame == null) {
                 newMetaData.screenScraperId = null;
                 newMetaData.videodownload = null;
@@ -2355,12 +2367,12 @@ public class ScraperFX extends Application {
             
             final HBox box = new HBox();
             box.setSpacing(7.);
-            box.setPadding(new Insets(7.));
+            box.setPadding(STANDARD_INSETS);
             box.getChildren().addAll(okButton, cancelButton);
             
             final VBox vbox = new VBox();
             vbox.setSpacing(7.);
-            vbox.setPadding(new Insets(7.));
+            vbox.setPadding(STANDARD_INSETS);
             vbox.getChildren().add(new Label("Select game:"));
             vbox.getChildren().add(filterField);
             vbox.getChildren().add(selectGameList);
@@ -2482,7 +2494,7 @@ public class ScraperFX extends Application {
             
             final VBox box = new VBox();
             box.setSpacing(7.);
-            box.setPadding(new Insets(7.));
+            box.setPadding(STANDARD_INSETS);
             box.getChildren().addAll(messageArea, p);
             
             final Scene scene = new Scene(box);

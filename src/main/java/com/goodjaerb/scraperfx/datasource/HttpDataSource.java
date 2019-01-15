@@ -9,6 +9,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -67,7 +69,10 @@ public abstract class HttpDataSource implements DataSource {
                     }
                 }
 
-                return new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                System.out.println(conn.getRequestProperties());
+                System.out.println(conn.getHeaderFields());
+                Logger.getLogger(HttpDataSource.class.getName()).log(Level.INFO, "{0} {1}", new Object[]{conn.getResponseCode(), conn.getResponseMessage()});
+                return new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             }
             catch(SocketTimeoutException ex) {
                 if(++retryCount < 3) {

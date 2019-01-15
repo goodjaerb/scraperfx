@@ -8,6 +8,8 @@ package com.goodjaerb.scraperfx.datasource.impl;
 import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
 import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperGame;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperInfo;
+import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperInfoV1;
 import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperSearchResults;
 import com.goodjaerb.scraperfx.datasource.impl.data.json.screenscraper.ScreenScraperSystemIdMap;
 import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
@@ -29,9 +31,11 @@ import java.util.logging.Logger;
 public class ScreenScraper2Source extends CustomHttpDataSource {
     public static final String                  SOURCE_NAME = "Screen Scraper v2 (screenscraper.fr)";
     
-    private static final String                 API_BASE_URL = "https://www.screenscraper.fr/api2/";
-//    private static final String                 API_INFO = "jeuInfos.php";
-    private static final String                 API_SEARCH = "jeuRecherche.php";
+    private static final String                 API_BASE_URL = "https://www.screenscraper.fr/";
+    private static final String                 API_V1 = "api/";
+    private static final String                 API_V2 = "api2/";
+    private static final String                 API_INFO = "jeuInfos.php"; // v1 & v2.
+    private static final String                 API_SEARCH = "jeuRecherche.php"; //v2 only.
     private static final Map<String, String>    DEFAULT_PARAMS;
     
 //    public enum MetaDataKey {
@@ -86,7 +90,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         params.put("recherche", game.matchedName);
         
         try {
-            final ScreenScraperSearchResults results = getData(new JsonDataSourcePlugin<>(ScreenScraperSearchResults.class), API_BASE_URL + API_SEARCH, params);
+            final ScreenScraperSearchResults results = getData(new JsonDataSourcePlugin<>(ScreenScraperSearchResults.class), API_BASE_URL + API_V2 + API_SEARCH, params);
             if(results != null && results.response.jeux != null && !results.response.jeux.isEmpty()) {
                 final List<ScreenScraperGame> resultsList = results.response.jeux;
                 final List<ScreenScraperGame> returnList = new ArrayList<>();
@@ -132,39 +136,39 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         return null;
     }
     
-//    private List<ScreenScraperGame> getInfo(String systemName, Game game, String gameId, Path filePath) {
-//        final Integer sysId = ScreenScraperSystemIdMap.getSystemId(systemName);
-//        if(sysId == null) {
-//            return null;
-//        }
-//        
-//        final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
-//        params.put("romnom", game.fileName);
-//        params.put("systemeid", Integer.toString(sysId));
-//        params.put("gameid", gameId);
-////        try {
-////            params.put("crc", crcCalc(filePath));
-////        }
-////        catch (IOException ex) {
-////            Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.WARNING, "Could not calculate CRC of file to assist in identifying on www.screenscraper.fr.", ex);
-////        } // sometimes this causes the query to fail even though it's the actual name. but leaving it out breaks the query too.
-//        
+    private List<ScreenScraperGame> getInfo(String systemName, Game game) {//, String gameId, Path filePath) {
+        final Integer sysId = ScreenScraperSystemIdMap.getId(systemName);
+        if(sysId == null) {
+            return null;
+        }
+        
+        final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
+        params.put("romnom", game.matchedName);
+        params.put("systemeid", Integer.toString(sysId));
+        params.put("gameid", game.metadata.screenScraperId);
 //        try {
-//            final ScreenScraperInfo info = getData(new JsonDataSourcePlugin<>(ScreenScraperInfo.class), API_BASE_URL + API_INFO, params);
-//            if(info != null) {
-//                return Collections.singletonList(info.response.jeu);
-//            }
+//            params.put("crc", crcCalc(filePath));
 //        }
-//        catch(IOException ex) {
-//            Logger.getLogger(ScreenScraper2Source.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
-//    }
+//        catch (IOException ex) {
+//            Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.WARNING, "Could not calculate CRC of file to assist in identifying on www.screenscraper.fr.", ex);
+//        } // sometimes this causes the query to fail even though it's the actual name. but leaving it out breaks the query too.
+        
+        try {
+            final ScreenScraperInfoV1 info = getData(new JsonDataSourcePlugin<>(ScreenScraperInfoV1.class), API_BASE_URL + API_V1 + API_INFO, params);
+            if(info != null) {
+                return Collections.singletonList(new ScreenScraperGame(info.response.jeu));
+            }
+        }
+        catch(IOException ex) {
+            Logger.getLogger(ScreenScraper2Source.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
     
     private List<ScreenScraperGame> getJsonData(String systemName, Game game) {
-//        if(game.metadata != null && game.metadata.screenScraperId != null && !game.metadata.screenScraperId.isEmpty()) {
-//            return getInfo(systemName, game, game.metadata.screenScraperId, filePath);
-//        }
+        if(game.metadata != null && game.metadata.screenScraperId != null && !game.metadata.screenScraperId.isEmpty()) {
+            return getInfo(systemName, game);//, game.metadata.screenScraperId, filePath);
+        }
         return getSearchResults(systemName, game);
     }
     

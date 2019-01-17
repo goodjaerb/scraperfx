@@ -25,7 +25,7 @@ public class ScreenScraperSystemIdMap {
         final HashMap<String, Integer> map = new HashMap<>();
         map.put("3DO", 29);
         map.put("Atari 800", 38);
-        map.put("Atari 2600", 39);
+        map.put("Atari 2600", 26);
         map.put("Atari 5200", 40);
         map.put("Atari 7800", 41);
         map.put("Atari Jaguar", 27);

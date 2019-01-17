@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 public class ArcadeItaliaSource extends CustomHttpDataSource {
 //    private static final String HTTP_CONTENT_LANGUAGE_PROP = "Accept-Language";
 //    private static final String HTTP_CONTENT_LANGUAGE_VALUE = "en";
-    
+    private static final String                 SOURCE_NAME = "Arcade Italia (adb.arcadeitalia.net)";
     private static final String                 API_URL = "http://adb.arcadeitalia.net/service_scraper.php";//?ajax=query_mame&lang=en&game_name=";
     private static final Map<String, String>    DEFAULT_PARAMS;
     private static final String                 GAME_NAME_PARAM = "game_name";
@@ -43,7 +43,7 @@ public class ArcadeItaliaSource extends CustomHttpDataSource {
 
     @Override
     public String getSourceName() {
-        return "Arcade Italia (adb.arcadeitalia.net)";
+        return SOURCE_NAME;
     }
     
     @Override
@@ -79,16 +79,16 @@ public class ArcadeItaliaSource extends CustomHttpDataSource {
                 }
                 metadata.images = new ArrayList<>();
                 if(notNullNorEmpty(data.result[0].url_image_title)) {
-                    metadata.images.add(new Image("title", data.result[0].url_image_title, "png", true));
+                    metadata.images.add(new Image("title", SOURCE_NAME, data.result[0].url_image_title, true));
                 }
                 if(notNullNorEmpty(data.result[0].url_image_ingame)) {
-                    metadata.images.add(new Image("game", data.result[0].url_image_ingame, "png", true));
+                    metadata.images.add(new Image("game", SOURCE_NAME, data.result[0].url_image_ingame, true));
                 }
                 if(notNullNorEmpty(data.result[0].url_image_marquee)) {
-                    metadata.images.add(new Image("marquee", data.result[0].url_image_marquee, "png", true));
+                    metadata.images.add(new Image("marquee", SOURCE_NAME, data.result[0].url_image_marquee, true));
                 }
                 if(notNullNorEmpty(data.result[0].url_image_flyer)) {
-                    metadata.images.add(new Image("flyer", data.result[0].url_image_flyer, "png", true));
+                    metadata.images.add(new Image("flyer", SOURCE_NAME, data.result[0].url_image_flyer, true));
                 }
                 return metadata;
             }

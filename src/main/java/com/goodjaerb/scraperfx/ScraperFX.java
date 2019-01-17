@@ -113,6 +113,8 @@ import java.util.stream.Stream;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -579,10 +581,12 @@ public class ScraperFX extends Application {
             if(currentGame != null) {
                 final SingleGameDownloadDialog d = new SingleGameDownloadDialog(getCurrentSettings().scrapeAs, matchedNameBrowseButton.getScene().getWindow());
                 d.showAndWait();
-                loadCurrentGameFields(currentGame);
-                final Game updatedGame = observableGamesList.remove(observableGamesList.indexOf(currentGame));
-                observableGamesList.add(updatedGame);
-                gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
+                if(!d.wasCancelled()) {
+                    loadCurrentGameFields(currentGame);
+                    final Game updatedGame = observableGamesList.remove(observableGamesList.indexOf(currentGame));
+                    observableGamesList.add(updatedGame);
+                    gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
+                }
             }
         });
         
@@ -1068,6 +1072,7 @@ public class ScraperFX extends Application {
             int retry = 0;
             while(retry < 3) {
                 try {
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "Downloading video from {0}...", url);
                     FileUtils.copyURLToFile(new URL(url), outputFile, 10000, 10000);
                     return true;
                 }
@@ -1303,7 +1308,8 @@ public class ScraperFX extends Application {
                 favoriteCheckBox.setSelected(g.metadata.favorite);
 
                 if(scanTask == null || !scanTask.isRunning()) {
-                    Platform.runLater(() -> {
+//                    Platform.runLater(() -> {
+                    new Thread(() -> {
                         imageTaskList.forEach(task -> task.cancel());
                         imageTaskList.clear();
 
@@ -1325,9 +1331,12 @@ public class ScraperFX extends Application {
                                 t.start();
                             });
 
-                            imagesScroll.setContent(box);
+                            Platform.runLater(() -> {
+                                imagesScroll.setContent(box);
+                            });
                         }
-                    });
+                    }).start();
+//                    });
                 }
             }
         }
@@ -1632,19 +1641,15 @@ public class ScraperFX extends Application {
     }
     
     private abstract class ScanTaskBase extends Task<Void> {
+        private final Path gamesPath;
+        private final List<Game> games;
         private final List<Path> paths = new ArrayList<>();
         
         protected Consumer<String> status;
         
         public ScanTaskBase(Path gamesPath, List<Game> games) {
-            // Don't know if this should be here or the start of call().
-            final DirectoryStream.Filter<Path> filter = path -> Files.isRegularFile(path) && games.stream().anyMatch((game) -> path.getFileName().toString().equals(game.fileName));
-            try(final DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
-                stream.forEach(path -> paths.add(path));
-            }
-            catch(IOException ex) {
-                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            this.gamesPath = gamesPath;
+            this.games = games;
         }
         
         protected abstract void scan(List<ScanTaskOperation> ops);
@@ -1655,6 +1660,18 @@ public class ScraperFX extends Application {
         
         @Override
         public Void call() {
+            // Don't know if this should be here or the start of call().
+            final DirectoryStream.Filter<Path> filter = path -> Files.isRegularFile(path) && games.stream().anyMatch((game) -> path.getFileName().toString().equals(game.fileName));
+            try(final DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
+                stream.forEach(path -> {
+                    status.accept("Found '" + path + "'.");
+                    paths.add(path);
+                });
+            }
+            catch(IOException ex) {
+                Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
             final List<ScanTaskOperation> ops = new ArrayList<>();
             final long startTime = System.nanoTime();
             
@@ -2323,6 +2340,8 @@ public class ScraperFX extends Application {
         
         private final String systemName;
         
+        private boolean cancelled;
+        
         public SingleGameDownloadDialog(String systemName, Window parentWindow) {
             super();
             this.systemName = systemName;
@@ -2339,14 +2358,26 @@ public class ScraperFX extends Application {
 
             filterField.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
                 if(e.getCode() == KeyCode.ESCAPE) {
-                    filterField.setText("");
+                    if("".equals(filterField.getText())) {
+                        cancelled = true;
+                        SingleGameDownloadDialog.this.hide();
+                    }
+                    else {
+                        filterField.setText("");
+                    }
                 }
             });
 
             selectGameList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             selectGameList.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
                 if(e.getCode() == KeyCode.ESCAPE) {
-                    filterField.setText("");
+                    if("".equals(filterField.getText())) {
+                        cancelled = true;
+                        SingleGameDownloadDialog.this.hide();
+                    }
+                    else {
+                        filterField.setText("");
+                    }
                 }
                 else if(e.getCode() == KeyCode.BACK_SPACE) {
                     final String currentText = filterField.getText();
@@ -2360,7 +2391,10 @@ public class ScraperFX extends Application {
             okButton.setOnAction(e -> onOkButton());
             okButton.setPrefWidth(175);
             
-            cancelButton.setOnAction(e -> hide());
+            cancelButton.setOnAction((ActionEvent e) -> {
+                cancelled = true;
+                hide();
+            });
             
             setOnShown(e -> onShown());
             setOnHidden(e -> workingTimer.cancel());
@@ -2385,6 +2419,10 @@ public class ScraperFX extends Application {
             initModality(Modality.WINDOW_MODAL);
             initOwner(parentWindow);
             setScene(scene);
+        }
+        
+        public boolean wasCancelled() {
+            return cancelled;
         }
         
         private void onOkButton() {

@@ -68,9 +68,28 @@ public abstract class HttpDataSource implements DataSource {
                         conn.setRequestProperty(httpProps[i], httpProps[i + 1]);
                     }
                 }
+                
+                int waitRetries = 0;
+                while(conn.getResponseCode() == 429 && waitRetries++ < 3) {
+                    Logger.getLogger(HttpDataSource.class.getName()).log(Level.WARNING, "Too many requests to {0}. Retrying in 10s.", encodedUrl);
+                    try {
+                        Thread.sleep(10000);
+                    }
+                    catch (InterruptedException ex) {
+                        Logger.getLogger(HttpDataSource.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                    conn = (HttpURLConnection)new URL(encodedUrl).openConnection();
+                    conn.setConnectTimeout(3000);
+                    conn.setReadTimeout(3000);
+                    conn.setRequestMethod("GET");
+                    if(httpProps != null && httpProps.length % 2 == 0) {
+                        for(int i = 0; i < httpProps.length; i += 2) {
+                            conn.setRequestProperty(httpProps[i], httpProps[i + 1]);
+                        }
+                    }
+                }
 
-                System.out.println(conn.getRequestProperties());
-                System.out.println(conn.getHeaderFields());
                 Logger.getLogger(HttpDataSource.class.getName()).log(Level.INFO, "{0} {1}", new Object[]{conn.getResponseCode(), conn.getResponseMessage()});
                 return new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             }

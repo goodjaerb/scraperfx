@@ -36,20 +36,20 @@ public class Image {
     public String   type;
     public String   source;
     public String   url;
-    public String   targetImageType;
+//    public String   targetImageType;
     public Boolean  selected;
     
     public Image() {
         selected = false;
     }
     
-    public Image(String type, String source, String url, String targetImageType, boolean b) {
-        this.type = type;
-        this.source = source;
-        this.url = url;
-        this.targetImageType = targetImageType;
-        this.selected = b;
-    }
+//    public Image(String type, String source, String url, String targetImageType, boolean b) {
+//        this.type = type;
+//        this.source = source;
+//        this.url = url;
+//        this.targetImageType = targetImageType;
+//        this.selected = b;
+//    }
     
     public Image(String type, String source, String url, boolean b) {
         this.type = type;
@@ -60,7 +60,7 @@ public class Image {
 
     @Override
     public String toString() {
-        return "Image{" + "type=" + type + ", url=" + url + ", targetImageType=" + targetImageType + ", selected=" + selected + '}';
+        return "Image{" + "type=" + type + ", url=" + url + ", selected=" + selected + '}';
     }
 
     @Override

@@ -5,8 +5,6 @@
  */
 package com.goodjaerb.scraperfx;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import javafx.animation.AnimationTimer;
@@ -22,9 +20,13 @@ public class QueuedMessageBox extends TextArea {
 
         @Override
         public void handle(long now) {
-            final List<String> messages = new ArrayList<>();
-            messageQueue.drainTo(messages);
-            messages.forEach(msg -> appendText(msg + "\n"));
+            final String message = messageQueue.poll();
+            if(message != null) {
+                appendText(message + "\n");
+            }
+//            final List<String> messages = new ArrayList<>();
+//            messageQueue.drainTo(messages);
+//            messages.forEach(msg -> appendText(msg + "\n"));
         }
     };
     

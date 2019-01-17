@@ -53,14 +53,14 @@ public class MetaData {
         return null;
     }
     
-    public String getSelectedImageType(String type) {
-        for(final Image image : images) {
-            if(type.equals(image.type) && image.selected) {
-                return image.targetImageType;
-            }
-        }
-        return null;
-    }
+//    public String getSelectedImageType(String type) {
+//        for(final Image image : images) {
+//            if(type.equals(image.type) && image.selected) {
+//                return image.targetImageType;
+//            }
+//        }
+//        return null;
+//    }
     
     public void selectImage(Image image) {
         images.stream().filter((i) -> (i.type.equals(image.type))).forEach((i) -> {

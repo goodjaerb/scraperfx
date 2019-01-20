@@ -18,9 +18,19 @@ public class ScreenScraperInfoV1 {
         public ScreenScraperResponse() {
             
         }
+
+        @Override
+        public String toString() {
+            return "ScreenScraperResponse{" + "jeu=" + jeu + '}';
+        }
     }
     
     public ScreenScraperInfoV1() {
         
+    }
+
+    @Override
+    public String toString() {
+        return "ScreenScraperInfoV1{" + "response=" + response + '}';
     }
 }

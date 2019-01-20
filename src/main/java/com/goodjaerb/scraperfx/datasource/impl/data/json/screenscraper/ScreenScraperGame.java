@@ -92,6 +92,14 @@ public class ScreenScraperGame {
         if(noms == null || noms.isEmpty()) {
             return id + " (" + systemenom + ")";
         }
-        return noms.get(0).text + " (" + systemenom + ")";
+        String name = noms.get(0).text;
+        for(NameData n : noms) {
+            if("us".equals(n.region)) {
+                name = n.text;
+                break;
+            }
+        }
+        return name + " (" + systemenom + ")";
+//        return noms.get(0).text + " (" + systemenom + ")";
     }
 }

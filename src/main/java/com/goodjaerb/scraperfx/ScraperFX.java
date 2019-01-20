@@ -101,6 +101,7 @@ import com.goodjaerb.scraperfx.settings.MetaData.MetaDataId;
 import com.goodjaerb.scraperfx.settings.SystemSettings;
 import com.google.gson.Gson;
 import java.io.FileNotFoundException;
+import java.net.HttpURLConnection;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
@@ -413,7 +414,7 @@ public class ScraperFX extends Application {
         * Games Tab
         */
         gamesListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        gamesListView.setPrefSize(450., 425.);
+        gamesListView.setPrefSize(550., 425.);
         gamesListView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends Game> c) -> {
             final Game selected = gamesListView.getSelectionModel().getSelectedItem();
             if(selected != null) {
@@ -1034,11 +1035,12 @@ public class ScraperFX extends Application {
         while(retry < 3) {
             try {
                 Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "Downloading image from {0}...", url);
-                final URLConnection connection = new URL(url).openConnection();
-                connection.setConnectTimeout(3000);
-                connection.setReadTimeout(3000);
+                final HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
+//                connection.setConnectTimeout(3000);
+//                connection.setReadTimeout(3000);
                 connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 
+                Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "{0} {1}", new Object[]{connection.getResponseCode(), connection.getResponseMessage()});
                 final BufferedImage img = ImageIO.read(connection.getInputStream());
                 return SwingFXUtils.toFXImage(img, null);
             }
@@ -1104,10 +1106,11 @@ public class ScraperFX extends Application {
             while(retry < 3) {
                 try {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "Downloading image from {0}...", url);
-                    final URLConnection connection = new URL(url).openConnection();
-                    connection.setConnectTimeout(3000);
-                    connection.setReadTimeout(3000);
+                    final HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
+//                    connection.setConnectTimeout(3000);
+//                    connection.setReadTimeout(3000);
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "{0} {1}", new Object[]{connection.getResponseCode(), connection.getResponseMessage()});
                     final BufferedImage img = ImageIO.read(connection.getInputStream());
                     
                     int width = 640;
@@ -2053,7 +2056,7 @@ public class ScraperFX extends Application {
                                 newMetaData.favorite = true;
                             }
 
-                            getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, localGame);
+                            getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, localGame, false);
 
                             localGame.updateMetaData(newMetaData);
                             status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
@@ -2073,13 +2076,13 @@ public class ScraperFX extends Application {
         }
     }
     
-    private void getExtraMetaData(MetaData newMetaData, String systemName, Game localGame) throws InstantiationException, ClassNotFoundException, IllegalAccessException {
-        final List<ScreenScraperGame> screenScraperResults = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraper2Source.class).getExtraMetaData(systemName, localGame);
+    private void getExtraMetaData(MetaData newMetaData, String systemName, Game localGame, boolean forceUpdate) throws InstantiationException, ClassNotFoundException, IllegalAccessException {
+        final List<ScreenScraperGame> screenScraperResults = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraper2Source.class).getExtraMetaData(systemName, localGame, forceUpdate);
         if(screenScraperResults != null && !screenScraperResults.isEmpty()) {
             ScreenScraperGame theGame = null;
 
             // if already have a ScreenScraper ID, check that it showed up in the results.
-            if(localGame.metadata != null && localGame.metadata.screenScraperId != null && !localGame.metadata.screenScraperId.isEmpty()) {
+            if(!forceUpdate && localGame.metadata != null && localGame.metadata.screenScraperId != null && !localGame.metadata.screenScraperId.isEmpty()) {
                 for(ScreenScraperGame ssGame : screenScraperResults) {
                     if(localGame.metadata.screenScraperId.equals(ssGame.id)) {
                         theGame = ssGame;
@@ -2150,7 +2153,7 @@ public class ScraperFX extends Application {
             }
             else {
                 newMetaData.screenScraperId = theGame.id;
-                if(theGame.medias != null && !theGame.medias.isEmpty()) {
+                if(theGame.medias != null && !theGame.medias.isEmpty() && theGame.medias.get(0).type != null) {
                     final List<ScreenScraperGame.Media> medias = theGame.medias;
                     for(ScreenScraperGame.Media media : medias) {
                         switch(media.type) {
@@ -2441,7 +2444,7 @@ public class ScraperFX extends Application {
                             newMetaData.favorite = true;
                         }
                         
-                        getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, currentGame);
+                        getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, currentGame, true);
 
                         currentGame.updateMetaData(newMetaData);
                         currentGame.strength = Game.MatchStrength.LOCKED;

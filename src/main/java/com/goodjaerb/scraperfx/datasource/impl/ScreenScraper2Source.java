@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,7 +80,17 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         return SOURCE_NAME;
     }
     
-    private List<ScreenScraperGame> getSearchResults(String systemName, Game game) {
+//    private long lastCheckTime = 0L;
+    private List<ScreenScraperGame> getSearchResults(String systemName, Game game, boolean forceUpdate) {
+//        if(System.nanoTime() - lastCheckTime > TimeUnit.SECONDS.toNanos(5)) {
+//            try {
+//                TimeUnit.SECONDS.sleep(5);
+//            }
+//            catch (InterruptedException ex) {
+//                Logger.getLogger(ScreenScraper2Source.class.getName()).log(Level.SEVERE, null, ex);
+//                return null;
+//            }
+//        }
         final Integer sysId = ScreenScraperSystemIdMap.getId(systemName);
         if(sysId == null) {
             return null;
@@ -90,32 +101,43 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         params.put("recherche", game.matchedName);
         
         try {
+//            lastCheckTime = System.nanoTime();
             final ScreenScraperSearchResults results = getData(new JsonDataSourcePlugin<>(ScreenScraperSearchResults.class), API_BASE_URL + API_V2 + API_SEARCH, params);
+            System.out.println("Received result.");
             if(results != null && results.response.jeux != null && !results.response.jeux.isEmpty()) {
                 final List<ScreenScraperGame> resultsList = results.response.jeux;
                 final List<ScreenScraperGame> returnList = new ArrayList<>();
-                
+
                 if(resultsList.size() == 1) {
-                    final ScreenScraperGame ssGame = resultsList.get(0);
+                    if(resultsList.get(0).id == null) {
+                        return null;
+                    }
+                    
+                    final ScreenScraperGame ssGame = getInfo(resultsList.get(0).systemeid, resultsList.get(0).id, resultsList.get(0).noms.get(0).text);
+//                    final ScreenScraperGame ssGame = resultsList.get(0);
                     if(ssGame == null || ssGame.systemeid == null) {
                         return null;
                     }
                     
-                    if(sysId == Integer.parseInt(resultsList.get(0).systemeid)) {
-                        return resultsList;
+                    if(sysId == Integer.parseInt(ssGame.systemeid)) {
+                        return Collections.singletonList(ssGame);
+//                        return resultsList;
                     }
                 }
                 else {
-                    for(ScreenScraperGame ssGame : resultsList) {
-                        if(sysId == Integer.parseInt(ssGame.systemeid)) {
-                            if(game.metadata != null 
+                    for(final ScreenScraperGame ssGame : resultsList) {
+                        final ScreenScraperGame fromInfosGame = getInfo(ssGame.systemeid, ssGame.id, ssGame.noms.get(0).text);
+                        
+                        if(fromInfosGame != null && sysId == Integer.parseInt(fromInfosGame.systemeid)) {
+                            if(!forceUpdate
+                                    && game.metadata != null 
                                     && game.metadata.screenScraperId != null 
                                     && !game.metadata.screenScraperId.isEmpty()
-                                    && ssGame.id.equals(game.metadata.screenScraperId)) {
-                                return Collections.singletonList(ssGame);
+                                    && fromInfosGame.id.equals(game.metadata.screenScraperId)) {
+                                return Collections.singletonList(fromInfosGame);
                             }
                             else {
-                                returnList.add(ssGame);
+                                returnList.add(fromInfosGame);
                             }
                         }
                     }
@@ -136,16 +158,11 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         return null;
     }
     
-    private List<ScreenScraperGame> getInfo(String systemName, Game game) {//, String gameId, Path filePath) {
-        final Integer sysId = ScreenScraperSystemIdMap.getId(systemName);
-        if(sysId == null) {
-            return null;
-        }
-        
+    private ScreenScraperGame getInfo(String systemId, String gameId, String gameName) {
         final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
-        params.put("romnom", game.matchedName);
-        params.put("systemeid", Integer.toString(sysId));
-        params.put("gameid", game.metadata.screenScraperId);
+        params.put("romnom", gameName);
+        params.put("systemeid", systemId);
+        params.put("gameid", gameId);
 //        try {
 //            params.put("crc", crcCalc(filePath));
 //        }
@@ -155,8 +172,10 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         
         try {
             final ScreenScraperInfoV1 info = getData(new JsonDataSourcePlugin<>(ScreenScraperInfoV1.class), API_BASE_URL + API_V1 + API_INFO, params);
-            if(info != null) {
-                return Collections.singletonList(new ScreenScraperGame(info.response.jeu));
+            System.out.println("Received result. " + info);
+            if(info != null && info.response != null && info.response.jeu != null) {
+                return new ScreenScraperGame(info.response.jeu);
+//                return Collections.singletonList(new ScreenScraperGame(info.response.jeu));
             }
         }
         catch(IOException ex) {
@@ -165,15 +184,29 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         return null;
     }
     
-    private List<ScreenScraperGame> getJsonData(String systemName, Game game) {
-        if(game.metadata != null && game.metadata.screenScraperId != null && !game.metadata.screenScraperId.isEmpty()) {
-            return getInfo(systemName, game);//, game.metadata.screenScraperId, filePath);
+    private ScreenScraperGame getInfo(String systemName, Game game) {//, String gameId, Path filePath) {
+        final Integer sysId = ScreenScraperSystemIdMap.getId(systemName);
+        if(sysId == null) {
+            return null;
         }
-        return getSearchResults(systemName, game);
+        
+        return getInfo(Integer.toString(sysId), game.metadata.screenScraperId, game.matchedName);
     }
     
-    public List<ScreenScraperGame> getExtraMetaData(String systemName, Game game) {
-        final List<ScreenScraperGame> results = getJsonData(systemName, game);
+    private List<ScreenScraperGame> getJsonData(String systemName, Game game, boolean forceUpdate) {
+        if(!forceUpdate && game.metadata != null && game.metadata.screenScraperId != null && !game.metadata.screenScraperId.isEmpty()) {
+            final ScreenScraperGame result = getInfo(systemName, game);
+            if(result == null) {
+                return null;
+            }
+            return Collections.singletonList(result);
+//            return getInfo(systemName, game);//, game.metadata.screenScraperId, filePath);
+        }
+        return getSearchResults(systemName, game, forceUpdate);
+    }
+    
+    public List<ScreenScraperGame> getExtraMetaData(String systemName, Game game, boolean forceUpdate) {
+        final List<ScreenScraperGame> results = getJsonData(systemName, game, forceUpdate);
         
         if(results != null && !results.isEmpty()) {
             return results;

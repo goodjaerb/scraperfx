@@ -293,8 +293,11 @@ public class ESOutput {
                                     if(g.metadata.metaName != null)         writer.append("\t\t<name>" + g.metadata.metaName + "</name>\n");
                                     if(g.metadata.metaDesc != null)         writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
                                     if(g.metadata.metaReleaseDate != null && !g.metadata.metaReleaseDate.isEmpty()) {
-                                        if(g.metadata.metaReleaseDate.length() == 4) {
-                                            writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate + "0101T000000</releasedate>\n");
+                                        final int dateLength = g.metadata.metaReleaseDate.length();
+                                        if(dateLength == 4 || dateLength == 5) {
+                                            //arcadeitalia tends to just have a year for a release date but often times will add a '?' to the end so
+                                            //this will take care of that.
+                                            writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate.replaceAll("\\p{Punct}", "") + "0101T000000</releasedate>\n");
                                         }
                                         else {
                                             writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate.substring(6) + g.metadata.metaReleaseDate.substring(0, 2) + g.metadata.metaReleaseDate.substring(3, 5) + "T000000</releasedate>\n");

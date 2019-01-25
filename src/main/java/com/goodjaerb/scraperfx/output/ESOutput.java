@@ -268,6 +268,7 @@ public class ESOutput {
                             }
                             
                             if(g.strength != Game.MatchStrength.IGNORE && (!skipUnmatchedCheckBox.isSelected() || g.strength != Game.MatchStrength.NO_MATCH)) {
+                                Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Beginning output of ''{0}''.", g);
                                 writer.append("\t<game>\n");
 
                                 writer.append("\t\t<path>./" + g.fileName + "</path>\n");
@@ -288,9 +289,10 @@ public class ESOutput {
                                     writer.append("\t\t<name>" + noMatchMetaName + "</name>\n");
                                 }
                                 else {
+                                    Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Outputting metadata ''{0}''.", g);
                                     if(g.metadata.metaName != null)         writer.append("\t\t<name>" + g.metadata.metaName + "</name>\n");
                                     if(g.metadata.metaDesc != null)         writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
-                                    if(g.metadata.metaReleaseDate != null) {
+                                    if(g.metadata.metaReleaseDate != null && !g.metadata.metaReleaseDate.isEmpty()) {
                                         if(g.metadata.metaReleaseDate.length() == 4) {
                                             writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate + "0101T000000</releasedate>\n");
                                         }
@@ -305,7 +307,9 @@ public class ESOutput {
                                     if(g.metadata.favorite)                 writer.append("\t\t<favorite>true</favorite>\n");
                                     
                                     if(g.metadata.videodownload != null && downloadVideosCheckBox.isSelected()) {
+                                        Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Downloading video for ''{0}''.", g);
                                         if(ScraperFX.saveVideo(videoPath, g.fileName + "_video.mp4", g.metadata.videodownload)) {
+                                            Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Video downloaded.");
                                             writer.append("\t\t<video>./videos/" + g.fileName + "_video.mp4</video>\n");
                                         }
                                     }

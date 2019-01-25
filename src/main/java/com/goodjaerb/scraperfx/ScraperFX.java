@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
@@ -115,7 +114,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -158,6 +156,7 @@ public class ScraperFX extends Application {
     private final TextField                                 datFilterField = new TextField();
     private final CheckBox                                  unmatchedOnlyCheckBox = new CheckBox("Don't Re-match matched files");
     private final CheckBox                                  refreshMetaDataCheckBox = new CheckBox("Refresh Matched Metadata");
+    private final CheckBox                                  forceScreenScraperUpdateCheckBox = new CheckBox("Force ScreenSCraper ID Update");
     private final CheckBox                                  askForScreenScraperMatchCheckBox = new CheckBox("Ask for ScreenScraper Game Match");
     private final ToggleGroup                               outputMediaGroup = new ToggleGroup();
     private final RadioButton                               outputMediaToUserDirButton = new RadioButton("Output media to User Dir");
@@ -373,9 +372,19 @@ public class ScraperFX extends Application {
             }
         });
         
+        forceScreenScraperUpdateCheckBox.setPadding(STANDARD_INSETS);
+        forceScreenScraperUpdateCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
+                askForScreenScraperMatchCheckBox.setSelected(true);
+                askForScreenScraperMatchCheckBox.setDisable(true);
+            }
+            else {
+                askForScreenScraperMatchCheckBox.setDisable(false);
+            }
+        });
+        
         refreshMetaDataCheckBox.setPadding(STANDARD_INSETS);
         refreshMetaDataCheckBox.setDisable(false);
-        
         askForScreenScraperMatchCheckBox.setPadding(STANDARD_INSETS);
 
         final HBox box21 = new HBox();
@@ -400,6 +409,7 @@ public class ScraperFX extends Application {
                 createBrowseFieldPane("DAT Filter (Advanced):", datFilterField),
                 unmatchedOnlyCheckBox,
                 refreshMetaDataCheckBox,
+                forceScreenScraperUpdateCheckBox,
                 askForScreenScraperMatchCheckBox,
                 outputMediaToUserDirButton,
                 outputMediaToRomsDirButton
@@ -2056,7 +2066,7 @@ public class ScraperFX extends Application {
                                 newMetaData.favorite = true;
                             }
 
-                            getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, localGame, false);
+                            getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, localGame, forceScreenScraperUpdateCheckBox.isSelected());
 
                             localGame.updateMetaData(newMetaData);
                             status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
@@ -2110,12 +2120,22 @@ public class ScraperFX extends Application {
             }
 
             if(theGame == null) {
-                if(!askForScreenScraperMatchCheckBox.isSelected()) {
+                if(!forceUpdate && !askForScreenScraperMatchCheckBox.isSelected()) {
                     // don't want to halt scanning to ask so i'll return here and not
                     // alter any possible current values.
                     return;
                 }
                 else {
+                    if(localGame.metadata != null && localGame.metadata.screenScraperId != null && !localGame.metadata.screenScraperId.isEmpty()) {
+                        for(int i = 0; i < screenScraperResults.size(); i++) {
+                            final ScreenScraperGame g = screenScraperResults.get(i);
+                            if(g.id.equals(localGame.metadata.screenScraperId)) {
+                                screenScraperResults.remove(i);
+                                screenScraperResults.set(0, g);
+                            }
+                        }
+                    }
+                    
                     final ScreenScraperResultHolder holder = new ScreenScraperResultHolder();
                     Platform.runLater(() -> {
                         final ChoiceDialog<ScreenScraperGame> choices = new ChoiceDialog<>(screenScraperResults.get(0), screenScraperResults);

@@ -13,11 +13,13 @@ import java.util.List;
  * @author goodjaerb
  */
 public class MetaData {
-    public enum MetaDataId { NAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, SCREEN_SCRAPER_ID, VIDEO_EMBED, VIDEO_DOWNLOAD, IMAGES };
+    public enum MetaDataId { NAME, SORTNAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, SCREEN_SCRAPER_ID, VIDEO_EMBED, VIDEO_DOWNLOAD, IMAGES };
     
     public Boolean      favorite = false;
     public String       metaName;
     public Boolean      lockName = false;
+    public String       metaSortName;
+    public Boolean      lockSortName = false;
     public String       metaDesc;
     public Boolean      lockDesc = false;
     public List<Image>  images;
@@ -84,6 +86,7 @@ public class MetaData {
         this.lockGenre              = other.lockGenre;
         this.lockImages             = other.lockImages;
         this.lockName               = other.lockName;
+        this.lockSortName           = other.lockSortName;
         this.lockPlayers            = other.lockPlayers;
         this.lockPublisher          = other.lockPublisher;
         this.lockRating             = other.lockRating;
@@ -98,6 +101,7 @@ public class MetaData {
         metaRating      = null;
         metaPublisher   = null;
         metaName        = null;
+        metaSortName    = null;
         metaDeveloper   = null;
         metaDesc        = null;
         players         = null;
@@ -113,6 +117,7 @@ public class MetaData {
         lockGenre           = false;
         lockImages          = false;
         lockName            = false;
+        lockSortName        = false;
         lockPlayers         = false;
         lockPublisher       = false;
         lockRating          = false;
@@ -128,6 +133,7 @@ public class MetaData {
             metaRating         = other.metaRating;
             metaPublisher      = other.metaPublisher;
             metaName           = other.metaName;
+            metaSortName       = other.metaSortName;
             metaDeveloper      = other.metaDeveloper;
             metaDesc           = other.metaDesc;
             players            = other.players;
@@ -145,6 +151,9 @@ public class MetaData {
         switch(id) {
             case NAME:
                 metaName = value;
+                break;
+            case SORTNAME:
+                metaSortName = value;
                 break;
             case DESC:
                 metaDesc = value;
@@ -184,6 +193,9 @@ public class MetaData {
             case NAME:
                 lockName = lock;
                 break;
+            case SORTNAME:
+                lockSortName = lock;
+                break;
             case DESC:
                 lockDesc = lock;
                 break;
@@ -222,6 +234,6 @@ public class MetaData {
     
     @Override
     public String toString() {
-        return "MetaData{" + "favorite=" + favorite + ", metaName=" + metaName + ", lockName=" + lockName + ", metaDesc=" + metaDesc + ", lockDesc=" + lockDesc + ", images=" + images + ", lockImages=" + lockImages + ", screenScraperId=" + screenScraperId + ", lockScreenScraperId=" + lockScreenScraperId + ", videoembed=" + videoembed + ", lockVideoEmbed=" + lockVideoEmbed + ", videodownload=" + videodownload + ", lockVideoDownload=" + lockVideoDownload + ", metaRating=" + metaRating + ", lockRating=" + lockRating + ", metaReleaseDate=" + metaReleaseDate + ", lockReleasedate=" + lockReleasedate + ", metaDeveloper=" + metaDeveloper + ", lockDeveloper=" + lockDeveloper + ", metaPublisher=" + metaPublisher + ", lockPublisher=" + lockPublisher + ", metaGenre=" + metaGenre + ", lockGenre=" + lockGenre + ", players=" + players + ", lockPlayers=" + lockPlayers + '}';
+        return "MetaData{" + "favorite=" + favorite + ", metaName=" + metaName + ", metaSortName=" + metaSortName + ", lockName=" + lockName + ", metaDesc=" + metaDesc + ", lockDesc=" + lockDesc + ", images=" + images + ", lockImages=" + lockImages + ", screenScraperId=" + screenScraperId + ", lockScreenScraperId=" + lockScreenScraperId + ", videoembed=" + videoembed + ", lockVideoEmbed=" + lockVideoEmbed + ", videodownload=" + videodownload + ", lockVideoDownload=" + lockVideoDownload + ", metaRating=" + metaRating + ", lockRating=" + lockRating + ", metaReleaseDate=" + metaReleaseDate + ", lockReleasedate=" + lockReleasedate + ", metaDeveloper=" + metaDeveloper + ", lockDeveloper=" + lockDeveloper + ", metaPublisher=" + metaPublisher + ", lockPublisher=" + lockPublisher + ", metaGenre=" + metaGenre + ", lockGenre=" + lockGenre + ", players=" + players + ", lockPlayers=" + lockPlayers + '}';
     }
 }

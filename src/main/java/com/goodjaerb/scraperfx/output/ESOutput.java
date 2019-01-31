@@ -291,6 +291,9 @@ public class ESOutput {
                                 else {
                                     Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Outputting metadata ''{0}''.", g);
                                     if(g.metadata.metaName != null)         writer.append("\t\t<name>" + g.metadata.metaName + "</name>\n");
+                                    if(g.metadata.metaSortName != null && !g.metadata.metaSortName.isEmpty()) {
+                                        writer.append("\t\t<sortname>" + g.metadata.metaSortName + "</sortname>\n");
+                                    }
                                     if(g.metadata.metaDesc != null)         writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
                                     if(g.metadata.metaReleaseDate != null && !g.metadata.metaReleaseDate.isEmpty()) {
                                         final int dateLength = g.metadata.metaReleaseDate.length();

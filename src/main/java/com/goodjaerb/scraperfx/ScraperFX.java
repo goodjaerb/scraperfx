@@ -186,6 +186,8 @@ public class ScraperFX extends Application {
     private final CheckBox              lockMatchedNameCheckBox = new CheckBox("Lock");
     private final TextField             metaNameField = new TextField();
     private final CheckBox              lockNameCheckBox = new CheckBox("Lock");
+    private final TextField             metaSortNameField = new TextField();
+    private final CheckBox              lockSortNameCheckBox = new CheckBox("Lock");
     private final TextArea              metaDescArea = new TextArea();
     private final CheckBox              lockDescCheckBox = new CheckBox("Lock");
     private final TextField             metaRatingField = new TextField();
@@ -621,6 +623,7 @@ public class ScraperFX extends Application {
             observableGamesList.add(updatedGame);
             gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
         });
+        lockSortNameCheckBox.setOnAction((e) ->         lockMetaField(metaSortNameField, MetaDataId.SORTNAME, currentGame.metadata, lockSortNameCheckBox.isSelected()));
         lockDescCheckBox.setOnAction((e) ->             lockMetaField(metaDescArea, MetaDataId.DESC, currentGame.metadata, lockDescCheckBox.isSelected()));
         lockDeveloperCheckBox.setOnAction((e) ->        lockMetaField(metaDeveloperField, MetaDataId.DEVELOPER, currentGame.metadata, lockDeveloperCheckBox.isSelected()));
         lockGenreCheckBox.setOnAction((e) ->            lockMetaField(metaGenreField, MetaDataId.GENRE, currentGame.metadata, lockGenreCheckBox.isSelected()));
@@ -638,6 +641,7 @@ public class ScraperFX extends Application {
         metaBox.getChildren().addAll(
                 createMetaFieldPane("Matched Game:", matchedNameField, matchedNameClearButton, matchedNameBrowseButton, lockMatchedNameCheckBox),
                 createMetaFieldPane("Name:", metaNameField, lockNameCheckBox),
+                createMetaFieldPane("Sort Name:", metaSortNameField, lockSortNameCheckBox),
                 createMetaFieldPane("Description:", metaDescArea, lockDescCheckBox),
                 createMetaFieldPane("Rating:", metaRatingField, lockRatingCheckBox),
                 createMetaFieldPane("Relase Date:", metaReleaseDateField, lockReleaseDateCheckBox),
@@ -1249,6 +1253,7 @@ public class ScraperFX extends Application {
     private void clearCurrentGameFields() {
         matchedNameField.clear();
         metaNameField.clear();
+        metaSortNameField.clear();
         metaDescArea.clear();
         metaRatingField.clear();
         metaReleaseDateField.clear();
@@ -1263,6 +1268,7 @@ public class ScraperFX extends Application {
         
         lockMatchedNameCheckBox.setSelected(false);
         lockNameCheckBox.setSelected(false);
+        lockSortNameCheckBox.setSelected(false);
         lockDescCheckBox.setSelected(false);
         lockRatingCheckBox.setSelected(false);
         lockReleaseDateCheckBox.setSelected(false);
@@ -1283,6 +1289,7 @@ public class ScraperFX extends Application {
             lockMatchedNameCheckBox.setSelected(g.strength == Game.MatchStrength.LOCKED);
             if(g.metadata != null) {
                 metaNameField.setText(g.metadata.metaName);
+                metaSortNameField.setText(g.metadata.metaSortName);
                 metaDescArea.setText(g.metadata.metaDesc);
                 metaRatingField.setText(g.metadata.metaRating);
                 metaReleaseDateField.setText(g.metadata.metaReleaseDate);
@@ -1296,6 +1303,8 @@ public class ScraperFX extends Application {
 
                 lockNameCheckBox.setSelected(g.metadata.lockName);
                 metaNameField.setEditable(!g.metadata.lockName);
+                lockSortNameCheckBox.setSelected(g.metadata.lockSortName);
+                metaSortNameField.setEditable(!g.metadata.lockSortName);
                 lockDescCheckBox.setSelected(g.metadata.lockDesc);
                 metaDescArea.setEditable(!g.metadata.lockDesc);
                 lockRatingCheckBox.setSelected(g.metadata.lockRating);

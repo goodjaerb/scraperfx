@@ -294,7 +294,7 @@ public class ESOutput {
                                     if(g.metadata.metaSortName != null && !g.metadata.metaSortName.isEmpty()) {
                                         writer.append("\t\t<sortname>" + g.metadata.metaSortName + "</sortname>\n");
                                     }
-                                    if(g.metadata.metaDesc != null)         writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
+                                    if(g.metadata.metaDesc != null && !g.metadata.metaDesc.isEmpty())         writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
                                     if(g.metadata.metaReleaseDate != null && !g.metadata.metaReleaseDate.isEmpty()) {
                                         final int dateLength = g.metadata.metaReleaseDate.length();
                                         if(dateLength == 4 || dateLength == 5) {
@@ -306,13 +306,13 @@ public class ESOutput {
                                             writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate.substring(6) + g.metadata.metaReleaseDate.substring(0, 2) + g.metadata.metaReleaseDate.substring(3, 5) + "T000000</releasedate>\n");
                                         }
                                     }
-                                    if(g.metadata.metaDeveloper != null)    writer.append("\t\t<developer>" + g.metadata.metaDeveloper + "</developer>\n");
-                                    if(g.metadata.metaPublisher != null)    writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
-                                    if(g.metadata.metaGenre != null)        writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");
-                                    if(g.metadata.players != null)          writer.append("\t\t<players>" + g.metadata.players + "</players>\n");
+                                    if(g.metadata.metaDeveloper != null && !g.metadata.metaDeveloper.isEmpty() && !"<generic>".equals(g.metadata.metaDeveloper))    writer.append("\t\t<developer>" + g.metadata.metaDeveloper.replace("<unknown> / ", "") + "</developer>\n");
+                                    if(g.metadata.metaPublisher != null && !g.metadata.metaPublisher.isEmpty())     writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
+                                    if(g.metadata.metaGenre != null && !g.metadata.metaGenre.isEmpty())             writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");
+                                    if(g.metadata.players != null && !g.metadata.players.isEmpty())                 writer.append("\t\t<players>" + g.metadata.players + "</players>\n");
                                     if(g.metadata.favorite)                 writer.append("\t\t<favorite>true</favorite>\n");
                                     
-                                    if(g.metadata.videodownload != null && downloadVideosCheckBox.isSelected()) {
+                                    if(g.metadata.videodownload != null && !g.metadata.videodownload.isEmpty() && downloadVideosCheckBox.isSelected()) {
                                         Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Downloading video for ''{0}''.", g);
                                         if(ScraperFX.saveVideo(videoPath, g.fileName + "_video.mp4", g.metadata.videodownload)) {
                                             Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Video downloaded.");

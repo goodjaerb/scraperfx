@@ -175,6 +175,7 @@ public class ScraperFX extends Application {
     private final CheckBox              hideLockedCheckBox = new CheckBox("Hide Locked Items");
     private final CheckBox              showOnlyLockedCheckBox = new CheckBox("Show Only Locked Items");
     private final CheckBox              showOnlyMissingScreenScraperIdCheckBox = new CheckBox("Missing ScreenScraper ID");
+    private final CheckBox              showOnlyFavoritesCheckBox = new CheckBox("Show Only Favorites");
     private final TextField             filterField = new TextField();
     private final ObservableList<Game>  observableGamesList = FXCollections.observableArrayList();
     private final SortedList<Game>      sortedGamesList = new SortedList<>(observableGamesList);
@@ -497,6 +498,28 @@ public class ScraperFX extends Application {
             gamesListView.refresh();
         });
         
+        final MenuItem setFavoriteTrueItem = new MenuItem("Set Favorite TRUE");
+        setFavoriteTrueItem.setOnAction((e) -> {
+            final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            selectedGames.forEach((g) -> {
+                if(getGame(g).metadata != null) {
+                    getGame(g).metadata.favorite = true;
+                }
+            });
+            gamesListView.refresh();
+        });
+        
+        final MenuItem setFavoriteFalseItem = new MenuItem("Set Favorite FALSE");
+        setFavoriteFalseItem.setOnAction((e) -> {
+            final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
+            selectedGames.forEach((g) -> {
+                if(getGame(g).metadata != null) {
+                    getGame(g).metadata.favorite = false;
+                }
+            });
+            gamesListView.refresh();
+        });
+        
         final MenuItem scanGamesItem = new MenuItem("Scan Selected Game(s)");
         scanGamesItem.setOnAction((e) -> {
             final List<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
@@ -536,7 +559,7 @@ public class ScraperFX extends Application {
             }
         });
         
-        gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem, unignoreItem, scanGamesItem));
+        gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem, unignoreItem, setFavoriteTrueItem, setFavoriteFalseItem, scanGamesItem));
         
         sortByMetaNameRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue) {
@@ -568,6 +591,10 @@ public class ScraperFX extends Application {
         });
         
         showOnlyMissingScreenScraperIdCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            filteredGamesList.setPredicate(buildFilterPredicate());
+        });
+        
+        showOnlyFavoritesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             filteredGamesList.setPredicate(buildFilterPredicate());
         });
         
@@ -667,7 +694,7 @@ public class ScraperFX extends Application {
         
         final VBox filterBox = new VBox();
         filterBox.setSpacing(7.);
-        filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, hideLockedCheckBox, showOnlyLockedCheckBox, showOnlyMissingScreenScraperIdCheckBox);
+        filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, hideLockedCheckBox, showOnlyLockedCheckBox, showOnlyMissingScreenScraperIdCheckBox, showOnlyFavoritesCheckBox);
         
         final HBox topBox = new HBox();
         topBox.setSpacing(7.);
@@ -952,7 +979,8 @@ public class ScraperFX extends Application {
                 getFilterTextPredicate(filterField.getText())).and(
                 getHideLockedPredicate()).and(
                 getShowOnlyLockedPredicate()).and(
-                getShowOnlyMissingScreenScraperIdPredicate());
+                getShowOnlyMissingScreenScraperIdPredicate()).and(
+                getShowOnlyFavoriatesIdPredicate());
     }
     
     private Predicate<Game> getHideIgnoredPredicate() {
@@ -1003,6 +1031,17 @@ public class ScraperFX extends Application {
         if(showOnlyMissingScreenScraperIdCheckBox.isSelected()) {
             return (game) -> {
                 return game.metadata == null || game.metadata.screenScraperId == null || game.metadata.screenScraperId.isEmpty();
+            };
+        }
+        return (game) -> {
+            return true;
+        };
+    }
+    
+    private Predicate<Game> getShowOnlyFavoriatesIdPredicate() {
+        if(showOnlyFavoritesCheckBox.isSelected()) {
+            return (game) -> {
+                return game.metadata != null && game.metadata.favorite;
             };
         }
         return (game) -> {

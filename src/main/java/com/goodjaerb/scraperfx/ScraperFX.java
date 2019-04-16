@@ -1439,7 +1439,7 @@ public class ScraperFX extends Application {
         systemList.getItems().clear();
         settings.systems.forEach(system -> systemList.getItems().add(system.name));
         if(selectAfter == null) {
-            systemList.getSelectionModel().select(0);
+            systemList.getSelectionModel().clearAndSelect(0);
         }
         else {
             systemList.getSelectionModel().select(selectAfter);

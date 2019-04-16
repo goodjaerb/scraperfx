@@ -5,6 +5,10 @@
  */
 package com.goodjaerb.scraperfx.datasource;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author goodjaerb
@@ -27,16 +31,28 @@ public class DataSourceFactory {
         
         DataSource getDataSource() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
             if(dataSource == null) {
-                final Class c = Class.forName(className);
-                dataSource = (DataSource)c.newInstance();
+                final Class<?> c = Class.forName(className);
+                try {
+                    dataSource = (DataSource)c.getDeclaredConstructor().newInstance();
+                }
+                catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
+                    Logger.getLogger(DataSourceFactory.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
             }
             return dataSource;
         }
         
         <T extends DataSource> T getDataSource(Class<T> clazz) throws InstantiationException, ClassNotFoundException, IllegalAccessException {
             if(dataSource == null) {
-                final Class c = Class.forName(className);
-                dataSource = (DataSource)c.newInstance();
+                final Class<?> c = Class.forName(className);
+                try {
+                    dataSource = (DataSource)c.getDeclaredConstructor().newInstance();
+                }
+                catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
+                    Logger.getLogger(DataSourceFactory.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
             }
             return clazz.cast(dataSource);
         }

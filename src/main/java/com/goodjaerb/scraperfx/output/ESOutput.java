@@ -5,7 +5,9 @@
  */
 package com.goodjaerb.scraperfx.output;
 
-import com.goodjaerb.scraperfx.QueuedMessageBox;
+import com.goodjaerb.scraperfx.ScraperFX;
+import com.goodjaerb.scraperfx.settings.Game;
+import com.goodjaerb.scraperfx.settings.Image;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -27,15 +29,12 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import com.goodjaerb.scraperfx.ScraperFX;
-import com.goodjaerb.scraperfx.settings.Game;
-import com.goodjaerb.scraperfx.settings.Image;
-import java.util.function.Consumer;
 import javafx.stage.Window;
 
 /**
@@ -114,7 +113,8 @@ public class ESOutput {
         private final Button            startButton = new Button("Start");
         private final Button            cancelButton = new Button("Cancel");
         private final ProgressBar       progressBar = new ProgressBar();
-        private final QueuedMessageBox  messageArea = new QueuedMessageBox("Press START to begin.\n");
+//        private final QueuedMessageBox  messageArea = new QueuedMessageBox("Press START to begin.\n");
+        private final TextArea          messageArea = new TextArea("Press START to begin.\n");
         
         public OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
             super();
@@ -182,25 +182,31 @@ public class ESOutput {
             tagsBox.getChildren().add(messageArea);
             tagsBox.getChildren().add(buttonBox);
             
-            final OutputTask task = new OutputTask(message -> messageArea.queueMessage(message), games, outputPath, imagesPath, videoPath);
+            final OutputTask task = new OutputTask(games, outputPath, imagesPath, videoPath);
+            
+            task.messageProperty().addListener((observable, oldValue, newValue) -> {
+                messageArea.appendText("\n" + newValue);
+            });
 
             task.progressProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                 progressBar.setProgress((double)newValue);
             });
 
             task.setOnSucceeded((e) -> {
-                messageArea.queueMessage("Output complete!");
+//                messageArea.queueMessage("Output complete!");
+                messageArea.appendText("Output complete!");
                 cancelButton.setText("Close");
             });
 
             task.setOnCancelled((e) -> {
-                messageArea.queueMessage("Output cancelled!");
+                messageArea.appendText("Output cancelled!");
+//                messageArea.queueMessage("Output cancelled!");
                 cancelButton.setText("Close");
             });
                 
             startButton.setOnAction((e) -> {
                 startButton.setDisable(true);
-                messageArea.start();
+//                messageArea.start();
                 final Thread t = new Thread(task);
 //                t.setDaemon(true);
                 t.start();
@@ -216,7 +222,7 @@ public class ESOutput {
             });
             
             setOnHidden((e) -> {
-                messageArea.stop();
+//                messageArea.stop();
                 task.cancel();
             });
 
@@ -235,15 +241,15 @@ public class ESOutput {
             private final Path imagesPath;
             private final Path videoPath;
             
-            private final Consumer<String> messageConsumer;
+//            private final Consumer<String> messageConsumer;
 
-            public OutputTask(Consumer<String> messageConsumer, List<Game> games, Path outputPath, Path imagesPath, Path videoPath) {
+            public OutputTask(List<Game> games, Path outputPath, Path imagesPath, Path videoPath) {
                 this.games = games;
                 this.outputPath = outputPath.resolve("gamelist.xml");
                 this.imagesPath = imagesPath;
                 this.videoPath = videoPath;
                 
-                this.messageConsumer = messageConsumer;
+//                this.messageConsumer = messageConsumer;
             }
 
             @Override
@@ -319,6 +325,10 @@ public class ESOutput {
                                             writer.append("\t\t<video>./videos/" + g.fileName + "_video.mp4</video>\n");
                                         }
                                     }
+                                    
+                                    if(g.metadata.videoembed != null && !g.metadata.videoembed.isEmpty()) {
+                                        writer.append("\t\t<videoEmbed>" + g.metadata.videoembed + "</videoEmbed>\n");
+                                    }
 
                                     if(g.metadata.images != null && !g.metadata.images.isEmpty()) {
                                         for(int i = 0; i < esTags.size(); i++) {
@@ -366,7 +376,8 @@ public class ESOutput {
                                 }
 
                                 writer.append("\t</game>\n");
-                                messageConsumer.accept("Completed " + g.fileName + " output to gamelist.xml");
+                                updateMessage("Completed " + g.fileName + " output to gamelist.xml");
+//                                messageConsumer.accept("Completed " + g.fileName + " output to gamelist.xml");
                             }
                             updateProgress(++fileCount, games.size());
                         }

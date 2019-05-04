@@ -22,6 +22,7 @@ import com.goodjaerb.scraperfx.settings.SystemSettings;
 import com.google.gson.Gson;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -31,6 +32,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -236,13 +238,11 @@ public class ScraperFX extends Application {
         /*
         * Settings Tab
         */
-        scrapeAsConsoleButton.setOnAction((e) -> {
+        final EventHandler<ActionEvent> actionEventEventHandler = (e) -> {
             scrapeAsArcadeSetup(scrapeAsArcadeButton.isSelected());
-        });
-
-        scrapeAsArcadeButton.setOnAction((e) -> {
-            scrapeAsArcadeSetup(scrapeAsArcadeButton.isSelected());
-        });
+        };
+        scrapeAsConsoleButton.setOnAction(actionEventEventHandler);
+        scrapeAsArcadeButton.setOnAction(actionEventEventHandler);
         
         arcadeScraperBox.getItems().addAll(SourceAgent.ARCADE_ITALIA, SourceAgent.MAMEDB);
         arcadeScraperBox.getSelectionModel().select(SourceAgent.ARCADE_ITALIA);
@@ -390,9 +390,7 @@ public class ScraperFX extends Application {
             }
         });
         
-        gamesListView.addEventHandler(KeyEvent.KEY_TYPED, (e) -> {
-            filterField.appendText(e.getCharacter());
-        });
+        gamesListView.addEventHandler(KeyEvent.KEY_TYPED, (e) -> filterField.appendText(e.getCharacter()));
         
         final MenuItem lockGamesItem = new MenuItem("Lock");
         lockGamesItem.setOnAction((e) -> {
@@ -445,8 +443,9 @@ public class ScraperFX extends Application {
         setFavoriteTrueItem.setOnAction((e) -> {
             final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.forEach((g) -> {
-                if(getGame(g).metadata != null) {
-                    getGame(g).metadata.favorite = true;
+                final Game foundGame = getGame(g);
+                if(foundGame.metadata != null) {
+                    foundGame.metadata.favorite = true;
                 }
             });
             gamesListView.refresh();
@@ -455,11 +454,7 @@ public class ScraperFX extends Application {
         final MenuItem setFavoriteFalseItem = new MenuItem("Set Favorite FALSE");
         setFavoriteFalseItem.setOnAction((e) -> {
             final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
-            selectedGames.forEach((g) -> {
-                if(getGame(g).metadata != null) {
-                    getGame(g).metadata.favorite = false;
-                }
-            });
+            selectedGames.stream().map(this::getGame).filter(foundGame -> foundGame.metadata != null).forEach(foundGame -> foundGame.metadata.favorite = false);
             gamesListView.refresh();
         });
         
@@ -494,11 +489,9 @@ public class ScraperFX extends Application {
                     scanTask = new SequentialConsoleScanTask(gamesPath, selectedGames);
 //                    scanTask = new ForkJoinConsoleScanTask(gamesPath, selectedGames);
                 }
-                
-                if(scanTask != null) {
-                    ScanProgressDialog scanProgressDialog = new ScanProgressDialog(gamesPath, selectedGames, gamesListView.getScene().getWindow());
-                    scanProgressDialog.showAndWait();
-                }
+
+                ScanProgressDialog scanProgressDialog = new ScanProgressDialog(gamesPath, selectedGames, gamesListView.getScene().getWindow());
+                scanProgressDialog.showAndWait();
             }
         });
         
@@ -516,34 +509,16 @@ public class ScraperFX extends Application {
             }
         });
         sortByMetaNameRadioButton.setSelected(true);
-        
-        hideIgnoredCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(buildFilterPredicate());
-        });
-        
-        showOnlyNonMatchedCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(buildFilterPredicate());
-        });
-        
-        hideLockedCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(buildFilterPredicate());
-        });
-        
-        showOnlyLockedCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(buildFilterPredicate());
-        });
-        
-        showOnlyMissingScreenScraperIdCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(buildFilterPredicate());
-        });
-        
-        showOnlyFavoritesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(buildFilterPredicate());
-        });
-        
-        filterField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredGamesList.setPredicate(buildFilterPredicate());
-        });
+
+        ChangeListener<Boolean> booleanChangeListener = (observable, oldValue, newValue) -> filteredGamesList.setPredicate(buildFilterPredicate());
+        hideIgnoredCheckBox.selectedProperty().addListener(booleanChangeListener);
+        showOnlyNonMatchedCheckBox.selectedProperty().addListener(booleanChangeListener);
+        hideLockedCheckBox.selectedProperty().addListener(booleanChangeListener);
+        showOnlyLockedCheckBox.selectedProperty().addListener(booleanChangeListener);
+        showOnlyMissingScreenScraperIdCheckBox.selectedProperty().addListener(booleanChangeListener);
+        showOnlyFavoritesCheckBox.selectedProperty().addListener(booleanChangeListener);
+
+        filterField.textProperty().addListener((observable, oldValue, newValue) -> filteredGamesList.setPredicate(buildFilterPredicate()));
         
         filterField.addEventHandler(KeyEvent.KEY_PRESSED, (e) -> {
             if(e.getCode() == KeyCode.ESCAPE) {
@@ -601,11 +576,14 @@ public class ScraperFX extends Application {
         lockRatingCheckBox.setOnAction((e) ->           lockMetaField(metaRatingField, MetaDataId.RATING, currentGame.metadata, lockRatingCheckBox.isSelected()));
         lockReleaseDateCheckBox.setOnAction((e) ->      lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, lockReleaseDateCheckBox.isSelected()));
         lockPlayersCheckBox.setOnAction((e) ->          lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, lockPlayersCheckBox.isSelected()));
-        lockImagesCheckBox.setOnAction((e) -> {         currentGame.metadata.lockImages = lockImagesCheckBox.isSelected(); });
+        lockImagesCheckBox.setOnAction((e) ->           currentGame.metadata.lockImages = lockImagesCheckBox.isSelected());
         lockScreenScraperIdCheckBox.setOnAction((e) ->  lockMetaField(screenScraperIdField, MetaDataId.SCREEN_SCRAPER_ID, currentGame.metadata, lockScreenScraperIdCheckBox.isSelected()));
         lockVideoEmbedCheckBox.setOnAction((e) ->       lockMetaField(videoEmbedField, MetaDataId.VIDEO_EMBED, currentGame.metadata, lockVideoEmbedCheckBox.isSelected()));
         lockVideoDownloadCheckBox.setOnAction((e) ->    lockMetaField(videoDownloadField, MetaDataId.VIDEO_DOWNLOAD, currentGame.metadata, lockVideoDownloadCheckBox.isSelected()));
-        favoriteCheckBox.setOnAction((e) -> {           currentGame.metadata.favorite = favoriteCheckBox.isSelected(); gamesListView.refresh(); });
+        favoriteCheckBox.setOnAction((e) -> {
+            currentGame.metadata.favorite = favoriteCheckBox.isSelected();
+            gamesListView.refresh();
+        });
         
         final VBox metaBox = new VBox();
         metaBox.getChildren().addAll(
@@ -672,9 +650,7 @@ public class ScraperFX extends Application {
 //            }
 //        });
         
-        saveButton.setOnAction((e) -> {
-            saveAll();
-        });
+        saveButton.setOnAction((e) -> saveAll());
         
         applyDatFileButton.setOnAction((e) -> {
             final File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
@@ -693,9 +669,7 @@ public class ScraperFX extends Application {
                                 return true;
                             }
                             return !element.getRomof().isEmpty() && datFilter.contains(element.getRomof());
-                        }).noneMatch((element) -> {
-                            return filename.equals(element.getName() + ".zip");
-                        })) {
+                        }).noneMatch((element) -> filename.equals(element.getName() + ".zip"))) {
                             game.strength = Game.MatchStrength.IGNORE;
                         }
                     });
@@ -734,7 +708,7 @@ public class ScraperFX extends Application {
         });
         
         outputToGamelistButton.setOnAction((e) -> {
-            Collections.sort(getSystemGameData(), Game.GAME_NAME_COMPARATOR);
+            getSystemGameData().sort(Game.GAME_NAME_COMPARATOR);
             final Window parentWindow = outputToGamelistButton.getScene().getWindow();
             if(outputMediaToUserDirButton.isSelected()) {
                 new ESOutput().output(getSystemGameData(),
@@ -789,8 +763,8 @@ public class ScraperFX extends Application {
             Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        /**
-         * Menu Bar
+        /*
+          Menu Bar
          */
         final MenuItem exitMenuItem = new MenuItem("E_xit");
         exitMenuItem.setOnAction((event) -> {

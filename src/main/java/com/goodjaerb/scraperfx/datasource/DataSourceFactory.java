@@ -15,11 +15,11 @@ import java.util.logging.Logger;
  */
 public class DataSourceFactory {
     public enum SourceAgent {
-        ARCADE_ITALIA("com.goodjaerb.scraperfx.datasource.impl.ArcadeItaliaSource"),
-        MAMEDB("com.goodjaerb.scraperfx.datasource.impl.MameDbSource"),
-        SCREEN_SCRAPER("com.goodjaerb.scraperfx.datasource.impl.ScreenScraper2Source"),
-        THEGAMESDB("com.goodjaerb.scraperfx.datasource.impl.GamesDbPublicSource"),
-        THEGAMESDB_PRIVATE("com.goodjaerb.scraperfx.datasource.impl.GamesDbPrivateSource"),
+        ARCADE_ITALIA("com.goodjaerb.scraperfx.datasource.arcadeitalia.ArcadeItaliaSource"),
+        MAMEDB("com.goodjaerb.scraperfx.datasource.mamedb.MameDbSource"),
+        SCREEN_SCRAPER("com.goodjaerb.scraperfx.datasource.screenscraper.ScreenScraper2Source"),
+        THEGAMESDB("com.goodjaerb.scraperfx.datasource.gamesdb.GamesDbPublicSource"),
+        THEGAMESDB_PRIVATE("com.goodjaerb.scraperfx.datasource.gamesdb.GamesDbPrivateSource"),
         ;
         
         private final String className;

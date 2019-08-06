@@ -8,17 +8,16 @@ package com.goodjaerb.scraperfx.datasource.gamesdb.data;
 import java.util.Collection;
 
 /**
- *
- * @author goodjaerb
  * @param <T>
+ * @author goodjaerb
  */
 public class GamesDbPaginatedData<T> extends GamesDbData<T> {
-    
+
     public void appendData(Collection<T> data) {
-        
+
     }
-    
+
     public Collection<T> values() {
         return null;
-    } 
+    }
 }

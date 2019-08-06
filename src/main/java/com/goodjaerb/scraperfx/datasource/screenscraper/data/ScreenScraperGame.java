@@ -9,45 +9,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author goodjaerb
  */
 public class ScreenScraperGame {
-    public String id;
+    public String         id;
     public List<NameData> noms;
-    public String systemeid;
-    public String systemenom;
-    public List<Media> medias;
-    
+    public String         systemeid;
+    public String         systemenom;
+    public List<Media>    medias;
+
     public static class NameData {
         public String region;
         public String text;
-        
+
         public NameData() {
-            
+
         }
-        
+
         public NameData(String region, String text) {
             this.region = region;
             this.text = text;
         }
     }
-    
+
     public static class Media {
         public String type;
         public String url;
         public String region;
-        
+
         public Media() {
-            
+
         }
-        
+
         public Media(String type, String url, String region) {
             this.type = type;
             this.url = url;
             this.region = region;
         }
-        
+
         public Media(String type, String url) {
             this.type = type;
             this.url = url;
@@ -57,12 +56,12 @@ public class ScreenScraperGame {
     public ScreenScraperGame() {
 
     }
-    
+
     public ScreenScraperGame(ScreenScraperGameV1 game) {
         this.id = game.id;
         this.systemeid = game.systemeid;
         this.systemenom = game.systemenom;
-        
+
         if(game.noms != null) {
             this.noms = new ArrayList<>();
             if(game.noms.nom_ss != null) {
@@ -72,7 +71,7 @@ public class ScreenScraperGame {
                 this.noms.add(new NameData("us", game.noms.nom_us));
             }
         }
-        
+
         if(game.medias != null) {
             this.medias = new ArrayList<>();
             if(game.medias.media_video != null) {
@@ -86,7 +85,7 @@ public class ScreenScraperGame {
             }
         }
     }
-    
+
     @Override
     public String toString() {
         if(noms == null || noms.isEmpty()) {

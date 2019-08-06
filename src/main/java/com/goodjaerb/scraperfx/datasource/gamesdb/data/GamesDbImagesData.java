@@ -6,30 +6,34 @@
 package com.goodjaerb.scraperfx.datasource.gamesdb.data;
 
 import com.google.gson.annotations.Expose;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 /**
- *
  * @author goodjaerb
  */
 public class GamesDbImagesData extends GamesDbPaginatedData<Map<String, List<GamesDbImagesData.Image>>> {
-    @Expose(serialize = true, deserialize = true) public BaseUrl base_url;
-    @Expose(serialize = true, deserialize = true) public Map<String, List<Image>> images;
-    
+    @Expose(serialize = true, deserialize = true)
+    public BaseUrl                  base_url;
+    @Expose(serialize = true, deserialize = true)
+    public Map<String, List<Image>> images;
+
     public static class BaseUrl {
-        @Expose(serialize = true, deserialize = true) public String original;
-        @Expose(serialize = true, deserialize = true) public String small;
-        @Expose(serialize = true, deserialize = true) public String thumb;
-        @Expose(serialize = true, deserialize = true) public String cropped_center_thumb;
-        @Expose(serialize = true, deserialize = true) public String medium;
-        @Expose(serialize = true, deserialize = true) public String large;
-        
+        @Expose(serialize = true, deserialize = true)
+        public String original;
+        @Expose(serialize = true, deserialize = true)
+        public String small;
+        @Expose(serialize = true, deserialize = true)
+        public String thumb;
+        @Expose(serialize = true, deserialize = true)
+        public String cropped_center_thumb;
+        @Expose(serialize = true, deserialize = true)
+        public String medium;
+        @Expose(serialize = true, deserialize = true)
+        public String large;
+
         public BaseUrl() {
-            
+
         }
 
         @Override
@@ -37,16 +41,21 @@ public class GamesDbImagesData extends GamesDbPaginatedData<Map<String, List<Gam
             return "BaseUrl{" + "original=" + original + ", small=" + small + ", thumb=" + thumb + ", cropped_center_thumb=" + cropped_center_thumb + ", medium=" + medium + ", large=" + large + '}';
         }
     }
-    
+
     public static class Image {
-        @Expose(serialize = true, deserialize = true) public int id;
-        @Expose(serialize = true, deserialize = true) public String type;
-        @Expose(serialize = true, deserialize = true) public String side;
-        @Expose(serialize = true, deserialize = true) public String filename;
-        @Expose(serialize = true, deserialize = true) public String resolution;
-        
+        @Expose(serialize = true, deserialize = true)
+        public int    id;
+        @Expose(serialize = true, deserialize = true)
+        public String type;
+        @Expose(serialize = true, deserialize = true)
+        public String side;
+        @Expose(serialize = true, deserialize = true)
+        public String filename;
+        @Expose(serialize = true, deserialize = true)
+        public String resolution;
+
         public Image() {
-            
+
         }
 
         @Override
@@ -54,9 +63,9 @@ public class GamesDbImagesData extends GamesDbPaginatedData<Map<String, List<Gam
             return "Image{" + "id=" + id + ", type=" + type + ", side=" + side + ", filename=" + filename + ", resolution=" + resolution + '}';
         }
     }
-    
+
     public GamesDbImagesData() {
-        
+
     }
 
     @Override
@@ -74,8 +83,8 @@ public class GamesDbImagesData extends GamesDbPaginatedData<Map<String, List<Gam
     /**
      * kind of awkward but going to try this. i need the whole map out of this to associate the game id to the list of images.
      * so this will return a one element collection which is the Map of the values of this data.
-     * 
-     * @return 
+     *
+     * @return
      */
     @Override
     public Collection<Map<String, List<Image>>> values() {

@@ -6,11 +6,10 @@
 package com.goodjaerb.scraperfx;
 
 /**
- *
  * @author steve
  */
 public class Main {
-    
+
     public static void main(String[] args) {
         ScraperFX.main(args);
     }

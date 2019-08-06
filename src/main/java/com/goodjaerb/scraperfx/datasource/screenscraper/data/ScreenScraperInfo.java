@@ -6,21 +6,20 @@
 package com.goodjaerb.scraperfx.datasource.screenscraper.data;
 
 /**
- *
  * @author goodjaerb
  */
 public class ScreenScraperInfo {
     public ScreenScraperResponse response;
-    
+
     public static class ScreenScraperResponse {
         public ScreenScraperGame jeu;
-        
+
         public ScreenScraperResponse() {
-            
+
         }
     }
-    
+
     public ScreenScraperInfo() {
-        
+
     }
 }

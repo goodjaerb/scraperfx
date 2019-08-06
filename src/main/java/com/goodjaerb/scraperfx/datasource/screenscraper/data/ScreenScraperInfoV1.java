@@ -6,17 +6,16 @@
 package com.goodjaerb.scraperfx.datasource.screenscraper.data;
 
 /**
- *
  * @author goodjaerb
  */
 public class ScreenScraperInfoV1 {
     public ScreenScraperResponse response;
-    
+
     public static class ScreenScraperResponse {
         public ScreenScraperGameV1 jeu;
-        
+
         public ScreenScraperResponse() {
-            
+
         }
 
         @Override
@@ -24,9 +23,9 @@ public class ScreenScraperInfoV1 {
             return "ScreenScraperResponse{" + "jeu=" + jeu + '}';
         }
     }
-    
+
     public ScreenScraperInfoV1() {
-        
+
     }
 
     @Override

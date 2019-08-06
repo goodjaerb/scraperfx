@@ -7,36 +7,32 @@ package com.goodjaerb.scraperfx.datasource.screenscraper;
 
 import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
+import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
 import com.goodjaerb.scraperfx.datasource.screenscraper.data.ScreenScraperGame;
 import com.goodjaerb.scraperfx.datasource.screenscraper.data.ScreenScraperInfoV1;
 import com.goodjaerb.scraperfx.datasource.screenscraper.data.ScreenScraperSearchResults;
 import com.goodjaerb.scraperfx.datasource.screenscraper.data.ScreenScraperSystemIdMap;
-import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author goodjaerb
  */
 public class ScreenScraper2Source extends CustomHttpDataSource {
-    public static final String                  SOURCE_NAME = "Screen Scraper v2 (screenscraper.fr)";
-    
-    private static final String                 API_BASE_URL = "https://www.screenscraper.fr/";
-    private static final String                 API_V1 = "api/";
-    private static final String                 API_V2 = "api2/";
-    private static final String                 API_INFO = "jeuInfos.php"; // v1 & v2.
-    private static final String                 API_SEARCH = "jeuRecherche.php"; //v2 only.
-    private static final Map<String, String>    DEFAULT_PARAMS;
-    
+    public static final String SOURCE_NAME = "Screen Scraper v2 (screenscraper.fr)";
+
+    private static final String              API_BASE_URL = "https://www.screenscraper.fr/";
+    private static final String              API_V1       = "api/";
+    private static final String              API_V2       = "api2/";
+    private static final String              API_INFO     = "jeuInfos.php"; // v1 & v2.
+    private static final String              API_SEARCH   = "jeuRecherche.php"; //v2 only.
+    private static final Map<String, String> DEFAULT_PARAMS;
+
 //    public enum MetaDataKey {
 //        ID,
 //        NAME,
@@ -46,17 +42,17 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
 //        BOX_WORLD,
 //        SCREENSHOT;
 //    }
-    
+
     static {
         final Map<String, String> initialParams = new HashMap<>();
         initialParams.put("devid", ScraperFX.getKeysValue("ScreenScraper.ID"));
         initialParams.put("devpassword", ScraperFX.getKeysValue("ScreenScraper.KEY"));
         initialParams.put("softname", "scraperfx");
         initialParams.put("output", "json");
-        
+
         DEFAULT_PARAMS = Collections.unmodifiableMap(initialParams);
     }
-    
+
 //    private String crcCalc(Path filePath) throws IOException {
 //        try(final InputStream inputStream = new BufferedInputStream(Files.newInputStream(filePath))) {
 //            final CRC32 crc = new CRC32();
@@ -72,13 +68,13 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
 //            return crcString;
 //        }
 //    }
-    
+
     @Override
     public String getSourceName() {
         return SOURCE_NAME;
     }
-    
-//    private long lastCheckTime = 0L;
+
+    //    private long lastCheckTime = 0L;
     private List<ScreenScraperGame> getSearchResults(String systemName, Game game, boolean forceUpdate) {
 //        if(System.nanoTime() - lastCheckTime > TimeUnit.SECONDS.toNanos(5)) {
 //            try {
@@ -97,7 +93,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
         params.put("systemeid", Integer.toString(sysId));
         params.put("recherche", game.matchedName);
-        
+
         try {
 //            lastCheckTime = System.nanoTime();
             final ScreenScraperSearchResults results = getData(new JsonDataSourcePlugin<>(ScreenScraperSearchResults.class), API_BASE_URL + API_V2 + API_SEARCH, params);
@@ -110,13 +106,13 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
                     if(resultsList.get(0).id == null) {
                         return null;
                     }
-                    
+
                     final ScreenScraperGame ssGame = getInfo(resultsList.get(0).systemeid, resultsList.get(0).id, resultsList.get(0).noms.get(0).text);
 //                    final ScreenScraperGame ssGame = resultsList.get(0);
                     if(ssGame == null || ssGame.systemeid == null) {
                         return null;
                     }
-                    
+
                     if(sysId == Integer.parseInt(ssGame.systemeid)) {
                         return Collections.singletonList(ssGame);
 //                        return resultsList;
@@ -125,11 +121,11 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
                 else {
                     for(final ScreenScraperGame ssGame : resultsList) {
                         final ScreenScraperGame fromInfosGame = getInfo(ssGame.systemeid, ssGame.id, ssGame.noms.get(0).text);
-                        
+
                         if(fromInfosGame != null && sysId == Integer.parseInt(fromInfosGame.systemeid)) {
                             if(!forceUpdate
-                                    && game.metadata != null 
-                                    && game.metadata.screenScraperId != null 
+                                    && game.metadata != null
+                                    && game.metadata.screenScraperId != null
                                     && !game.metadata.screenScraperId.isEmpty()
                                     && fromInfosGame.id.equals(game.metadata.screenScraperId)) {
                                 return Collections.singletonList(fromInfosGame);
@@ -150,12 +146,12 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
 //                return games;
             }
         }
-        catch (IOException ex) {
+        catch(IOException ex) {
             Logger.getLogger(ScreenScraper2Source.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
-    
+
     private ScreenScraperGame getInfo(String systemId, String gameId, String gameName) {
         final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
         params.put("romnom", gameName);
@@ -167,7 +163,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
 //        catch (IOException ex) {
 //            Logger.getLogger(ScreenScraperSource.class.getName()).log(Level.WARNING, "Could not calculate CRC of file to assist in identifying on www.screenscraper.fr.", ex);
 //        } // sometimes this causes the query to fail even though it's the actual name. but leaving it out breaks the query too.
-        
+
         try {
             final ScreenScraperInfoV1 info = getData(new JsonDataSourcePlugin<>(ScreenScraperInfoV1.class), API_BASE_URL + API_V1 + API_INFO, params);
             System.out.println("Received result. " + info);
@@ -181,16 +177,16 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         }
         return null;
     }
-    
+
     private ScreenScraperGame getInfo(String systemName, Game game) {//, String gameId, Path filePath) {
         final Integer sysId = ScreenScraperSystemIdMap.getId(systemName);
         if(sysId == null) {
             return null;
         }
-        
+
         return getInfo(Integer.toString(sysId), game.metadata.screenScraperId, game.matchedName);
     }
-    
+
     private List<ScreenScraperGame> getJsonData(String systemName, Game game, boolean forceUpdate) {
         if(!forceUpdate && game.metadata != null && game.metadata.screenScraperId != null && !game.metadata.screenScraperId.isEmpty()) {
             final ScreenScraperGame result = getInfo(systemName, game);
@@ -202,14 +198,14 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         }
         return getSearchResults(systemName, game, forceUpdate);
     }
-    
+
     public List<ScreenScraperGame> getExtraMetaData(String systemName, Game game, boolean forceUpdate) {
         final List<ScreenScraperGame> results = getJsonData(systemName, game, forceUpdate);
-        
+
         if(results != null && !results.isEmpty()) {
             return results;
 //            final List<Map<ScreenScraper2Source.MetaDataKey, String>> returnList = new ArrayList<>();
-            
+
 //            for(ScreenScraperGame result : results) {
 //                final Map<MetaDataKey, String> metaDataMap = new HashMap<>();
 //
@@ -252,7 +248,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         }
         return null;
     }
-    
+
     @Override
     public List<String> getSystemNames() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

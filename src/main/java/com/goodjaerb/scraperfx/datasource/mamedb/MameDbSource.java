@@ -5,6 +5,11 @@
  */
 package com.goodjaerb.scraperfx.datasource.mamedb;
 
+import com.goodjaerb.scraperfx.datasource.HttpDataSource;
+import com.goodjaerb.scraperfx.settings.Game;
+import com.goodjaerb.scraperfx.settings.Image;
+import com.goodjaerb.scraperfx.settings.MetaData;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,24 +18,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.goodjaerb.scraperfx.datasource.HttpDataSource;
-import com.goodjaerb.scraperfx.settings.Game;
-import com.goodjaerb.scraperfx.settings.Image;
-import com.goodjaerb.scraperfx.settings.MetaData;
 
 /**
- *
  * @author goodjaerb
  */
 public class MameDbSource extends HttpDataSource {
 
     private static final String BASE_URL = "http://mamedb.blu-ferret.co.uk/";
-    
+
     @Override
     public String getSourceName() {
         return "MameDB (mamedb.org)";
     }
-    
+
     @Override
     public List<String> getSystemNames() {
         throw new UnsupportedOperationException("Not supported.");
@@ -40,13 +40,13 @@ public class MameDbSource extends HttpDataSource {
     public List<String> getSystemGameNames(String systemName) {
         throw new UnsupportedOperationException("Not supported.");
     }
-    
+
     @Override
     public MetaData getMetaData(String systemName, Game game) {
         final MetaData data = new MetaData();
 
         final String url = BASE_URL + "game/" + game.matchedName;
-        
+
         try(final BufferedReader reader = getReader(url)) {
             if(reader != null) {
                 String result = "";
@@ -80,10 +80,10 @@ public class MameDbSource extends HttpDataSource {
                 return data;
             }
         }
-        catch (IOException ex) {
+        catch(IOException ex) {
             Logger.getLogger(MameDbSource.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return null;
     }
 }

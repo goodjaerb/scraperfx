@@ -6,46 +6,42 @@
 package com.goodjaerb.scraperfx.datasource.arcadeitalia;
 
 import com.goodjaerb.scraperfx.datasource.CustomHttpDataSource;
-import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
 import com.goodjaerb.scraperfx.datasource.arcadeitalia.data.ArcadeItaliaData;
+import com.goodjaerb.scraperfx.datasource.plugin.JsonDataSourcePlugin;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
 import com.goodjaerb.scraperfx.settings.MetaData;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author goodjaerb
  */
 public class ArcadeItaliaSource extends CustomHttpDataSource {
-//    private static final String HTTP_CONTENT_LANGUAGE_PROP = "Accept-Language";
+    //    private static final String HTTP_CONTENT_LANGUAGE_PROP = "Accept-Language";
 //    private static final String HTTP_CONTENT_LANGUAGE_VALUE = "en";
-    private static final String                 SOURCE_NAME = "Arcade Italia (adb.arcadeitalia.net)";
-    private static final String                 API_URL = "http://adb.arcadeitalia.net/service_scraper.php";//?ajax=query_mame&lang=en&game_name=";
-    private static final Map<String, String>    DEFAULT_PARAMS;
-    private static final String                 GAME_NAME_PARAM = "game_name";
-    
+    private static final String              SOURCE_NAME     = "Arcade Italia (adb.arcadeitalia.net)";
+    private static final String              API_URL         = "http://adb.arcadeitalia.net/service_scraper.php";//?ajax=query_mame&lang=en&game_name=";
+    private static final Map<String, String> DEFAULT_PARAMS;
+    private static final String              GAME_NAME_PARAM = "game_name";
+
     static {
         final Map<String, String> initialMap = new HashMap<>();
         initialMap.put("ajax", "query_mame");
         initialMap.put("lang", "en");
-        
+
         DEFAULT_PARAMS = Collections.unmodifiableMap(initialMap);
     }
-    
+
 
     @Override
     public String getSourceName() {
         return SOURCE_NAME;
     }
-    
+
     @Override
     public List<String> getSystemNames() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -61,7 +57,7 @@ public class ArcadeItaliaSource extends CustomHttpDataSource {
         try {
             final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
             params.put(GAME_NAME_PARAM, game.matchedName);
-            
+
             final ArcadeItaliaData data = getData(new JsonDataSourcePlugin<>(ArcadeItaliaData.class), API_URL, params);
             if(data != null && data.result != null && data.result.length > 0) {
                 final MetaData metadata = new MetaData();
@@ -70,7 +66,7 @@ public class ArcadeItaliaSource extends CustomHttpDataSource {
                 metadata.metaGenre = data.result[0].genre;
                 metadata.metaReleaseDate = data.result[0].year;
                 metadata.metaDeveloper = data.result[0].manufacturer;
-                
+
                 if(notNullNorEmpty(data.result[0].youtube_video_id)) {
                     metadata.videoembed = "https://www.youtube.com/embed/" + data.result[0].youtube_video_id;
                 }
@@ -93,13 +89,13 @@ public class ArcadeItaliaSource extends CustomHttpDataSource {
                 return metadata;
             }
         }
-        catch (IOException ex) {
+        catch(IOException ex) {
             Logger.getLogger(ArcadeItaliaSource.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return null;
     }
-    
+
     private boolean notNullNorEmpty(String s) {
         return s != null && !s.isEmpty();
     }

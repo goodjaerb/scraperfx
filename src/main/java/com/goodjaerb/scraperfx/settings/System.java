@@ -5,46 +5,46 @@
  */
 package com.goodjaerb.scraperfx.settings;
 
-import java.util.Objects;
 import org.xmappr.annotation.Attribute;
 import org.xmappr.annotation.Element;
 import org.xmappr.annotation.RootElement;
 
+import java.util.Objects;
+
 /**
- *
  * @author goodjaerb
  */
 @RootElement
 public class System implements Comparable<System> {
-    
+
     @Attribute
     public String name;
-    
+
     @Attribute
     public String scrapeAs;
-    
+
     @Attribute
     public Boolean unmatchedOnly;
-    
+
     @Attribute
     public Boolean scrapeAsArcade;
-    
+
     @Element
     public String romsDir;
-    
+
     @Element
     public String substringRegex;
-    
+
     @Element
     public String ignoreRegex;
-    
+
     @Element
     public String datFilter;
-    
+
     public System() {
         this("");
     }
-    
+
     public System(String name) {
         this.name = name;
         this.scrapeAsArcade = false;
@@ -52,7 +52,7 @@ public class System implements Comparable<System> {
         this.romsDir = "";
         this.unmatchedOnly = false;
     }
-    
+
     public System(System sys) {
         this.name = sys.name;
         this.scrapeAsArcade = sys.scrapeAsArcade;
@@ -60,7 +60,7 @@ public class System implements Comparable<System> {
         this.romsDir = sys.romsDir;
         this.unmatchedOnly = sys.unmatchedOnly;
     }
-    
+
     @Override
     public int compareTo(System o) {
         return name.compareTo(o.name);

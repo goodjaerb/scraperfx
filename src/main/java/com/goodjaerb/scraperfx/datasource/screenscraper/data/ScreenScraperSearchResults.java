@@ -9,21 +9,20 @@ import java.util.List;
  */
 
 /**
- *
  * @author goodjaerb
  */
 public class ScreenScraperSearchResults {
     public ScreenScraperResponse response;
-    
+
     public static class ScreenScraperResponse {
         public List<ScreenScraperGame> jeux;
-        
+
         public ScreenScraperResponse() {
-            
+
         }
     }
-    
+
     public ScreenScraperSearchResults() {
-        
+
     }
 }

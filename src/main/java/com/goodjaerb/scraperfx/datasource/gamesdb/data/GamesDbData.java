@@ -5,18 +5,17 @@
  */
 package com.goodjaerb.scraperfx.datasource.gamesdb.data;
 
-import com.goodjaerb.scraperfx.datasource.gamesdb.GamesDbSourceBase;
 import com.google.gson.annotations.Expose;
 
 /**
- *
- * @author goodjaerb
  * @param <T>
+ * @author goodjaerb
  */
 public class GamesDbData<T> {
-    
-    @Expose(serialize = false, deserialize = true) public int count;
-    
+
+    @Expose(serialize = false, deserialize = true)
+    public int count;
+
     public boolean isDataAvailable() {
         return false;
     }

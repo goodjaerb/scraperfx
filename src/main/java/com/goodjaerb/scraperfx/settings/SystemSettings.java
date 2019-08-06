@@ -5,38 +5,38 @@
  */
 package com.goodjaerb.scraperfx.settings;
 
+import org.xmappr.annotation.Element;
+import org.xmappr.annotation.RootElement;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
-import org.xmappr.annotation.Element;
-import org.xmappr.annotation.RootElement;
 
 /**
- *
  * @author goodjaerb
  */
 @RootElement(name = "system-settings")
 public class SystemSettings {
-    
+
     @Element(name = "system")
     public Collection<System> systems;
-    
+
     public SystemSettings() {
         systems = new TreeSet<>();
     }
-    
+
     public void renameSystem(String oldName, String newName) {
         System oldSys = get(oldName);
         if(oldSys != null) {
             systems.remove(oldSys);
-            
+
             System newSystem = new System(oldSys);
             newSystem.name = newName;
             systems.add(newSystem);
         }
     }
-    
+
     public System get(String systemName) {
         System temp = new System(systemName);
         if(systems.contains(temp)) {
@@ -45,7 +45,7 @@ public class SystemSettings {
         }
         return null;
     }
-    
+
     private List<System> asList() {
         return Arrays.asList(systems.toArray(new System[0]));
     }

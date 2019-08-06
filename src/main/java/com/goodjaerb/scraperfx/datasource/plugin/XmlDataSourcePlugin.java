@@ -5,24 +5,24 @@
  */
 package com.goodjaerb.scraperfx.datasource.plugin;
 
-import java.io.BufferedReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.xmappr.Xmappr;
 import org.xmappr.XmapprException;
 
+import java.io.BufferedReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- *
- * @author goodjaerb
  * @param <T>
+ * @author goodjaerb
  */
 public class XmlDataSourcePlugin<T> implements DataSourcePlugin<T> {
     private final Class<T> dataClass;
-    
+
     public XmlDataSourcePlugin(Class<T> dataClass) {
         this.dataClass = dataClass;
     }
-    
+
     @Override
     public T convert(BufferedReader reader) {
         try {

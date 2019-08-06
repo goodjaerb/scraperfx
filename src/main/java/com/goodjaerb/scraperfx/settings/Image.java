@@ -8,41 +8,40 @@ package com.goodjaerb.scraperfx.settings;
 import java.util.Objects;
 
 /**
- *
  * @author goodjaerb
  */
 public class Image {
     public enum ImageType {
         LOGO("logo", false), BOX_FRONT("box-front", false), BOX_BACK("box-back", false), SCREENSHOT("screenshot", false), FANART("fanart", false),
         GAME("game", true), TITLE("title", true), FLYER("flyer", true), MARQUEE("marquee", true);
-        
-        private final String name;
+
+        private final String  name;
         private final boolean arcadeImage;
-        
+
         ImageType(String s, boolean b) {
             this.name = s;
             this.arcadeImage = b;
         }
-        
+
         public String getName() {
             return name;
         }
-        
+
         public boolean isArcadeImage() {
             return arcadeImage;
         }
     }
-    
-    public String   type;
-    public String   source;
-    public String   url;
-//    public String   targetImageType;
-    public Boolean  selected;
-    
+
+    public String  type;
+    public String  source;
+    public String  url;
+    //    public String   targetImageType;
+    public Boolean selected;
+
     public Image() {
         selected = false;
     }
-    
+
 //    public Image(String type, String source, String url, String targetImageType, boolean b) {
 //        this.type = type;
 //        this.source = source;
@@ -50,7 +49,7 @@ public class Image {
 //        this.targetImageType = targetImageType;
 //        this.selected = b;
 //    }
-    
+
     public Image(String type, String source, String url, boolean b) {
         this.type = type;
         this.source = source;
@@ -73,17 +72,17 @@ public class Image {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
+        if(this == obj) {
             return true;
         }
-        if (obj == null) {
+        if(obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(getClass() != obj.getClass()) {
             return false;
         }
         final Image other = (Image) obj;
-        if (!Objects.equals(this.type, other.type)) {
+        if(!Objects.equals(this.type, other.type)) {
             return false;
         }
         return Objects.equals(this.url, other.url);

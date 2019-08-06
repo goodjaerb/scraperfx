@@ -6,88 +6,80 @@
 package com.goodjaerb.scraperfx.datasource.gamesdb;
 
 import com.goodjaerb.scraperfx.ScraperFX;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbDevelopersData;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbGamesByPlatformData;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbGenresData;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbImagesData;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbPaginatedResult;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbPlatform;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbPlatformsData;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbPublishersData;
-import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbResult;
+import com.goodjaerb.scraperfx.datasource.gamesdb.data.*;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
 import com.goodjaerb.scraperfx.settings.MetaData;
 import com.google.gson.reflect.TypeToken;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 /**
- *
  * @author goodjaerb <goodjaerb@gmail.com>
  */
 public class GamesDbPublicSource extends GamesDbSourceBase {
     private static final Map<String, String> DEFAULT_PARAMS;
-    
+
     static {
         final Map<String, String> initialParams = new HashMap<>();
         initialParams.put("apikey", ScraperFX.getKeysValue("GamesDb.Public"));
-        
+
         DEFAULT_PARAMS = Collections.unmodifiableMap(initialParams);
     }
-    
+
     @Override
     public Map<String, String> getDefaultParams() {
         return DEFAULT_PARAMS;
     }
-    
+
     private void populatePlatformsData() {
         populateCache(
-                CACHED_PLATFORMS_DATA, 
-                new TypeToken<GamesDbResult<GamesDbPlatformsData>>(){}.getType(), 
+                CACHED_PLATFORMS_DATA,
+                new TypeToken<GamesDbResult<GamesDbPlatformsData>>() {
+                }.getType(),
                 GamesDbPlatformsData.class,
-                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PLATFORMS_FILE), 
-                API_BASE_URL + API_GET_PLATFORMS_LIST, 
+                ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PLATFORMS_FILE),
+                API_BASE_URL + API_GET_PLATFORMS_LIST,
                 getDefaultParams());
     }
-    
+
     private void populateGenresData() {
         populateCache(
                 CACHED_GENRES_DATA,
-                new TypeToken<GamesDbResult<GamesDbGenresData>>(){}.getType(),
+                new TypeToken<GamesDbResult<GamesDbGenresData>>() {
+                }.getType(),
                 GamesDbGenresData.class,
                 ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(GENRES_FILE),
                 API_BASE_URL + API_GET_GENRES_LIST,
                 getDefaultParams());
     }
-    
+
     private void populateDevelopersData() {
         populateCache(
                 CACHED_DEVELOPERS_DATA,
-                new TypeToken<GamesDbResult<GamesDbDevelopersData>>(){}.getType(),
+                new TypeToken<GamesDbResult<GamesDbDevelopersData>>() {
+                }.getType(),
                 GamesDbDevelopersData.class,
                 ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(DEVELOPERS_FILE),
                 API_BASE_URL + API_GET_DEVELOPERS_LIST,
                 getDefaultParams());
     }
-    
+
     private void populatePublishersData() {
         populateCache(
                 CACHED_PUBLISHERS_DATA,
-                new TypeToken<GamesDbResult<GamesDbPublishersData>>(){}.getType(),
+                new TypeToken<GamesDbResult<GamesDbPublishersData>>() {
+                }.getType(),
                 GamesDbPublishersData.class,
                 ScraperFX.LOCALDB_PATH.resolve(GAMESDB_LOCAL_DIR).resolve(PUBLISHERS_FILE),
                 API_BASE_URL + API_GET_PUBLISHERS_LIST,
                 getDefaultParams());
     }
-    
+
     @Override
     public List<String> getSystemNames() {
         populatePlatformsData();
-        
+
         if(CACHED_PLATFORMS_DATA.isDataAvailable()) {
             final List<String> systemNames = new ArrayList<>();
             CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> {
@@ -97,10 +89,10 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
         }
         return null;
     }
-    
+
     public List<GamesDbPlatform> getPlatforms() {
         populatePlatformsData();
-        
+
         if(CACHED_PLATFORMS_DATA.isDataAvailable()) {
             final List<GamesDbPlatform> platforms = new ArrayList<>();
             CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> {
@@ -110,7 +102,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
         }
         return null;
     }
-    
+
     private String getPlatformIdForName(String platformName) {
         for(final GamesDbPlatform platform : getPlatforms()) {
             if(platformName.equals(platform.name)) {
@@ -125,7 +117,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
         final String platformId = getPlatformIdForName(systemName);
         if(platformId != null) {
             loadGamesByPlatformCache(platformId);
-            
+
             final GamesDbPaginatedResult<GamesDbGamesByPlatformData> cachedData = CACHED_GAMES_BY_PLATFORM_DATA.get(platformId);
             if(cachedData != null && cachedData.isDataAvailable()) {
                 final List<String> gameNames = new ArrayList<>();
@@ -137,7 +129,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
         }
         return null;
     }
-    
+
     private GamesDbGamesByPlatformData.Game getGame(String platformId, String gameName) {
         for(final GamesDbGamesByPlatformData.Game game : CACHED_GAMES_BY_PLATFORM_DATA.get(platformId).data.games) {
             if(gameName.equals(game.game_title)) {
@@ -151,39 +143,39 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
     public MetaData getMetaData(String systemName, Game game) {
         final String platformId = getPlatformIdForName(systemName);
         loadGamesByPlatformCache(platformId);
-        
+
         final GamesDbGamesByPlatformData.Game g = getGame(platformId, game.matchedName);
         if(g != null) {
             final MetaData data = new MetaData();
-            
-            data.metaReleaseDate    = g.release_date;
-            data.metaRating         = g.rating;
-            data.metaPublisher      = publishersToString(g.publishers);
-            data.metaName           = g.game_title;
-            data.metaDeveloper      = developersToString(g.developers);
-            data.metaDesc           = g.overview;
-            data.players            = g.players == null ? "" : g.players.toString();
-            data.metaGenre          = genresToString(g.genres);
-            data.images             = convertImages(platformId, g.id.toString());
-            
+
+            data.metaReleaseDate = g.release_date;
+            data.metaRating = g.rating;
+            data.metaPublisher = publishersToString(g.publishers);
+            data.metaName = g.game_title;
+            data.metaDeveloper = developersToString(g.developers);
+            data.metaDesc = g.overview;
+            data.players = g.players == null ? "" : g.players.toString();
+            data.metaGenre = genresToString(g.genres);
+            data.images = convertImages(platformId, g.id.toString());
+
             return data;
         }
-        
+
         return null;
     }
-    
+
     private List<Image> convertImages(String platformId, String gameId) {
         loadGamesImagesCache(platformId);
-        
+
         final GamesDbPaginatedResult<GamesDbImagesData> cachedData = CACHED_GAMES_IMAGES_DATA.get(platformId);
         if(cachedData != null && cachedData.isDataAvailable()) {
             final List<Image> images = new ArrayList<>();
-            
+
             int fanartCount = 0;
             int boxartCount = 0;
             int screenshotCount = 0;
             int logoCount = 0;
-            
+
             final List<GamesDbImagesData.Image> cachedImages = cachedData.data.images.get(gameId);
             if(cachedImages != null && !cachedImages.isEmpty()) {
                 for(final GamesDbImagesData.Image image : cachedImages) {
@@ -212,10 +204,10 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
             }
             return images;
         }
-        
+
         return Collections.emptyList();
     }
-    
+
     private String genresToString(List<Integer> genres) {
         if(genres != null) {
             populateGenresData();
@@ -233,7 +225,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
         }
         return "";
     }
-    
+
     private String developersToString(List<Integer> developers) {
         if(developers != null) {
             populateDevelopersData();
@@ -251,7 +243,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
         }
         return "";
     }
-    
+
     private String publishersToString(List<Integer> publishers) {
         if(publishers != null) {
             populatePublishersData();

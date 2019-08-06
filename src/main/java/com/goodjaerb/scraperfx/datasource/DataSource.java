@@ -5,18 +5,21 @@
  */
 package com.goodjaerb.scraperfx.datasource;
 
-import java.util.List;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.MetaData;
 
+import java.util.List;
+
 /**
- *
  * @author goodjaerb
  */
 public interface DataSource {
-    
+
     public String getSourceName();
+
     public List<String> getSystemNames();
+
     public List<String> getSystemGameNames(String systemName);
+
     public MetaData getMetaData(String systemName, Game game);
 }

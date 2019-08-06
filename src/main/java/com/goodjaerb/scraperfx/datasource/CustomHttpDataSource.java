@@ -6,16 +6,16 @@
 package com.goodjaerb.scraperfx.datasource;
 
 import com.goodjaerb.scraperfx.datasource.plugin.DataSourcePlugin;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Map;
 
 /**
- *
  * @author goodjaerb <goodjaerb@gmail.com>
  */
 public abstract class CustomHttpDataSource extends HttpDataSource {
-    
+
     public <T> T getData(DataSourcePlugin<T> plugin, String url, Map<String, String> params) throws IOException {
         try(final BufferedReader reader = getReader(url, params)) {
             if(reader != null) {
@@ -24,7 +24,7 @@ public abstract class CustomHttpDataSource extends HttpDataSource {
         }
         return null;
     }
-    
+
     public <T> T getData(DataSourcePlugin<T> plugin, String url) throws IOException {
         return getData(plugin, url, null);
     }

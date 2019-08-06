@@ -7,23 +7,23 @@ package com.goodjaerb.scraperfx.datasource.plugin;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+
 import java.io.BufferedReader;
 import java.lang.reflect.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author goodjaerb
  * @param <T>
+ * @author goodjaerb
  */
 public class JsonDataSourcePlugin<T> implements DataSourcePlugin<T> {
     private final Type typeOfT;
-    
+
     public JsonDataSourcePlugin(Type typeOfT) {
         this.typeOfT = typeOfT;
     }
-    
+
     @Override
     public T convert(BufferedReader reader) {
         try {

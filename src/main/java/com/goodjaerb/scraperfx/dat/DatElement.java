@@ -6,11 +6,11 @@
 package com.goodjaerb.scraperfx.dat;
 
 /**
- *
  * @author goodjaerb
  */
 public interface DatElement {
-    
+
     public String getName();
+
     public String getRomof();
 }

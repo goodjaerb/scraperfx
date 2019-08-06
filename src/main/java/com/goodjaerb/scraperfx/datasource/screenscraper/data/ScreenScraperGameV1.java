@@ -6,23 +6,22 @@
 package com.goodjaerb.scraperfx.datasource.screenscraper.data;
 
 /**
- *
  * @author goodjaerb
  */
 public class ScreenScraperGameV1 {
-    public String id;
-    public String nom;
+    public String   id;
+    public String   nom;
     public NameData noms;
-    public String systemeid;
-    public String systemenom;
-    public Medias medias;
-    
+    public String   systemeid;
+    public String   systemenom;
+    public Medias   medias;
+
     public static class NameData {
         public String nom_ss;
         public String nom_us;
-        
+
         public NameData() {
-            
+
         }
 
         @Override
@@ -30,10 +29,10 @@ public class ScreenScraperGameV1 {
             return "NameData{" + "nom_ss=" + nom_ss + ", nom_us=" + nom_us + '}';
         }
     }
-    
+
     public static class Medias {
-        public String media_screenshot;
-        public String media_video;
+        public String    media_screenshot;
+        public String    media_video;
         public MediaBoxs media_boxs;
 
         @Override
@@ -41,7 +40,7 @@ public class ScreenScraperGameV1 {
             return "Medias{" + "media_screenshot=" + media_screenshot + ", media_video=" + media_video + ", media_boxs=" + media_boxs + '}';
         }
     }
-    
+
     public static class MediaBoxs {
         public String media_box2d_us;
     }

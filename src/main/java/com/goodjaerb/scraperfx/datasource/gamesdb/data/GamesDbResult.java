@@ -8,21 +8,25 @@ package com.goodjaerb.scraperfx.datasource.gamesdb.data;
 import com.google.gson.annotations.Expose;
 
 /**
- *
- * @author goodjaerb
  * @param <T>
+ * @author goodjaerb
  */
 public class GamesDbResult<T extends GamesDbData<?>> {
-    @Expose(serialize = false, deserialize = true)  public int code;
-    @Expose(serialize = false, deserialize = true)  public String status;
-    @Expose(serialize = true, deserialize = true)   public T data;
-    @Expose(serialize = false, deserialize = true)  public int remaining_monthly_allowance;
-    @Expose(serialize = false, deserialize = true)  public int extra_allowance;
-    
+    @Expose(serialize = false, deserialize = true)
+    public int    code;
+    @Expose(serialize = false, deserialize = true)
+    public String status;
+    @Expose(serialize = true, deserialize = true)
+    public T      data;
+    @Expose(serialize = false, deserialize = true)
+    public int    remaining_monthly_allowance;
+    @Expose(serialize = false, deserialize = true)
+    public int    extra_allowance;
+
     public GamesDbResult() {
-        
+
     }
-    
+
     public boolean isDataAvailable() {
         return data != null && data.isDataAvailable();
     }

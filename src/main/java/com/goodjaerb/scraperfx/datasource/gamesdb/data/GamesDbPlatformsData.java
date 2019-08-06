@@ -6,15 +6,16 @@
 package com.goodjaerb.scraperfx.datasource.gamesdb.data;
 
 import com.google.gson.annotations.Expose;
+
 import java.util.Map;
 
 /**
- *
  * @author goodjaerb
  */
 public class GamesDbPlatformsData extends GamesDbData<GamesDbPlatform> {
-    @Expose(serialize = true, deserialize = true) public Map<String, GamesDbPlatform> platforms;
-        
+    @Expose(serialize = true, deserialize = true)
+    public Map<String, GamesDbPlatform> platforms;
+
 //    public static class Platform {
 //        @Expose(serialize = true, deserialize = true) public int id;
 //        @Expose(serialize = true, deserialize = true) public String name;
@@ -33,7 +34,7 @@ public class GamesDbPlatformsData extends GamesDbData<GamesDbPlatform> {
 //            return "Platform{" + "id=" + id + ", name=" + name + ", alias=" + alias + ", icon=" + icon + ", console=" + console + ", controller=" + controller + ", developer=" + developer + '}';
 //        }
 //    }
-    
+
     public GamesDbPlatformsData() {
     }
 
@@ -41,7 +42,7 @@ public class GamesDbPlatformsData extends GamesDbData<GamesDbPlatform> {
     public String toString() {
         return "GamesDbPlatformsData{" + "count=" + count + ", platforms=" + platforms + '}';
     }
-    
+
     @Override
     public boolean isDataAvailable() {
         return !(platforms == null || platforms.isEmpty());

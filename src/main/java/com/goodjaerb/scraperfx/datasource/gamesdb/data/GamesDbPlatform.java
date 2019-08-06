@@ -8,20 +8,26 @@ package com.goodjaerb.scraperfx.datasource.gamesdb.data;
 import com.google.gson.annotations.Expose;
 
 /**
- * 
  * @author goodjaerb <goodjaerb@gmail.com>
  */
 public class GamesDbPlatform {
-        @Expose(serialize = true, deserialize = true) public int id;
-        @Expose(serialize = true, deserialize = true) public String name;
-        @Expose(serialize = true, deserialize = true) public String alias;
-        @Expose(serialize = true, deserialize = true) public String icon;
-        @Expose(serialize = true, deserialize = true) public String console;
-        @Expose(serialize = true, deserialize = true) public String controller;
-        @Expose(serialize = true, deserialize = true) public String developer;
+    @Expose(serialize = true, deserialize = true)
+    public int    id;
+    @Expose(serialize = true, deserialize = true)
+    public String name;
+    @Expose(serialize = true, deserialize = true)
+    public String alias;
+    @Expose(serialize = true, deserialize = true)
+    public String icon;
+    @Expose(serialize = true, deserialize = true)
+    public String console;
+    @Expose(serialize = true, deserialize = true)
+    public String controller;
+    @Expose(serialize = true, deserialize = true)
+    public String developer;
 
     public GamesDbPlatform() {
-        
+
     }
 
     @Override

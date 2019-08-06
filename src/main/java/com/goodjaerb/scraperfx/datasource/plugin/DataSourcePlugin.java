@@ -8,11 +8,10 @@ package com.goodjaerb.scraperfx.datasource.plugin;
 import java.io.BufferedReader;
 
 /**
- *
- * @author goodjaerb <goodjaerb@gmail.com>
  * @param <T>
+ * @author goodjaerb <goodjaerb@gmail.com>
  */
 public interface DataSourcePlugin<T> {
-    
+
     public abstract T convert(BufferedReader reader);
 }

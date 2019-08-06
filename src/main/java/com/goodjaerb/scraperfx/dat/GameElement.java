@@ -5,37 +5,37 @@
  */
 package com.goodjaerb.scraperfx.dat;
 
-import java.util.Objects;
 import org.xmappr.annotation.Attribute;
 import org.xmappr.annotation.RootElement;
 
+import java.util.Objects;
+
 /**
- *
  * @author goodjaerb
  */
 @RootElement(name = "game")
 public class GameElement implements DatElement {
-    
+
     @Attribute(name = "name")
     public String name;
-    
+
     @Attribute(name = "romof")
     public String romof;
-    
+
     public GameElement() {
         this("", "");
     }
-    
+
     public GameElement(String name, String romof) {
         this.name = name;
         this.romof = romof;
     }
-    
+
     @Override
     public String getName() {
         return name;
     }
-    
+
     @Override
     public String getRomof() {
         return romof;
@@ -55,13 +55,13 @@ public class GameElement implements DatElement {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
+        if(this == obj) {
             return true;
         }
-        if (obj == null) {
+        if(obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(getClass() != obj.getClass()) {
             return false;
         }
         final GameElement other = (GameElement) obj;

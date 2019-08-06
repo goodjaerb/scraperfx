@@ -8,6 +8,17 @@ package com.goodjaerb.scraperfx.output;
 import com.goodjaerb.scraperfx.ScraperFX;
 import com.goodjaerb.scraperfx.settings.Game;
 import com.goodjaerb.scraperfx.settings.Image;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -20,49 +31,32 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 
 /**
- *
  * @author goodjaerb
  */
 public class ESOutput {
-    
+
     public enum ESImageTag {
         IMAGE("image", Image.ImageType.BOX_FRONT, Image.ImageType.SCREENSHOT, Image.ImageType.TITLE, Image.ImageType.GAME),
         BG_IMAGE("bgImage", Image.ImageType.SCREENSHOT, Image.ImageType.FANART, Image.ImageType.GAME, Image.ImageType.TITLE),
         SCREENSHOT("screenshot", Image.ImageType.SCREENSHOT, null, Image.ImageType.GAME, null),
         ;
-        
-        private final String tag;
+
+        private final String          tag;
         private final Image.ImageType defaultConsoleType;
         private final Image.ImageType secondaryConsoleType;
         private final Image.ImageType defaultArcadeType;
         private final Image.ImageType secondaryArcadeType;
-        
+
         ESImageTag(String s) {
             this(s, null, null);
         }
-        
+
         ESImageTag(String s, Image.ImageType consoleDefault, Image.ImageType consoleSecondary) {
             this(s, consoleDefault, consoleSecondary, null, null);
         }
-        
+
         ESImageTag(String s, Image.ImageType consoleDefault, Image.ImageType consoleSecondary, Image.ImageType arcadeDefault, Image.ImageType arcadeSecondary) {
             this.tag = s;
             this.defaultConsoleType = consoleDefault;
@@ -70,74 +64,74 @@ public class ESOutput {
             this.defaultArcadeType = arcadeDefault;
             this.secondaryArcadeType = arcadeSecondary;
         }
-        
+
         public Image.ImageType getConsoleDefault() {
             return defaultConsoleType;
         }
-        
+
         public Image.ImageType getConsoleSecondary() {
             return secondaryConsoleType;
         }
-        
+
         public Image.ImageType getArcadeDefault() {
             return defaultArcadeType;
         }
-        
+
         public Image.ImageType getArcadeSecondary() {
             return secondaryArcadeType;
         }
-        
+
         public String getTag() {
             return tag;
         }
     }
-    
+
     public static final String GAMELISTS_DIR = "gamelists";
-    public static final String IMAGES_DIR = "images";
-    public static final String VIDEOS_DIR = "videos";
-    
+    public static final String IMAGES_DIR    = "images";
+    public static final String VIDEOS_DIR    = "videos";
+
     public void output(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
         final OutputDialog d = new OutputDialog(games, outputPath, imagesPath, videoPath, arcade, parentWindow);
         d.showAndWait();
     }
-   
+
     private class OutputDialog extends Stage {
-        
-        private final List<String>              esTags = new ArrayList<>();
-        private final List<CheckBox>            enableTagCheckBoxes = new ArrayList<>();
-        private final List<ComboBox<String>>    primaryMetaDataTypes = new ArrayList<>();
-        private final List<ComboBox<String>>    secondaryMetaDataTypes = new ArrayList<>();
-        private final CheckBox                  skipUnmatchedCheckBox = new CheckBox("Skip Unmatched Files");
-        private final CheckBox                  downloadVideosCheckBox = new CheckBox("Download Videos");
-        
-        private final Button            startButton = new Button("Start");
-        private final Button            cancelButton = new Button("Cancel");
-        private final ProgressBar       progressBar = new ProgressBar();
-//        private final QueuedMessageBox  messageArea = new QueuedMessageBox("Press START to begin.\n");
-        private final TextArea          messageArea = new TextArea("Press START to begin.\n");
-        
+
+        private final List<String>           esTags                 = new ArrayList<>();
+        private final List<CheckBox>         enableTagCheckBoxes    = new ArrayList<>();
+        private final List<ComboBox<String>> primaryMetaDataTypes   = new ArrayList<>();
+        private final List<ComboBox<String>> secondaryMetaDataTypes = new ArrayList<>();
+        private final CheckBox               skipUnmatchedCheckBox  = new CheckBox("Skip Unmatched Files");
+        private final CheckBox               downloadVideosCheckBox = new CheckBox("Download Videos");
+
+        private final Button      startButton  = new Button("Start");
+        private final Button      cancelButton = new Button("Cancel");
+        private final ProgressBar progressBar  = new ProgressBar();
+        //        private final QueuedMessageBox  messageArea = new QueuedMessageBox("Press START to begin.\n");
+        private final TextArea    messageArea  = new TextArea("Press START to begin.\n");
+
         public OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
             super();
-            
+
             final VBox tagsBox = new VBox();
             tagsBox.setSpacing(7.);
             tagsBox.setPadding(new Insets(7.));
             tagsBox.getChildren().add(new Label("EmulationStation Image Tags"));
-            
+
             for(final ESImageTag tag : ESImageTag.values()) {
                 esTags.add(tag.getTag());
                 final TextField tagField = new TextField(tag.getTag());
                 tagField.setEditable(false);
-                
+
                 final CheckBox enableTagCheckBox = new CheckBox();
                 enableTagCheckBox.setSelected(true);
                 ComboBox<String> primaryTypeBox = new ComboBox<>();
                 ComboBox<String> secondaryTypeBox = new ComboBox<>();
-                
+
                 enableTagCheckBoxes.add(enableTagCheckBox);
                 primaryMetaDataTypes.add(primaryTypeBox);
                 secondaryMetaDataTypes.add(secondaryTypeBox);
-                
+
                 primaryTypeBox.getItems().add("");
                 primaryTypeBox.getSelectionModel().select(0);
                 secondaryTypeBox.getItems().add("");
@@ -148,7 +142,7 @@ public class ESOutput {
                         secondaryTypeBox.getItems().add(type.getName());
                     }
                 }
-                
+
                 if(arcade) {
                     if(tag.getArcadeDefault() != null) {
                         primaryTypeBox.getSelectionModel().select(tag.getArcadeDefault().getName());
@@ -165,31 +159,31 @@ public class ESOutput {
                         secondaryTypeBox.getSelectionModel().select(tag.getConsoleSecondary().getName());
                     }
                 }
-                
+
                 final HBox box = new HBox();
                 box.setSpacing(7.);
                 box.getChildren().addAll(enableTagCheckBox, tagField, primaryTypeBox, secondaryTypeBox);
-                
+
                 tagsBox.getChildren().add(box);
             }
-            
+
             final HBox buttonBox = new HBox();
             buttonBox.setSpacing(7.);
             buttonBox.getChildren().addAll(progressBar, startButton, cancelButton);
-            
+
             tagsBox.getChildren().add(skipUnmatchedCheckBox);
             tagsBox.getChildren().add(downloadVideosCheckBox);
             tagsBox.getChildren().add(messageArea);
             tagsBox.getChildren().add(buttonBox);
-            
+
             final OutputTask task = new OutputTask(games, outputPath, imagesPath, videoPath);
-            
+
             task.messageProperty().addListener((observable, oldValue, newValue) -> {
                 messageArea.appendText("\n" + newValue);
             });
 
             task.progressProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                progressBar.setProgress((double)newValue);
+                progressBar.setProgress((double) newValue);
             });
 
             task.setOnSucceeded((e) -> {
@@ -203,7 +197,7 @@ public class ESOutput {
 //                messageArea.queueMessage("Output cancelled!");
                 cancelButton.setText("Close");
             });
-                
+
             startButton.setOnAction((e) -> {
                 startButton.setDisable(true);
 //                messageArea.start();
@@ -211,7 +205,7 @@ public class ESOutput {
 //                t.setDaemon(true);
                 t.start();
             });
-            
+
             cancelButton.setOnAction((e) -> {
                 if(task.isRunning()) {
                     task.cancel();
@@ -220,27 +214,27 @@ public class ESOutput {
                     hide();
                 }
             });
-            
+
             setOnHidden((e) -> {
 //                messageArea.stop();
                 task.cancel();
             });
 
             final Scene scene = new Scene(tagsBox);
-            
+
             setTitle("EmulationStation Output");
             setResizable(false);
             initModality(Modality.WINDOW_MODAL);
             initOwner(parentWindow);
             setScene(scene);
         }
-        
+
         private class OutputTask extends Task<Void> {
             private final List<Game> games;
-            private final Path outputPath;
-            private final Path imagesPath;
-            private final Path videoPath;
-            
+            private final Path       outputPath;
+            private final Path       imagesPath;
+            private final Path       videoPath;
+
 //            private final Consumer<String> messageConsumer;
 
             public OutputTask(List<Game> games, Path outputPath, Path imagesPath, Path videoPath) {
@@ -248,12 +242,12 @@ public class ESOutput {
                 this.outputPath = outputPath.resolve("gamelist.xml");
                 this.imagesPath = imagesPath;
                 this.videoPath = videoPath;
-                
+
 //                this.messageConsumer = messageConsumer;
             }
 
             @Override
-            protected Void call()  {
+            protected Void call() {
                 final AtomicBoolean isScanning = new AtomicBoolean(true);
                 try {
                     Files.createDirectories(outputPath.getParent());
@@ -272,7 +266,7 @@ public class ESOutput {
                             if(isCancelled()) {
                                 break;
                             }
-                            
+
                             if(g.strength != Game.MatchStrength.IGNORE && (!skipUnmatchedCheckBox.isSelected() || g.strength != Game.MatchStrength.NO_MATCH)) {
                                 Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Beginning output of ''{0}''.", g);
                                 writer.append("\t<game>\n");
@@ -296,11 +290,15 @@ public class ESOutput {
                                 }
                                 else {
                                     Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Outputting metadata ''{0}''.", g);
-                                    if(g.metadata.metaName != null)         writer.append("\t\t<name>" + g.metadata.metaName + "</name>\n");
+                                    if(g.metadata.metaName != null) {
+                                        writer.append("\t\t<name>" + g.metadata.metaName + "</name>\n");
+                                    }
                                     if(g.metadata.metaSortName != null && !g.metadata.metaSortName.isEmpty()) {
                                         writer.append("\t\t<sortname>" + g.metadata.metaSortName + "</sortname>\n");
                                     }
-                                    if(g.metadata.metaDesc != null && !g.metadata.metaDesc.isEmpty())         writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
+                                    if(g.metadata.metaDesc != null && !g.metadata.metaDesc.isEmpty()) {
+                                        writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
+                                    }
                                     if(g.metadata.metaReleaseDate != null && !g.metadata.metaReleaseDate.isEmpty()) {
                                         final int dateLength = g.metadata.metaReleaseDate.length();
                                         if(dateLength == 4 || dateLength == 5) {
@@ -312,12 +310,22 @@ public class ESOutput {
                                             writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate.substring(6) + g.metadata.metaReleaseDate.substring(0, 2) + g.metadata.metaReleaseDate.substring(3, 5) + "T000000</releasedate>\n");
                                         }
                                     }
-                                    if(g.metadata.metaDeveloper != null && !g.metadata.metaDeveloper.isEmpty() && !"<generic>".equals(g.metadata.metaDeveloper))    writer.append("\t\t<developer>" + g.metadata.metaDeveloper.replace("<unknown> / ", "") + "</developer>\n");
-                                    if(g.metadata.metaPublisher != null && !g.metadata.metaPublisher.isEmpty())     writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
-                                    if(g.metadata.metaGenre != null && !g.metadata.metaGenre.isEmpty())             writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");
-                                    if(g.metadata.players != null && !g.metadata.players.isEmpty())                 writer.append("\t\t<players>" + g.metadata.players + "</players>\n");
-                                    if(g.metadata.favorite)                 writer.append("\t\t<favorite>true</favorite>\n");
-                                    
+                                    if(g.metadata.metaDeveloper != null && !g.metadata.metaDeveloper.isEmpty() && !"<generic>".equals(g.metadata.metaDeveloper)) {
+                                        writer.append("\t\t<developer>" + g.metadata.metaDeveloper.replace("<unknown> / ", "") + "</developer>\n");
+                                    }
+                                    if(g.metadata.metaPublisher != null && !g.metadata.metaPublisher.isEmpty()) {
+                                        writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
+                                    }
+                                    if(g.metadata.metaGenre != null && !g.metadata.metaGenre.isEmpty()) {
+                                        writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");
+                                    }
+                                    if(g.metadata.players != null && !g.metadata.players.isEmpty()) {
+                                        writer.append("\t\t<players>" + g.metadata.players + "</players>\n");
+                                    }
+                                    if(g.metadata.favorite) {
+                                        writer.append("\t\t<favorite>true</favorite>\n");
+                                    }
+
                                     if(g.metadata.videodownload != null && !g.metadata.videodownload.isEmpty() && downloadVideosCheckBox.isSelected()) {
                                         Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Downloading video for ''{0}''.", g);
                                         if(ScraperFX.saveVideo(videoPath, g.fileName + "_video.mp4", g.metadata.videodownload)) {
@@ -325,7 +333,7 @@ public class ESOutput {
                                             writer.append("\t\t<video>./videos/" + g.fileName + "_video.mp4</video>\n");
                                         }
                                     }
-                                    
+
                                     if(g.metadata.videoembed != null && !g.metadata.videoembed.isEmpty()) {
                                         writer.append("\t\t<videoEmbed>" + g.metadata.videoembed + "</videoEmbed>\n");
                                     }
@@ -337,7 +345,7 @@ public class ESOutput {
                                                 final String secondary = secondaryMetaDataTypes.get(i).getSelectionModel().getSelectedItem();
                                                 final String primaryPath = g.metadata.getSelectedImageUrl(primary);
                                                 final String secondaryPath = g.metadata.getSelectedImageUrl(secondary);
-                                                
+
 //                                                String primaryImageType = g.metadata.getSelectedImageType(primary);
 //                                                String secondaryImageType = g.metadata.getSelectedImageType(secondary);
 //                                                if(primaryImageType == null && primaryPath != null) primaryImageType = primaryPath.substring(primaryPath.lastIndexOf(".") + 1);//determineOutputType(primaryPath);
@@ -352,7 +360,7 @@ public class ESOutput {
                                                     writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-" + secondary + "." + secondaryImageType + "</" + esTags.get(i) + ">\n");
                                                     continue;
                                                 }
-                                                
+
                                                 //hardcode flyer/marquee as last resorts because i can't be bothered to update the gui.
                                                 //for the life of me i don't know why i do this??
                                                 final String flyerPath = g.metadata.getSelectedImageUrl("flyer");

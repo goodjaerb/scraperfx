@@ -16,11 +16,11 @@ import java.util.Map;
  */
 public class ScreenScraperSystemIdMap {
     private static final Map<String, Integer> SYSTEM_ID_MAP;
-    
+
     public static Integer getId(String gamesDbSystemName) {
         return SYSTEM_ID_MAP.get(gamesDbSystemName);
     }
-    
+
     static {
         final HashMap<String, Integer> map = new HashMap<>();
         map.put("3DO", 29);
@@ -63,7 +63,7 @@ public class ScreenScraperSystemIdMap {
         map.put("TurboGrafx 16", 31);
         map.put("WonderSwan", 45);
         map.put("WonderSwan Color", 46);
-        
+
         SYSTEM_ID_MAP = Collections.unmodifiableMap(map);
     }
 }

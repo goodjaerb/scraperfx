@@ -6,21 +6,24 @@
 package com.goodjaerb.scraperfx.datasource.gamesdb.data;
 
 import com.google.gson.annotations.Expose;
+
 import java.util.Map;
 
 /**
- *
  * @author goodjaerb <goodjaerb@gmail.com>
  */
 public class GamesDbGenresData extends GamesDbData<GamesDbGenresData.Genre> {
-    @Expose(serialize = true, deserialize = true)   public Map<String, Genre> genres;
-    
+    @Expose(serialize = true, deserialize = true)
+    public Map<String, Genre> genres;
+
     public static class Genre {
-        @Expose(serialize = true, deserialize = true) public int id;
-        @Expose(serialize = true, deserialize = true) public String name;
-        
+        @Expose(serialize = true, deserialize = true)
+        public int    id;
+        @Expose(serialize = true, deserialize = true)
+        public String name;
+
         public Genre() {
-            
+
         }
 
         @Override
@@ -28,16 +31,16 @@ public class GamesDbGenresData extends GamesDbData<GamesDbGenresData.Genre> {
             return "Genre{" + "id=" + id + ", name=" + name + '}';
         }
     }
-    
+
     public GamesDbGenresData() {
-        
+
     }
 
     @Override
     public String toString() {
         return "GamesDbGenresData{" + "count=" + count + ", genres=" + genres + '}';
     }
-    
+
     @Override
     public boolean isDataAvailable() {
         return !(genres == null || genres.isEmpty());

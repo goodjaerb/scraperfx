@@ -6,12 +6,11 @@
 package com.goodjaerb.scraperfx.datasource.arcadeitalia.data;
 
 /**
- *
  * @author goodjaerb
  */
 public class ArcadeItaliaData {
     public static class Result {
-        public int index;
+        public int    index;
         public String url;
         public String game_name;
         public String title;
@@ -23,7 +22,7 @@ public class ArcadeItaliaData {
         public String url_image_cabinet;
         public String url_image_flyer;
         public String genre;
-        public int players;
+        public int    players;
         public String year;
         public String status;
         public String history;
@@ -32,13 +31,13 @@ public class ArcadeItaliaData {
         public String youtube_video_id;
         public String url_video_shortplay;
         public String url_video_shortplay_hd;
-        public int emulator_id;
+        public int    emulator_id;
         public String emulator_name;
         public String languages;
-        public int rate;
-        
+        public int    rate;
+
         public Result() {
-            
+
         }
 
         @Override
@@ -47,11 +46,11 @@ public class ArcadeItaliaData {
         }
     }
 
-    public int release;
+    public int      release;
     public Result[] result;
-    
+
     public ArcadeItaliaData() {
-        
+
     }
 
     @Override

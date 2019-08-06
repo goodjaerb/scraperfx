@@ -10,8 +10,8 @@ import com.goodjaerb.scraperfx.datasource.DataSourceFactory;
 import com.goodjaerb.scraperfx.datasource.DataSourceFactory.SourceAgent;
 import com.goodjaerb.scraperfx.datasource.gamesdb.GamesDbPrivateSource;
 import com.goodjaerb.scraperfx.datasource.gamesdb.GamesDbPublicSource;
-import com.goodjaerb.scraperfx.datasource.screenscraper.ScreenScraper2Source;
 import com.goodjaerb.scraperfx.datasource.gamesdb.data.GamesDbPlatform;
+import com.goodjaerb.scraperfx.datasource.screenscraper.ScreenScraper2Source;
 import com.goodjaerb.scraperfx.datasource.screenscraper.data.ScreenScraperGame;
 import com.goodjaerb.scraperfx.output.ESOutput;
 import com.goodjaerb.scraperfx.settings.Game;
@@ -70,136 +70,135 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- *
  * @author goodjaerb
  */
 public class ScraperFX extends Application {
-    public static final Path   SETTINGS_PATH = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx");
-    public static final Path   LOCALDB_PATH = SETTINGS_PATH.resolve(".localdb");
-    public static final Path   GAMEDATA_PATH = SETTINGS_PATH.resolve(".gamedata");
-    
+    public static final Path SETTINGS_PATH = FileSystems.getDefault().getPath(System.getProperty("user.home"), ".scraperfx");
+    public static final Path LOCALDB_PATH  = SETTINGS_PATH.resolve(".localdb");
+    public static final Path GAMEDATA_PATH = SETTINGS_PATH.resolve(".gamedata");
+
     private static final Insets STANDARD_INSETS = new Insets(7.);
-    private static final String SCRAPERFX_CONF = "scraperfx.conf";
-    private static final String KEYS_FILENAME = "keys.ini";
-    private static final Ini    KEYS_INI = new Ini();
-    
-    private static SystemSettings   settings;
-    private static String           currentSystemName;
-    
-    private final ListView<String>                          systemList = new ListView<>();
-    private final TabPane                                   tabPane = new TabPane();
-    private final Tab                                       settingsTab = new Tab("Settings");
-    private final ToggleGroup                               scrapeTypeGroup = new ToggleGroup();
-    private final RadioButton                               scrapeAsConsoleButton = new RadioButton("Console");
-    private final RadioButton                               scrapeAsArcadeButton = new RadioButton("Arcade");
-    private final ComboBox<DataSourceFactory.SourceAgent>   arcadeScraperBox = new ComboBox<>();
-    private final ComboBox<String>                          consoleSelectComboBox = new ComboBox<>();
-    private final TextField                                 gameSourceField = new TextField();
-    private final Button                                    gameSourceBrowseButton = new Button("...");
-    private final TextField                                 filenameRegexField = new TextField();
-    private final TextField                                 ignoreRegexField = new TextField();
-    private final TextField                                 datFilterField = new TextField();
-    private final CheckBox                                  unmatchedOnlyCheckBox = new CheckBox("Don't Re-match matched files");
-    private final CheckBox                                  refreshMetaDataCheckBox = new CheckBox("Refresh Matched Metadata");
-    private final CheckBox                                  forceScreenScraperUpdateCheckBox = new CheckBox("Force ScreenSCraper ID Update");
-    private final CheckBox                                  askForScreenScraperMatchCheckBox = new CheckBox("Ask for ScreenScraper Game Match");
-    private final ToggleGroup                               outputMediaGroup = new ToggleGroup();
-    private final RadioButton                               outputMediaToUserDirButton = new RadioButton("Output media to User Dir");
-    private final RadioButton                               outputMediaToRomsDirButton = new RadioButton("Output media to Roms Dir");
-    
-    private final Tab                   gamesTab = new Tab("Games");
-    private final BorderPane            gamesPane = new BorderPane();
-    private final ScrollPane            imagesScroll = new ScrollPane();
-    private final CheckBox              favoriteCheckBox = new CheckBox("Favorite");
-    private final CheckBox              lockImagesCheckBox = new CheckBox("Lock Images");
-    private final ToggleGroup           sortByGroup = new ToggleGroup();
-    private final RadioButton           sortByMetaNameRadioButton = new RadioButton("Sort By Game Name");
-    private final RadioButton           sortByFileNameRadioButton = new RadioButton("Sort By File Name");
-    private final CheckBox              hideIgnoredCheckBox = new CheckBox("Hide Ignored Items");
-    private final CheckBox              showOnlyNonMatchedCheckBox = new CheckBox("Show Only Non-Matched Items");
-    private final CheckBox              hideLockedCheckBox = new CheckBox("Hide Locked Items");
-    private final CheckBox              showOnlyLockedCheckBox = new CheckBox("Show Only Locked Items");
-    private final CheckBox              showOnlyMissingScreenScraperIdCheckBox = new CheckBox("Missing ScreenScraper ID");
-    private final CheckBox              showOnlyFavoritesCheckBox = new CheckBox("Show Only Favorites");
-    private final TextField             filterField = new TextField();
-    private final ObservableList<Game>  observableGamesList = FXCollections.observableArrayList();
-    private final SortedList<Game>      sortedGamesList = new SortedList<>(observableGamesList);
-    private final FilteredList<Game>    filteredGamesList = new FilteredList<>(sortedGamesList, getHideIgnoredPredicate());
-    private final ListView<Game>        gamesListView = new ListView<>(filteredGamesList);
-    private final TextField             matchedNameField = new TextField();
-    private final Button                matchedNameBrowseButton = new Button("...");
-    private final Button                matchedNameClearButton = new Button("X");
-    private final CheckBox              lockMatchedNameCheckBox = new CheckBox("Lock");
-    private final TextField             metaNameField = new TextField();
-    private final CheckBox              lockNameCheckBox = new CheckBox("Lock");
-    private final TextField             metaSortNameField = new TextField();
-    private final CheckBox              lockSortNameCheckBox = new CheckBox("Lock");
-    private final TextArea              metaDescArea = new TextArea();
-    private final CheckBox              lockDescCheckBox = new CheckBox("Lock");
-    private final TextField             metaRatingField = new TextField();
-    private final CheckBox              lockRatingCheckBox = new CheckBox("Lock");
-    private final TextField             metaReleaseDateField = new TextField();
-    private final CheckBox              lockReleaseDateCheckBox = new CheckBox("Lock");
-    private final TextField             metaDeveloperField = new TextField();
-    private final CheckBox              lockDeveloperCheckBox = new CheckBox("Lock");
-    private final TextField             metaPublisherField = new TextField();
-    private final CheckBox              lockPublisherCheckBox = new CheckBox("Lock");
-    private final TextField             metaGenreField = new TextField();
-    private final CheckBox              lockGenreCheckBox = new CheckBox("Lock");
-    private final TextField             playersField = new TextField();
-    private final CheckBox              lockPlayersCheckBox = new CheckBox("Lock");
-    private final TextField             screenScraperIdField = new TextField();
-    private final CheckBox              lockScreenScraperIdCheckBox = new CheckBox("Lock");
-    private final TextField             videoEmbedField = new TextField();
-    private final CheckBox              lockVideoEmbedCheckBox = new CheckBox("Lock");
-    private final TextField             videoDownloadField = new TextField();
-    private final CheckBox              lockVideoDownloadCheckBox = new CheckBox("Lock");
-    
-    private final Button saveButton = new Button("Save");
-    private final Button applyDatFileButton = new Button("Apply DAT File");
-//    private final Button scanButton = new Button("Scan Now");;
-    private final Button refreshFileListButton = new Button("Refresh File List");
-    private final Button deleteSystemButton = new Button("Delete System");
+    private static final String SCRAPERFX_CONF  = "scraperfx.conf";
+    private static final String KEYS_FILENAME   = "keys.ini";
+    private static final Ini    KEYS_INI        = new Ini();
+
+    private static SystemSettings settings;
+    private static String         currentSystemName;
+
+    private final ListView<String>                        systemList                       = new ListView<>();
+    private final TabPane                                 tabPane                          = new TabPane();
+    private final Tab                                     settingsTab                      = new Tab("Settings");
+    private final ToggleGroup                             scrapeTypeGroup                  = new ToggleGroup();
+    private final RadioButton                             scrapeAsConsoleButton            = new RadioButton("Console");
+    private final RadioButton                             scrapeAsArcadeButton             = new RadioButton("Arcade");
+    private final ComboBox<DataSourceFactory.SourceAgent> arcadeScraperBox                 = new ComboBox<>();
+    private final ComboBox<String>                        consoleSelectComboBox            = new ComboBox<>();
+    private final TextField                               gameSourceField                  = new TextField();
+    private final Button                                  gameSourceBrowseButton           = new Button("...");
+    private final TextField                               filenameRegexField               = new TextField();
+    private final TextField                               ignoreRegexField                 = new TextField();
+    private final TextField                               datFilterField                   = new TextField();
+    private final CheckBox                                unmatchedOnlyCheckBox            = new CheckBox("Don't Re-match matched files");
+    private final CheckBox                                refreshMetaDataCheckBox          = new CheckBox("Refresh Matched Metadata");
+    private final CheckBox                                forceScreenScraperUpdateCheckBox = new CheckBox("Force ScreenSCraper ID Update");
+    private final CheckBox                                askForScreenScraperMatchCheckBox = new CheckBox("Ask for ScreenScraper Game Match");
+    private final ToggleGroup                             outputMediaGroup                 = new ToggleGroup();
+    private final RadioButton                             outputMediaToUserDirButton       = new RadioButton("Output media to User Dir");
+    private final RadioButton                             outputMediaToRomsDirButton       = new RadioButton("Output media to Roms Dir");
+
+    private final Tab                  gamesTab                               = new Tab("Games");
+    private final BorderPane           gamesPane                              = new BorderPane();
+    private final ScrollPane           imagesScroll                           = new ScrollPane();
+    private final CheckBox             favoriteCheckBox                       = new CheckBox("Favorite");
+    private final CheckBox             lockImagesCheckBox                     = new CheckBox("Lock Images");
+    private final ToggleGroup          sortByGroup                            = new ToggleGroup();
+    private final RadioButton          sortByMetaNameRadioButton              = new RadioButton("Sort By Game Name");
+    private final RadioButton          sortByFileNameRadioButton              = new RadioButton("Sort By File Name");
+    private final CheckBox             hideIgnoredCheckBox                    = new CheckBox("Hide Ignored Items");
+    private final CheckBox             showOnlyNonMatchedCheckBox             = new CheckBox("Show Only Non-Matched Items");
+    private final CheckBox             hideLockedCheckBox                     = new CheckBox("Hide Locked Items");
+    private final CheckBox             showOnlyLockedCheckBox                 = new CheckBox("Show Only Locked Items");
+    private final CheckBox             showOnlyMissingScreenScraperIdCheckBox = new CheckBox("Missing ScreenScraper ID");
+    private final CheckBox             showOnlyFavoritesCheckBox              = new CheckBox("Show Only Favorites");
+    private final TextField            filterField                            = new TextField();
+    private final ObservableList<Game> observableGamesList                    = FXCollections.observableArrayList();
+    private final SortedList<Game>     sortedGamesList                        = new SortedList<>(observableGamesList);
+    private final FilteredList<Game>   filteredGamesList                      = new FilteredList<>(sortedGamesList, getHideIgnoredPredicate());
+    private final ListView<Game>       gamesListView                          = new ListView<>(filteredGamesList);
+    private final TextField            matchedNameField                       = new TextField();
+    private final Button               matchedNameBrowseButton                = new Button("...");
+    private final Button               matchedNameClearButton                 = new Button("X");
+    private final CheckBox             lockMatchedNameCheckBox                = new CheckBox("Lock");
+    private final TextField            metaNameField                          = new TextField();
+    private final CheckBox             lockNameCheckBox                       = new CheckBox("Lock");
+    private final TextField            metaSortNameField                      = new TextField();
+    private final CheckBox             lockSortNameCheckBox                   = new CheckBox("Lock");
+    private final TextArea             metaDescArea                           = new TextArea();
+    private final CheckBox             lockDescCheckBox                       = new CheckBox("Lock");
+    private final TextField            metaRatingField                        = new TextField();
+    private final CheckBox             lockRatingCheckBox                     = new CheckBox("Lock");
+    private final TextField            metaReleaseDateField                   = new TextField();
+    private final CheckBox             lockReleaseDateCheckBox                = new CheckBox("Lock");
+    private final TextField            metaDeveloperField                     = new TextField();
+    private final CheckBox             lockDeveloperCheckBox                  = new CheckBox("Lock");
+    private final TextField            metaPublisherField                     = new TextField();
+    private final CheckBox             lockPublisherCheckBox                  = new CheckBox("Lock");
+    private final TextField            metaGenreField                         = new TextField();
+    private final CheckBox             lockGenreCheckBox                      = new CheckBox("Lock");
+    private final TextField            playersField                           = new TextField();
+    private final CheckBox             lockPlayersCheckBox                    = new CheckBox("Lock");
+    private final TextField            screenScraperIdField                   = new TextField();
+    private final CheckBox             lockScreenScraperIdCheckBox            = new CheckBox("Lock");
+    private final TextField            videoEmbedField                        = new TextField();
+    private final CheckBox             lockVideoEmbedCheckBox                 = new CheckBox("Lock");
+    private final TextField            videoDownloadField                     = new TextField();
+    private final CheckBox             lockVideoDownloadCheckBox              = new CheckBox("Lock");
+
+    private final Button saveButton             = new Button("Save");
+    private final Button applyDatFileButton     = new Button("Apply DAT File");
+    //    private final Button scanButton = new Button("Scan Now");;
+    private final Button refreshFileListButton  = new Button("Refresh File List");
+    private final Button deleteSystemButton     = new Button("Delete System");
     private final Button outputToGamelistButton = new Button("Output to Gamelist.xml");
-    
-    private final List<ImageLoadingTask>    imageTaskList = new ArrayList<>();
-    private final Map<String, GameList>     gamedata = new HashMap<>();
-    private final MenuBar                   menuBar;
-    private final Scene                     rootScene;
-    
-    private Game            currentGame;
-    private ScanTaskBase    scanTask;
-    
+
+    private final List<ImageLoadingTask> imageTaskList = new ArrayList<>();
+    private final Map<String, GameList>  gamedata      = new HashMap<>();
+    private final MenuBar                menuBar;
+    private final Scene                  rootScene;
+
+    private Game         currentGame;
+    private ScanTaskBase scanTask;
+
     public ScraperFX() {
         final StackPane root = new StackPane();
         rootScene = new Scene(root);
-        
+
         scrapeAsConsoleButton.setToggleGroup(scrapeTypeGroup);
         scrapeAsConsoleButton.setSelected(true);
         scrapeAsArcadeButton.setToggleGroup(scrapeTypeGroup);
-        
+
         consoleSelectComboBox.setEditable(false);
-        
+
         gameSourceField.setEditable(false);
-        
+
         outputMediaToUserDirButton.setToggleGroup(outputMediaGroup);
         outputMediaToUserDirButton.setSelected(true);
         outputMediaToRomsDirButton.setToggleGroup(outputMediaGroup);
-        
+
         sortByMetaNameRadioButton.setToggleGroup(sortByGroup);
         sortByFileNameRadioButton.setToggleGroup(sortByGroup);
-        
+
         gamesListView.setCellFactory((ListView<Game> list) -> new GameListCell());
-        
+
         matchedNameField.setEditable(false);
         matchedNameClearButton.setStyle("-fx-font-weight: bold");
         matchedNameClearButton.setTextFill(Color.RED);
-        
+
         metaDescArea.setWrapText(true);
-        
+
         /*
-        * System List
-        */
+         * System List
+         */
         systemList.setPrefSize(175., 500.);
         systemList.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends String> c) -> {
             final String newSelection = systemList.getSelectionModel().getSelectedItem();
@@ -211,14 +210,14 @@ public class ScraperFX extends Application {
                 currentGame = null;
             }
         });
-                
+
         final MenuItem renameItem = new MenuItem("Rename");
         renameItem.setOnAction((e) -> {
             final TextInputDialog renameDialog = new TextInputDialog();
             renameDialog.setHeaderText("Rename system '" + currentSystemName + "'");
             renameDialog.setTitle("Rename System");
             renameDialog.setContentText("Name:");
-            
+
             final Optional<String> result = renameDialog.showAndWait();
             if(result.isPresent()) {
                 settings.renameSystem(currentSystemName, result.get());
@@ -226,47 +225,47 @@ public class ScraperFX extends Application {
             }
         });
         systemList.setContextMenu(new ContextMenu(renameItem));
-        
+
         final Button addSystemButton = new Button("Add System");
-        addSystemButton.setOnAction((e) -> addSystemButtonActionPerformed() );
-        
+        addSystemButton.setOnAction((e) -> addSystemButtonActionPerformed());
+
         final VBox box2 = new VBox(systemList, addSystemButton);
         VBox.setVgrow(systemList, Priority.ALWAYS);
         box2.setSpacing(7.);
         // End System List
-        
+
         /*
-        * Settings Tab
-        */
+         * Settings Tab
+         */
         final EventHandler<ActionEvent> actionEventEventHandler = (e) -> {
             scrapeAsArcadeSetup(scrapeAsArcadeButton.isSelected());
         };
         scrapeAsConsoleButton.setOnAction(actionEventEventHandler);
         scrapeAsArcadeButton.setOnAction(actionEventEventHandler);
-        
+
         arcadeScraperBox.getItems().addAll(SourceAgent.ARCADE_ITALIA, SourceAgent.MAMEDB);
         arcadeScraperBox.getSelectionModel().select(SourceAgent.ARCADE_ITALIA);
-        
+
         consoleSelectComboBox.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends String> obs, String oldValue, String newValue) -> {
             if(getCurrentSettings() != null) {
                 getCurrentSettings().scrapeAs = consoleSelectComboBox.getSelectionModel().getSelectedItem();
             }
         });
-        
+
         gameSourceBrowseButton.setOnAction((e) -> {
             final File dir = Chooser.getDir("Game Source Directory", rootScene.getWindow());
             if(dir != null) {
                 gameSourceField.setText(dir.getPath());
                 getCurrentSettings().romsDir = dir.getPath();
                 getSystemGameData().clear();
-                
+
                 final FileSystem fs = FileSystems.getDefault();
                 final Path gamesPath = fs.getPath(gameSourceField.getText());
                 if(Files.exists(gamesPath)) {
                     final List<Path> paths = new ArrayList<>();
                     final DirectoryStream.Filter<Path> filter = (Path file) -> (Files.isRegularFile(file));
                     try(final DirectoryStream<Path> stream = Files.newDirectoryStream(gamesPath, filter)) {
-                        for(final Path p: stream) {
+                        for(final Path p : stream) {
                             paths.add(p);
                         }
                     }
@@ -283,32 +282,32 @@ public class ScraperFX extends Application {
                 }
             }
         });
-        
+
         filenameRegexField.focusedProperty().addListener((obs, oldValue, newValue) -> {
             if(!newValue) {
                 //lost focus
                 getCurrentSettings().substringRegex = filenameRegexField.getText();
             }
         });
-        
+
         ignoreRegexField.focusedProperty().addListener((obs, oldValue, newValue) -> {
             if(!newValue) {
                 //lost focus
                 getCurrentSettings().ignoreRegex = ignoreRegexField.getText();
             }
         });
-        
+
         datFilterField.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if(!newValue) {
                 //lost focus
                 getCurrentSettings().datFilter = datFilterField.getText();
             }
         });
-        
+
         unmatchedOnlyCheckBox.setPadding(STANDARD_INSETS);
         unmatchedOnlyCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {//setOnAction((e) -> {
             getCurrentSettings().unmatchedOnly = unmatchedOnlyCheckBox.isSelected();
-            
+
             refreshMetaDataCheckBox.setSelected(false);
             if(unmatchedOnlyCheckBox.isSelected()) {
                 refreshMetaDataCheckBox.setDisable(false);
@@ -317,7 +316,7 @@ public class ScraperFX extends Application {
                 refreshMetaDataCheckBox.setDisable(true);
             }
         });
-        
+
         forceScreenScraperUpdateCheckBox.setPadding(STANDARD_INSETS);
         forceScreenScraperUpdateCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue) {
@@ -328,7 +327,7 @@ public class ScraperFX extends Application {
                 askForScreenScraperMatchCheckBox.setDisable(false);
             }
         });
-        
+
         refreshMetaDataCheckBox.setPadding(STANDARD_INSETS);
         refreshMetaDataCheckBox.setDisable(false);
         askForScreenScraperMatchCheckBox.setPadding(STANDARD_INSETS);
@@ -336,15 +335,15 @@ public class ScraperFX extends Application {
         final HBox box21 = new HBox();
         box21.setSpacing(7.);
         box21.setPadding(STANDARD_INSETS);
-        
+
         box21.getChildren().addAll(new Label("Scrap as:"), scrapeAsConsoleButton, scrapeAsArcadeButton, arcadeScraperBox);
-        
+
         final HBox selectConsoleBox = new HBox();
         selectConsoleBox.setSpacing(7.);
         selectConsoleBox.setPadding(STANDARD_INSETS);
         selectConsoleBox.getChildren().add(new Label("Select Console:"));
         selectConsoleBox.getChildren().add(consoleSelectComboBox);
-        
+
         final VBox settingsPane = new VBox();
         settingsPane.getChildren().addAll(
                 box21,
@@ -360,15 +359,15 @@ public class ScraperFX extends Application {
                 outputMediaToUserDirButton,
                 outputMediaToRomsDirButton
         );
-        
+
         settingsTab.setContent(settingsPane);
         settingsTab.setClosable(false);
         settingsTab.setDisable(true);
         // End Settings Tab
-        
+
         /*
-        * Games Tab
-        */
+         * Games Tab
+         */
         gamesListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         gamesListView.setPrefSize(550., 425.);
         gamesListView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends Game> c) -> {
@@ -379,7 +378,7 @@ public class ScraperFX extends Application {
                 loadCurrentGameFields(currentGame);
             }
         });
-        
+
         gamesListView.addEventHandler(KeyEvent.KEY_PRESSED, (e) -> {
             if(e.getCode() == KeyCode.ESCAPE) {
                 filterField.setText("");
@@ -389,9 +388,9 @@ public class ScraperFX extends Application {
                 filterField.setText(currentText.substring(0, currentText.length() - 1));
             }
         });
-        
+
         gamesListView.addEventHandler(KeyEvent.KEY_TYPED, (e) -> filterField.appendText(e.getCharacter()));
-        
+
         final MenuItem lockGamesItem = new MenuItem("Lock");
         lockGamesItem.setOnAction((e) -> {
             final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
@@ -401,7 +400,7 @@ public class ScraperFX extends Application {
             gamesListView.refresh();
             loadCurrentGameFields(currentGame);
         });
-        
+
         final MenuItem unlockGamesItem = new MenuItem("Unlock");
         unlockGamesItem.setOnAction((e) -> {
             final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
@@ -417,7 +416,7 @@ public class ScraperFX extends Application {
             gamesListView.refresh();
             loadCurrentGameFields(currentGame);
         });
-        
+
         final MenuItem ignoreItem = new MenuItem("Ignore");
         ignoreItem.setOnAction((e) -> {
             final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
@@ -429,7 +428,7 @@ public class ScraperFX extends Application {
             });
             gamesListView.refresh();
         });
-        
+
         final MenuItem unignoreItem = new MenuItem("Unignore");
         unignoreItem.setOnAction((e) -> {
             final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
@@ -438,7 +437,7 @@ public class ScraperFX extends Application {
             });
             gamesListView.refresh();
         });
-        
+
         final MenuItem setFavoriteTrueItem = new MenuItem("Set Favorite TRUE");
         setFavoriteTrueItem.setOnAction((e) -> {
             final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
@@ -450,18 +449,18 @@ public class ScraperFX extends Application {
             });
             gamesListView.refresh();
         });
-        
+
         final MenuItem setFavoriteFalseItem = new MenuItem("Set Favorite FALSE");
         setFavoriteFalseItem.setOnAction((e) -> {
             final ObservableList<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
             selectedGames.stream().map(this::getGame).filter(foundGame -> foundGame.metadata != null).forEach(foundGame -> foundGame.metadata.favorite = false);
             gamesListView.refresh();
         });
-        
+
         final MenuItem scanGamesItem = new MenuItem("Scan Selected Game(s)");
         scanGamesItem.setOnAction((e) -> {
             final List<Game> selectedGames = gamesListView.getSelectionModel().getSelectedItems();
-            
+
             final FileSystem fs = FileSystems.getDefault();
             final Path gamesPath = fs.getPath(gameSourceField.getText());
             if(Files.exists(gamesPath)) {
@@ -494,15 +493,15 @@ public class ScraperFX extends Application {
                 scanProgressDialog.showAndWait();
             }
         });
-        
+
         gamesListView.setContextMenu(new ContextMenu(lockGamesItem, unlockGamesItem, ignoreItem, unignoreItem, setFavoriteTrueItem, setFavoriteFalseItem, scanGamesItem));
-        
+
         sortByMetaNameRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue) {
                 sortedGamesList.setComparator(Game.GAME_NAME_COMPARATOR);
             }
         });
-        
+
         sortByFileNameRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue) {
                 sortedGamesList.setComparator(Game.FILE_NAME_COMPARATOR);
@@ -519,13 +518,13 @@ public class ScraperFX extends Application {
         showOnlyFavoritesCheckBox.selectedProperty().addListener(booleanChangeListener);
 
         filterField.textProperty().addListener((observable, oldValue, newValue) -> filteredGamesList.setPredicate(buildFilterPredicate()));
-        
+
         filterField.addEventHandler(KeyEvent.KEY_PRESSED, (e) -> {
             if(e.getCode() == KeyCode.ESCAPE) {
                 filterField.setText("");
             }
         });
-        
+
         matchedNameClearButton.setOnAction((e) -> {
             clearCurrentGameFields();
             currentGame.matchedName = null;
@@ -534,7 +533,7 @@ public class ScraperFX extends Application {
             loadCurrentGameFields(currentGame);
             gamesListView.refresh();
         });
-        
+
         matchedNameBrowseButton.setOnAction((e) -> {
             if(currentGame != null) {
                 final SingleGameDownloadDialog d = new SingleGameDownloadDialog(getCurrentSettings().scrapeAs, matchedNameBrowseButton.getScene().getWindow());
@@ -547,7 +546,7 @@ public class ScraperFX extends Application {
                 }
             }
         });
-        
+
         lockMatchedNameCheckBox.setOnAction((e) -> {
             if(lockMatchedNameCheckBox.isSelected()) {
                 currentGame.strength = Game.MatchStrength.LOCKED;
@@ -568,23 +567,23 @@ public class ScraperFX extends Application {
             observableGamesList.add(updatedGame);
             gamesListView.getSelectionModel().clearAndSelect(gamesListView.getItems().indexOf(updatedGame));
         });
-        lockSortNameCheckBox.setOnAction((e) ->         lockMetaField(metaSortNameField, MetaDataId.SORTNAME, currentGame.metadata, lockSortNameCheckBox.isSelected()));
-        lockDescCheckBox.setOnAction((e) ->             lockMetaField(metaDescArea, MetaDataId.DESC, currentGame.metadata, lockDescCheckBox.isSelected()));
-        lockDeveloperCheckBox.setOnAction((e) ->        lockMetaField(metaDeveloperField, MetaDataId.DEVELOPER, currentGame.metadata, lockDeveloperCheckBox.isSelected()));
-        lockGenreCheckBox.setOnAction((e) ->            lockMetaField(metaGenreField, MetaDataId.GENRE, currentGame.metadata, lockGenreCheckBox.isSelected()));
-        lockPublisherCheckBox.setOnAction((e) ->        lockMetaField(metaPublisherField, MetaDataId.PUBLISHER, currentGame.metadata, lockPublisherCheckBox.isSelected()));
-        lockRatingCheckBox.setOnAction((e) ->           lockMetaField(metaRatingField, MetaDataId.RATING, currentGame.metadata, lockRatingCheckBox.isSelected()));
-        lockReleaseDateCheckBox.setOnAction((e) ->      lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, lockReleaseDateCheckBox.isSelected()));
-        lockPlayersCheckBox.setOnAction((e) ->          lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, lockPlayersCheckBox.isSelected()));
-        lockImagesCheckBox.setOnAction((e) ->           currentGame.metadata.lockImages = lockImagesCheckBox.isSelected());
-        lockScreenScraperIdCheckBox.setOnAction((e) ->  lockMetaField(screenScraperIdField, MetaDataId.SCREEN_SCRAPER_ID, currentGame.metadata, lockScreenScraperIdCheckBox.isSelected()));
-        lockVideoEmbedCheckBox.setOnAction((e) ->       lockMetaField(videoEmbedField, MetaDataId.VIDEO_EMBED, currentGame.metadata, lockVideoEmbedCheckBox.isSelected()));
-        lockVideoDownloadCheckBox.setOnAction((e) ->    lockMetaField(videoDownloadField, MetaDataId.VIDEO_DOWNLOAD, currentGame.metadata, lockVideoDownloadCheckBox.isSelected()));
+        lockSortNameCheckBox.setOnAction((e) -> lockMetaField(metaSortNameField, MetaDataId.SORTNAME, currentGame.metadata, lockSortNameCheckBox.isSelected()));
+        lockDescCheckBox.setOnAction((e) -> lockMetaField(metaDescArea, MetaDataId.DESC, currentGame.metadata, lockDescCheckBox.isSelected()));
+        lockDeveloperCheckBox.setOnAction((e) -> lockMetaField(metaDeveloperField, MetaDataId.DEVELOPER, currentGame.metadata, lockDeveloperCheckBox.isSelected()));
+        lockGenreCheckBox.setOnAction((e) -> lockMetaField(metaGenreField, MetaDataId.GENRE, currentGame.metadata, lockGenreCheckBox.isSelected()));
+        lockPublisherCheckBox.setOnAction((e) -> lockMetaField(metaPublisherField, MetaDataId.PUBLISHER, currentGame.metadata, lockPublisherCheckBox.isSelected()));
+        lockRatingCheckBox.setOnAction((e) -> lockMetaField(metaRatingField, MetaDataId.RATING, currentGame.metadata, lockRatingCheckBox.isSelected()));
+        lockReleaseDateCheckBox.setOnAction((e) -> lockMetaField(metaReleaseDateField, MetaDataId.RELEASE_DATE, currentGame.metadata, lockReleaseDateCheckBox.isSelected()));
+        lockPlayersCheckBox.setOnAction((e) -> lockMetaField(playersField, MetaDataId.PLAYERS, currentGame.metadata, lockPlayersCheckBox.isSelected()));
+        lockImagesCheckBox.setOnAction((e) -> currentGame.metadata.lockImages = lockImagesCheckBox.isSelected());
+        lockScreenScraperIdCheckBox.setOnAction((e) -> lockMetaField(screenScraperIdField, MetaDataId.SCREEN_SCRAPER_ID, currentGame.metadata, lockScreenScraperIdCheckBox.isSelected()));
+        lockVideoEmbedCheckBox.setOnAction((e) -> lockMetaField(videoEmbedField, MetaDataId.VIDEO_EMBED, currentGame.metadata, lockVideoEmbedCheckBox.isSelected()));
+        lockVideoDownloadCheckBox.setOnAction((e) -> lockMetaField(videoDownloadField, MetaDataId.VIDEO_DOWNLOAD, currentGame.metadata, lockVideoDownloadCheckBox.isSelected()));
         favoriteCheckBox.setOnAction((e) -> {
             currentGame.metadata.favorite = favoriteCheckBox.isSelected();
             gamesListView.refresh();
         });
-        
+
         final VBox metaBox = new VBox();
         metaBox.getChildren().addAll(
                 createMetaFieldPane("Matched Game:", matchedNameField, matchedNameClearButton, matchedNameBrowseButton, lockMatchedNameCheckBox),
@@ -601,39 +600,39 @@ public class ScraperFX extends Application {
                 createMetaFieldPane("Video Embed URL:", videoEmbedField, lockVideoEmbedCheckBox),
                 createMetaFieldPane("Video Download URL:", videoDownloadField, lockVideoDownloadCheckBox)
         );
-        
+
         imagesScroll.setPrefSize(200., 475.);
-        
+
         final VBox imagesBox = new VBox();
         imagesBox.setPadding(STANDARD_INSETS);
         imagesBox.setSpacing(7.);
         imagesBox.getChildren().addAll(favoriteCheckBox, lockImagesCheckBox, imagesScroll);
-        
+
         final VBox sortByBox = new VBox();
         sortByBox.setSpacing(7.);
         sortByBox.getChildren().addAll(sortByMetaNameRadioButton, sortByFileNameRadioButton, filterField);
-        
+
         final VBox filterBox = new VBox();
         filterBox.setSpacing(7.);
         filterBox.getChildren().addAll(hideIgnoredCheckBox, showOnlyNonMatchedCheckBox, hideLockedCheckBox, showOnlyLockedCheckBox, showOnlyMissingScreenScraperIdCheckBox, showOnlyFavoritesCheckBox);
-        
+
         final HBox topBox = new HBox();
         topBox.setSpacing(7.);
         topBox.getChildren().addAll(sortByBox, filterBox);
-        
+
         final VBox leftBox = new VBox(7., topBox, gamesListView);
         VBox.setVgrow(gamesListView, Priority.ALWAYS);
-        
+
         gamesPane.setPadding(STANDARD_INSETS);
         gamesPane.setLeft(leftBox);
         gamesPane.setCenter(metaBox);
         gamesPane.setRight(imagesBox);
-        
+
         gamesTab.setContent(gamesPane);
         gamesTab.setClosable(false);
         gamesTab.setDisable(true);
         // End Games Tab
-        
+
 //        scanButton.setOnAction((ActionEvent e) -> {
 //            FileSystem fs = FileSystems.getDefault();
 //            Path gamesPath = fs.getPath(gameSourceField.getText());
@@ -649,17 +648,17 @@ public class ScraperFX extends Application {
 //                scanProgressDialog.showAndWait();
 //            }
 //        });
-        
+
         saveButton.setOnAction((e) -> saveAll());
-        
+
         applyDatFileButton.setOnAction((e) -> {
             final File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
 //            final List<File> files = Chooser.openFiles("Select DAT File(s)", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
             if(datFile != null) {
                 try {
                     final Datafile dat = readDatFile(datFile.toPath());
-    //            if(files != null) {
-    //                for(final File datFile : files) {
+                    //            if(files != null) {
+                    //                for(final File datFile : files) {
                     final String datFilter = getCurrentSettings().datFilter;
                     observableGamesList.forEach((game) -> {
                         final String filename = game.fileName;
@@ -675,13 +674,13 @@ public class ScraperFX extends Application {
                     });
                     gamesListView.refresh();
                 }
-                catch (IOException ex) {
+                catch(IOException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                 }
 //                }
             }
         });
-        
+
         refreshFileListButton.setOnAction((e) -> {
             final FileSystem fs = FileSystems.getDefault();
             final Path gamesPath = fs.getPath(gameSourceField.getText());
@@ -696,7 +695,7 @@ public class ScraperFX extends Application {
                 catch(IOException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
                 paths.forEach((p) -> {
                     final Game g = new Game(p.getFileName().toString());
                     if(!observableGamesList.contains(g)) {
@@ -706,7 +705,7 @@ public class ScraperFX extends Application {
                 });
             }
         });
-        
+
         outputToGamelistButton.setOnAction((e) -> {
             getSystemGameData().sort(Game.GAME_NAME_COMPARATOR);
             final Window parentWindow = outputToGamelistButton.getScene().getWindow();
@@ -727,31 +726,31 @@ public class ScraperFX extends Application {
                         parentWindow);
             }
         });
-        
-        deleteSystemButton.setOnAction((e) -> deleteSystemButtonOnActionPerformed() );
-        
+
+        deleteSystemButton.setOnAction((e) -> deleteSystemButtonOnActionPerformed());
+
         final FlowPane settingsButtonPane = new FlowPane(saveButton, applyDatFileButton, deleteSystemButton, refreshFileListButton, outputToGamelistButton);
         settingsButtonPane.setHgap(7.);
         settingsButtonPane.setAlignment(Pos.CENTER);
-        
+
         tabPane.getTabs().add(settingsTab);
         tabPane.getTabs().add(gamesTab);
         tabPane.getSelectionModel().select(0);
-        
+
         final BorderPane rightPane = new BorderPane();
         rightPane.setCenter(tabPane);
         rightPane.setBottom(settingsButtonPane);
 
         final HBox mainBox = new HBox(box2, rightPane);
         mainBox.setSpacing(7.);
-        
+
         menuBar = new MenuBar();
         final BorderPane appPane = new BorderPane(mainBox, menuBar, null, null, null);
         BorderPane.setMargin(mainBox, STANDARD_INSETS);
-        
+
         root.getChildren().add(appPane);
     }
-    
+
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -772,9 +771,9 @@ public class ScraperFX extends Application {
                 primaryStage.hide();
             }
         });
-        
+
         final Menu fileMenu = new Menu("_File", null, exitMenuItem);
-        
+
 //        final MenuItem updateConsolePlatforms = new MenuItem("Update _Platforms (Console)");
 //        updateConsolePlatforms.setOnAction((event) -> {
 //            // Show a warning about api key limit.
@@ -790,7 +789,7 @@ public class ScraperFX extends Application {
                     final List<GamesDbPlatform> platforms = DataSourceFactory.get(SourceAgent.THEGAMESDB, GamesDbPublicSource.class).getPlatforms();
                     final ChoiceDialog<GamesDbPlatform> choiceDialog = new ChoiceDialog<>(platforms.get(0), platforms);
                     choiceDialog.setContentText("This operation will use a portion of your one-time-use private key to TheGamesDB.\nDo not perform this operation for a platform you already have a local backup of.");
-                    
+
                     final Optional<GamesDbPlatform> result = choiceDialog.showAndWait();
                     if(result.isPresent()) {
                         // use SourceAgent.THEGAMESDB_PRIVATE to download GamesByPlatform
@@ -799,27 +798,28 @@ public class ScraperFX extends Application {
                         System.out.println(DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(result.get().name));
                         System.out.println("END FROM ScraperFX!!!!!!!!!!!!!!!!!!!!!!!!!");
                     }
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                }
+                catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
-            
+
             menuBar.getMenus().add(new Menu("Admin", null, downloadGamesByPlatformMenuItem));
         }
-        
-        
+
+
         primaryStage.setOnCloseRequest((event) -> {
             if(!exitCheck()) {
                 event.consume();
             }
         });
-        
+
 //        primaryStage.setOnShown((event) -> {
 //            Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "primaryStage.shown()");
 //            // check if local DB exists.
 //            // 
 //        });
-        
+
         new Thread(() -> {
             try {
                 final List<String> consoles = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemNames();
@@ -839,17 +839,17 @@ public class ScraperFX extends Application {
                 Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
-        
-        
+
+
         primaryStage.setTitle("ScraperFX");
         primaryStage.setScene(rootScene);
         primaryStage.show();
     }
-    
+
     public static String getKeysValue(String name) {
         return KEYS_INI.get("Keys", name);
     }
-    
+
     private boolean exitCheck() {
         final ButtonType saveThenQuitButton = new ButtonType("Save & Quit");
         final ButtonType dontQuitButton = new ButtonType("Wait, Don't Quit!");
@@ -868,28 +868,28 @@ public class ScraperFX extends Application {
         }
         return true;
     }
-    
-    private final String[] numbers = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" };
-    private final String[] romans = { "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv" };
-    
+
+    private final String[] numbers = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
+    private final String[] romans  = {"i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv"};
+
     private boolean isNumeral(String s) {
         return Arrays.asList(numbers).contains(s) || Arrays.asList(romans).contains(s);
     }
-    
+
     private String asDigit(String s) {
         if(Arrays.asList(numbers).contains(s)) {
             return s;
         }
         return numbers[Arrays.asList(romans).indexOf(s)];
     }
-    
+
     private String asRoman(String s) {
         if(Arrays.asList(romans).contains(s)) {
             return s;
         }
         return romans[Arrays.asList(numbers).indexOf(s)];
     }
-    
+
     private Predicate<Game> buildFilterPredicate() {
         return getHideIgnoredPredicate().and(
                 getShowOnlyNonMatchedPredicate()).and(
@@ -899,7 +899,7 @@ public class ScraperFX extends Application {
                 getShowOnlyMissingScreenScraperIdPredicate()).and(
                 getShowOnlyFavoriatesIdPredicate());
     }
-    
+
     private Predicate<Game> getHideIgnoredPredicate() {
         if(hideIgnoredCheckBox.isSelected()) {
             return (game) -> {
@@ -910,7 +910,7 @@ public class ScraperFX extends Application {
             return true;
         };
     }
-    
+
     private Predicate<Game> getShowOnlyNonMatchedPredicate() {
         if(showOnlyNonMatchedCheckBox.isSelected()) {
             return (game) -> {
@@ -921,7 +921,7 @@ public class ScraperFX extends Application {
             return true;
         };
     }
-    
+
     private Predicate<Game> getHideLockedPredicate() {
         if(hideLockedCheckBox.isSelected()) {
             return (game) -> {
@@ -932,7 +932,7 @@ public class ScraperFX extends Application {
             return true;
         };
     }
-    
+
     private Predicate<Game> getShowOnlyLockedPredicate() {
         if(showOnlyLockedCheckBox.isSelected()) {
             return (game) -> {
@@ -943,7 +943,7 @@ public class ScraperFX extends Application {
             return true;
         };
     }
-    
+
     private Predicate<Game> getShowOnlyMissingScreenScraperIdPredicate() {
         if(showOnlyMissingScreenScraperIdCheckBox.isSelected()) {
             return (game) -> {
@@ -954,7 +954,7 @@ public class ScraperFX extends Application {
             return true;
         };
     }
-    
+
     private Predicate<Game> getShowOnlyFavoriatesIdPredicate() {
         if(showOnlyFavoritesCheckBox.isSelected()) {
             return (game) -> {
@@ -965,7 +965,7 @@ public class ScraperFX extends Application {
             return true;
         };
     }
-    
+
     private Predicate<Game> getFilterTextPredicate(String filterText) {
         return (game) -> {
             if(filterText.trim().isEmpty()) {
@@ -974,7 +974,7 @@ public class ScraperFX extends Application {
             return game.fileName.toLowerCase().contains(filterText.toLowerCase()) || (game.metadata != null && game.metadata.metaName != null && game.metadata.metaName.toLowerCase().contains(filterText.toLowerCase()));
         };
     }
-    
+
     private void saveAll() {
         try {
             writeSettings();
@@ -986,7 +986,7 @@ public class ScraperFX extends Application {
             new Alert(Alert.AlertType.ERROR, "Error saving settings.", ButtonType.OK).showAndWait();
         }
     }
-    
+
     private void lockMetaField(TextInputControl textControl, MetaDataId id, MetaData data, Boolean lock) {
         if(lock) {
             textControl.setEditable(false);
@@ -999,13 +999,13 @@ public class ScraperFX extends Application {
         }
         gamesListView.refresh();
     }
-    
+
     private Image getImageFromURL(String url) throws MalformedURLException, IOException {
         int retry = 0;
         while(retry < 3) {
             try {
                 Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "Downloading image from {0}...", url);
-                final HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
+                final HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 //                connection.setConnectTimeout(3000);
 //                connection.setReadTimeout(3000);
                 connection.setRequestProperty("User-Agent", "Mozilla/5.0");
@@ -1026,16 +1026,16 @@ public class ScraperFX extends Application {
         }
         return null;
     }
-    
+
     public static boolean saveVideo(Path path, String filename, String url) throws IOException {
         if(url == null || url.isEmpty()) {
             return false;
         }
-        
+
         if(!Files.exists(path)) {
             Files.createDirectories(path);
         }
-        
+
         final File outputFile = new File(path.toString() + File.separator + filename);
         if(outputFile.exists()) {
             return true;
@@ -1057,16 +1057,16 @@ public class ScraperFX extends Application {
         }
         return false;
     }
-    
+
     public static boolean writeImageToFile(Path path, String imageFileName, String imageOutputType, String url) throws MalformedURLException, IOException {
         if(url == null || url.isEmpty()) {
             return false;
         }
-        
+
         if(!Files.exists(path)) {
             Files.createDirectories(path);
         }
-                    
+
         final File outputFile = new File(path.toString() + File.separator + imageFileName + "." + imageOutputType);
         if(outputFile.exists()) {
             return true;
@@ -1076,18 +1076,18 @@ public class ScraperFX extends Application {
             while(retry < 3) {
                 try {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "Downloading image from {0}...", url);
-                    final HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
+                    final HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 //                    connection.setConnectTimeout(3000);
 //                    connection.setReadTimeout(3000);
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0");
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "{0} {1}", new Object[]{connection.getResponseCode(), connection.getResponseMessage()});
                     final BufferedImage img = ImageIO.read(connection.getInputStream());
-                    
+
                     int width = 640;
                     if(img.getWidth() <= 640) {
                         width = img.getWidth();
                     }
-                    
+
                     final java.awt.Image scaled = img.getScaledInstance(width, -1, java.awt.Image.SCALE_SMOOTH);
                     final BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
                     scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
@@ -1107,11 +1107,11 @@ public class ScraperFX extends Application {
         }
         return false;
     }
-    
+
     private Pane createMetaFieldPane(String labelStr, TextInputControl field, CheckBox lockCheckBox) {
         return createMetaFieldPane(labelStr, field, null, null, lockCheckBox);
     }
-    
+
     private Pane createMetaFieldPane(String labelStr, TextInputControl field, Button clearButton, Button browseButton, CheckBox lockCheckBox) {
         final Label label = new Label(labelStr);
         label.setPadding(new Insets(7., 7., 0., 7.));
@@ -1121,7 +1121,7 @@ public class ScraperFX extends Application {
         else if(field instanceof TextArea) {
             field.setPrefSize(275., 125.);
         }
-        
+
         final FlowPane pane = new FlowPane();
         pane.getChildren().add(field);
         if(browseButton != null) {
@@ -1133,27 +1133,27 @@ public class ScraperFX extends Application {
         if(lockCheckBox != null) {
             pane.getChildren().add(lockCheckBox);
         }
-        
+
         pane.setHgap(7.);
         pane.setPadding(new Insets(0., 7., 0., 7.));
-        
+
         final VBox box = new VBox(label, pane);
         return box;
     }
-    
+
     private Pane createBrowseFieldPane(String labelStr, TextField field) {
         return createBrowseFieldPane(labelStr, field, null, null);
     }
-    
+
     private Pane createBrowseFieldPane(String labelStr, TextField field, Button browseButton) {
         return createBrowseFieldPane(labelStr, field, null, browseButton);
     }
-    
+
     private Pane createBrowseFieldPane(String labelStr, TextField field, Button clearButton, Button browseButton) {
         final Label label = new Label(labelStr);
         label.setPadding(new Insets(7., 7., 0., 7.));
         field.setPrefWidth(275.);
-        
+
         final FlowPane pane = new FlowPane();
         pane.getChildren().add(field);
         if(browseButton != null) {
@@ -1161,38 +1161,38 @@ public class ScraperFX extends Application {
         }
         if(clearButton != null) {
             pane.getChildren().add(clearButton);
-            
+
             clearButton.setOnAction((e) -> {
                 field.clear();
             });
         }
-        
+
         pane.setHgap(7.);
         pane.setPadding(new Insets(0., 7., 0., 7.));
-        
+
         final VBox box = new VBox(label, pane);
         return box;
     }
-    
+
     public static com.goodjaerb.scraperfx.settings.System getCurrentSettings() {
         return getSettings(currentSystemName);
     }
-    
+
     private static com.goodjaerb.scraperfx.settings.System getSettings(String systemName) {
         return settings.get(systemName);
     }
-    
+
     private List<Game> getSystemGameData() {
         return getSystemGameData(currentSystemName);
     }
-    
+
     private List<Game> getSystemGameData(String systemName) {
         if(!gamedata.containsKey(systemName)) {
             gamedata.put(systemName, new GameList(systemName));
         }
         return gamedata.get(systemName).games;
     }
-    
+
     //gets the reference to game out of the gamedata that this game is referring to... if that makes sense!
     private Game getGame(Game g) {
         final List<Game> games = getSystemGameData();
@@ -1205,7 +1205,7 @@ public class ScraperFX extends Application {
         }
         return games.get(index);
     }
-    
+
     private void clearCurrentGameFields() {
         matchedNameField.clear();
         metaNameField.clear();
@@ -1221,7 +1221,7 @@ public class ScraperFX extends Application {
         videoEmbedField.clear();
         videoDownloadField.clear();
         imagesScroll.setContent(null);
-        
+
         lockMatchedNameCheckBox.setSelected(false);
         lockNameCheckBox.setSelected(false);
         lockSortNameCheckBox.setSelected(false);
@@ -1236,10 +1236,10 @@ public class ScraperFX extends Application {
         lockVideoEmbedCheckBox.setSelected(false);
         lockVideoDownloadCheckBox.setSelected(false);
     }
-    
+
     private void loadCurrentGameFields(Game g) {
         clearCurrentGameFields();
-        
+
         if(g != null) {
             matchedNameField.setText(g.matchedName);
             lockMatchedNameCheckBox.setSelected(g.strength == Game.MatchStrength.LOCKED);
@@ -1319,7 +1319,7 @@ public class ScraperFX extends Application {
             }
         }
     }
-    
+
     private void scrapeAsArcadeSetup(boolean b) {
         if(b) {
             getCurrentSettings().scrapeAsArcade = true;
@@ -1336,7 +1336,7 @@ public class ScraperFX extends Application {
             arcadeScraperBox.setDisable(true);
         }
     }
-    
+
     private void loadCurrentSettings() {
         scrapeAsArcadeSetup(getCurrentSettings().scrapeAsArcade);
         consoleSelectComboBox.getSelectionModel().select(getCurrentSettings().scrapeAs);
@@ -1345,13 +1345,13 @@ public class ScraperFX extends Application {
         ignoreRegexField.setText(getCurrentSettings().ignoreRegex);
         datFilterField.setText(getCurrentSettings().datFilter);
         unmatchedOnlyCheckBox.setSelected(getCurrentSettings().unmatchedOnly);
-        
+
         observableGamesList.clear();
         if(getSystemGameData() != null) {
             observableGamesList.addAll(getSystemGameData());
         }
     }
-    
+
     private void loadSystemList(String selectAfter) {
         systemList.getItems().clear();
         settings.systems.forEach(system -> systemList.getItems().add(system.name));
@@ -1363,7 +1363,7 @@ public class ScraperFX extends Application {
         }
         tabPane.getSelectionModel().select(settingsTab);
     }
-    
+
     private void clearSettingsTab() {
         gameSourceField.clear();
         filenameRegexField.clear();
@@ -1371,24 +1371,24 @@ public class ScraperFX extends Application {
         datFilterField.clear();
         unmatchedOnlyCheckBox.setSelected(false);
     }
-    
+
     private void disableTabs() {
         settingsTab.setDisable(true);
         gamesTab.setDisable(true);
     }
-    
+
     private void enableTabs() {
         settingsTab.setDisable(false);
         gamesTab.setDisable(false);
     }
-    
+
     private void addSystemButtonActionPerformed() {
         final TextInputDialog dialog = new TextInputDialog();
         dialog.setHeaderText("Enter a name for your system.\n\nIf you are using EmulationStation, it is\nsuggested you name your systems to match\nyour rom folder names.");
         dialog.setContentText("Name:");
         dialog.setTitle("Name System");
         final Optional<String> result = dialog.showAndWait();
-        
+
         if(result.isPresent() && result.get().trim().length() > 0) {
             final String name = result.get();
             if(systemList.getItems().contains(name)) {
@@ -1401,7 +1401,7 @@ public class ScraperFX extends Application {
             }
         }
     }
-    
+
     private void deleteSystemButtonOnActionPerformed() {
         final Optional<ButtonType> result = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to remove '" + currentSystemName + "' from your systems?", ButtonType.YES, ButtonType.CANCEL).showAndWait();
 
@@ -1416,35 +1416,35 @@ public class ScraperFX extends Application {
             }
         }
     }
-    
+
     private Datafile readDatFile(Path path) throws FileNotFoundException, IOException {
         final Xmappr xm = new Xmappr(Datafile.class);
-        
+
         final BufferedInputStream in = new BufferedInputStream(new FileInputStream(path.toFile()));
         final CharsetDecoder charsetDecoder = StandardCharsets.UTF_8.newDecoder();
         charsetDecoder.onMalformedInput(CodingErrorAction.REPLACE);
         charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-        
+
         try(final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
-            return (Datafile)xm.fromXML(reader);
+            return (Datafile) xm.fromXML(reader);
         }
         catch(IOException ex) {
             throw ex;
         }
     }
-    
+
     private void readSettings() throws IOException {
         final Path scraperfxConfPath = SETTINGS_PATH.resolve(SCRAPERFX_CONF);
         if(Files.exists(scraperfxConfPath)) {
             final Xmappr xm = new Xmappr(SystemSettings.class);
-            
+
             final BufferedInputStream in = new BufferedInputStream(new FileInputStream(scraperfxConfPath.toFile()));
             final CharsetDecoder charsetDecoder = StandardCharsets.UTF_8.newDecoder();
             charsetDecoder.onMalformedInput(CodingErrorAction.REPLACE);
             charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-            
+
             try(final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
-                settings = (SystemSettings)xm.fromXML(reader);
+                settings = (SystemSettings) xm.fromXML(reader);
                 loadSystemList(null);
             }
             catch(IOException ex) {
@@ -1455,27 +1455,27 @@ public class ScraperFX extends Application {
             settings = new SystemSettings();
         }
     }
-    
+
     private void readGameData() throws IOException {
         final Gson gson = new Gson();
-        
+
         try(final Stream<Path> stream = Files.list(GAMEDATA_PATH)) {
             stream.forEach((path) -> {
                 try(BufferedReader reader = Files.newBufferedReader(path)) {
                     final GameList gameList = gson.fromJson(reader, GameList.class);
                     gamedata.put(gameList.system, gameList);
                 }
-                catch (IOException ex) {
+                catch(IOException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
         }
     }
-    
+
     private void writeGameData() throws IOException {
 //        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final Gson gson = new Gson();
-        
+
         for(final GameList gameList : gamedata.values()) {
             if(!gameList.games.isEmpty()) {
                 final Path gamedataPath = GAMEDATA_PATH.resolve(gameList.system + ".json");
@@ -1483,7 +1483,7 @@ public class ScraperFX extends Application {
                     Files.createDirectories(gamedataPath.getParent());
                     Files.createFile(gamedataPath);
                 }
-                
+
                 try(final BufferedWriter writer = Files.newBufferedWriter(gamedataPath)) {
                     gson.toJson(gameList, writer);
                     writer.flush();
@@ -1491,14 +1491,14 @@ public class ScraperFX extends Application {
             }
         }
     }
-    
+
     private void writeSettings() throws IOException {
         final Path settingsPath = SETTINGS_PATH.resolve(SCRAPERFX_CONF);
         if(!Files.exists(settingsPath)) {
             Files.createDirectories(settingsPath.getParent());
             Files.createFile(settingsPath);
         }
-        
+
         final Xmappr xm = new Xmappr(SystemSettings.class);
         xm.setPrettyPrint(true);
         try(final BufferedWriter writer = Files.newBufferedWriter(settingsPath)) {
@@ -1508,7 +1508,7 @@ public class ScraperFX extends Application {
             throw ex;
         }
     }
-    
+
     private boolean isInteger(String s) {
         try {
             Integer.parseInt(s);
@@ -1525,16 +1525,16 @@ public class ScraperFX extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-    
+
     private class MetaImageViewBox extends VBox {
         private final List<MetaImageView> views = new ArrayList<>();
-        
+
         public MetaImageViewBox() {
             super();
             setSpacing(7.);
             setPadding(STANDARD_INSETS);
         }
-        
+
         public void selectImage(com.goodjaerb.scraperfx.settings.Image image) {
             currentGame.metadata.selectImage(image);
             views.stream().forEach(view -> {
@@ -1546,22 +1546,22 @@ public class ScraperFX extends Application {
                 }
             });
         }
-        
+
         public void addView(MetaImageView view) {
             getChildren().add(view);
             views.add(view);
         }
     }
-    
+
     private final class MetaImageView extends VBox {
         private final ImageView view = new ImageView("images/loading.gif");
-        
+
         private final com.goodjaerb.scraperfx.settings.Image image;
-        
+
         public MetaImageView(com.goodjaerb.scraperfx.settings.Image image) {
             super();
             this.image = image;
-            
+
             view.setFitHeight(175.);
             view.setPreserveRatio(true);
 
@@ -1572,30 +1572,30 @@ public class ScraperFX extends Application {
                 setBorder(new Border(new BorderStroke(Color.LIGHTGREEN, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5))));
             }
             addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
-                ((MetaImageViewBox)getParent()).selectImage(image);
+                ((MetaImageViewBox) getParent()).selectImage(image);
             });
         }
-        
+
         public com.goodjaerb.scraperfx.settings.Image getImage() {
             return image;
         }
-        
+
         public ImageView getView() {
             return view;
         }
     }
-    
+
     private class ImageLoadingTask extends Task<Void> {
-        private final MetaImageView view;
+        private final MetaImageView                          view;
         private final com.goodjaerb.scraperfx.settings.Image scraperImage;
-        
+
         private Image image;
 
         public ImageLoadingTask(final MetaImageView view, com.goodjaerb.scraperfx.settings.Image scraperImage) {
             this.view = view;
             this.scraperImage = scraperImage;
         }
-        
+
         @Override
         protected Void call() {
             try {
@@ -1617,25 +1617,25 @@ public class ScraperFX extends Application {
             view.getView().setImage(null);
         }
     }
-    
+
     private abstract class ScanTaskBase extends Task<Void> {
-        private final Path gamesPath;
+        private final Path       gamesPath;
         private final List<Game> games;
         private final List<Path> paths = new ArrayList<>();
-        
+
 //        protected Consumer<String> status;
-        
+
         public ScanTaskBase(Path gamesPath, List<Game> games) {
             this.gamesPath = gamesPath;
             this.games = games;
         }
-        
+
         protected abstract void scan(List<ScanTaskOperation> ops);
-        
+
 //        public void setStatusUpdater(Consumer<String> status) {
 //            this.status = status;
 //        }
-        
+
         @Override
         public Void call() {
             // Don't know if this should be here or the start of call().
@@ -1650,7 +1650,7 @@ public class ScraperFX extends Application {
             catch(IOException ex) {
                 Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+
             final List<ScanTaskOperation> ops = new ArrayList<>();
             final long startTime = System.nanoTime();
 
@@ -1661,7 +1661,7 @@ public class ScraperFX extends Application {
                 if(isCancelled()) {
                     break;
                 }
-                
+
                 final String filename = p.getFileName().toString();
                 Game localGame = getGame(new Game(filename));
                 if(localGame == null) {
@@ -1703,7 +1703,7 @@ public class ScraperFX extends Application {
                             updateMessage("Not matching '" + localGame.fileName + "' because it is LOCKED.");
 //                            status.accept("Not matching '" + localGame.fileName + "' because it is LOCKED.");
                         }
-                        else if(unmatchedOnlyCheckBox.isSelected() 
+                        else if(unmatchedOnlyCheckBox.isSelected()
                                 && localGame.strength != Game.MatchStrength.IGNORE && localGame.strength != Game.MatchStrength.NO_MATCH) {
                             // this game is already matched and we only want unmatched games.
                             skipMatching = true;
@@ -1728,38 +1728,38 @@ public class ScraperFX extends Application {
 //                                status.accept("NOT refreshing metadata for '" + localGame.fileName + "' due to check-box (un)selection.");
                             }
                         }
-                        
+
                         ops.add(new ScanTaskOperation(skipMatching, refreshMatchedGame, startedUnmatched, localGame));
                     }
                 }
             }
-            
+
             /**
              * Step 2: Perform operations.
              */
             scan(ops);
-            
-            
+
+
             /**
              * Step 3: Finish up.
              */
             updateMessage(Duration.ofNanos(System.nanoTime() - startTime).toString());
 //            status.accept(Duration.ofNanos(System.nanoTime() - startTime).toString());
-                
+
             Platform.runLater(() -> {
                 gamesListView.refresh();
             });
             return null;
         }
     }
-    
+
     private class ScanTaskOperation {
-        
+
         public final boolean skipMatching;
         public final boolean refreshMetaData;
         public final boolean startedUnmatched;
-        public final Game game;
-        
+        public final Game    game;
+
         public ScanTaskOperation(boolean skipMatching, boolean refreshMetaData, boolean startedUnmatched, Game game) {
             this.skipMatching = skipMatching;
             this.refreshMetaData = refreshMetaData;
@@ -1767,27 +1767,27 @@ public class ScraperFX extends Application {
             this.game = game;
         }
     }
-    
+
     private class SequentialArcadeScanTask extends ScanTaskBase {
-        
+
         public SequentialArcadeScanTask(Path gamesPath, List<Game> games) {
             super(gamesPath, games);
         }
-        
+
         @Override
         protected void scan(List<ScanTaskOperation> ops) {
             final int totalFiles = ops.size();
             int completedCount = 0;
-            
+
             for(final ScanTaskOperation op : ops) {
                 if(isCancelled()) {
                     break;
                 }
-                
+
                 final boolean skipMatching = op.skipMatching;
                 final boolean refreshMatchedGame = op.refreshMetaData;
                 final boolean startedUnmatched = op.startedUnmatched;
-                
+
                 final Game localGame = op.game;
                 final String filename = localGame.fileName;
                 final String noExtName = filename.substring(0, filename.lastIndexOf(".")).toLowerCase();
@@ -1832,16 +1832,16 @@ public class ScraperFX extends Application {
 //                            status.accept("Refreshed metadata for '" + filename + "' (" + localGame.metadata.metaName + ").");
                         }
                     }
-                    catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                    catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                         Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                
+
                 updateProgress(++completedCount, totalFiles);
 
                 getSystemGameData().remove(localGame);
                 getSystemGameData().add(localGame);
-                
+
                 Platform.runLater(() -> {
                     final int index = observableGamesList.indexOf(localGame);
                     if(index != -1) {
@@ -1853,13 +1853,13 @@ public class ScraperFX extends Application {
             }
         }
     }
-    
+
     private abstract class ConsoleScanTaskBase extends ScanTaskBase {
-        
+
         public ConsoleScanTaskBase(Path gamesPath, List<Game> games) {
             super(gamesPath, games);
         }
-        
+
         public Game match(ScanTaskOperation op) {
             final boolean skipMatching = op.skipMatching;
             final boolean refreshMatchedGame = op.refreshMetaData;
@@ -1965,8 +1965,8 @@ public class ScraperFX extends Application {
                                     mostPartsHit = hits;
                                 }
                                 hitNames.add(gameName);
-                                hitPercents.add((double)hitLength / (double)noExtName.replaceAll("\\s", "").length());
-                                remoteHitPercents.add((double)hitLength / (double)lowerCaseName.length());
+                                hitPercents.add((double) hitLength / (double) noExtName.replaceAll("\\s", "").length());
+                                remoteHitPercents.add((double) hitLength / (double) lowerCaseName.length());
                             }
                         }
                     }
@@ -2061,14 +2061,15 @@ public class ScraperFX extends Application {
 //                        status.accept("Error connecting to thegamesdb.net. Please try again.");
                     }
                 }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+            }
+            catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                 Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+
             return localGame;
         }
     }
-    
+
     private void getExtraMetaData(MetaData newMetaData, String systemName, Game localGame, boolean forceUpdate) throws InstantiationException, ClassNotFoundException, IllegalAccessException {
         final List<ScreenScraperGame> screenScraperResults = DataSourceFactory.get(SourceAgent.SCREEN_SCRAPER, ScreenScraper2Source.class).getExtraMetaData(systemName, localGame, forceUpdate);
         if(screenScraperResults != null && !screenScraperResults.isEmpty()) {
@@ -2083,14 +2084,14 @@ public class ScraperFX extends Application {
                     }
                 }
             }
-            
+
             // check for a name match.
             if(theGame == null) {
                 for(ScreenScraperGame ssGame : screenScraperResults) {
                     if(ssGame.noms.stream().anyMatch((ScreenScraperGame.NameData nameData) -> {
                         final String name1 = nameData.text.replaceAll("\\p{Punct}", "").replaceAll("\\s{2,}", " ").toLowerCase().trim();
                         final String name2 = localGame.matchedName.replaceAll("\\p{Punct}", "").replaceAll("\\s{2,}", " ").toLowerCase().trim();
-                        
+
                         final boolean result = name1.equals(name2);
                         Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "\"{0}\"==\"{1}\" {2}", new Object[]{name1, name2, result});
                         return result;
@@ -2118,7 +2119,7 @@ public class ScraperFX extends Application {
                             }
                         }
                     }
-                    
+
                     final ScreenScraperResultHolder holder = new ScreenScraperResultHolder();
                     Platform.runLater(() -> {
                         final ChoiceDialog<ScreenScraperGame> choices = new ChoiceDialog<>(screenScraperResults.get(0), screenScraperResults);
@@ -2138,7 +2139,7 @@ public class ScraperFX extends Application {
                             holder.wait();
                         }
                     }
-                    catch (InterruptedException ex) {
+                    catch(InterruptedException ex) {
                         Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
@@ -2147,7 +2148,7 @@ public class ScraperFX extends Application {
                     }
                 }
             }
-            
+
             if(theGame == null) {
                 newMetaData.screenScraperId = null;
                 newMetaData.videodownload = null;
@@ -2197,19 +2198,19 @@ public class ScraperFX extends Application {
             }
         }
     }
-    
+
     private class ScreenScraperResultHolder {
         private Optional<ScreenScraperGame> result;
-        
+
         public void setResult(Optional<ScreenScraperGame> result) {
             this.result = result;
         }
-        
+
         public Optional<ScreenScraperGame> get() {
             return result;
         }
     }
-    
+
 //    private class ForkJoinConsoleScanTask extends ConsoleScanTaskBase {
 //
 //        public ForkJoinConsoleScanTask(Path gamesPath, List<Game> games) {
@@ -2265,23 +2266,23 @@ public class ScraperFX extends Application {
 //            }
 //        }
 //    }
-    
+
     private class SequentialConsoleScanTask extends ConsoleScanTaskBase {
-        
+
         public SequentialConsoleScanTask(Path gamesPath, List<Game> games) {
             super(gamesPath, games);
         }
-        
+
         @Override
         public void scan(List<ScanTaskOperation> ops) {
             final int totalFiles = ops.size();
             int completedCount = 0;
-            
+
             for(final ScanTaskOperation op : ops) {
                 if(isCancelled()) {
                     break;
                 }
-                
+
                 final Game localGame = match(op);
 
                 updateProgress(++completedCount, totalFiles);
@@ -2300,20 +2301,21 @@ public class ScraperFX extends Application {
             }
         }
     }
-    
+
     private class SingleGameDownloadDialog extends Stage {
-        private final ObservableList<String>    namesList = FXCollections.observableArrayList();
-        private final FilteredList<String>      filteredNamesList = new FilteredList<>(namesList);
-        private final TextField                 filterField = new TextField();;
-        private final ListView<String>          selectGameList = new ListView<>(filteredNamesList);
-        private final Button                    okButton = new Button("OK");
-        private final Button                    cancelButton = new Button("Cancel");
-        
+        private final ObservableList<String> namesList         = FXCollections.observableArrayList();
+        private final FilteredList<String>   filteredNamesList = new FilteredList<>(namesList);
+        private final TextField              filterField       = new TextField();
+        ;
+        private final ListView<String> selectGameList = new ListView<>(filteredNamesList);
+        private final Button           okButton       = new Button("OK");
+        private final Button           cancelButton   = new Button("Cancel");
+
         private final Timer     workingTimer = new Timer();
-        private final TimerTask workingTask = new TimerTask() {
+        private final TimerTask workingTask  = new TimerTask() {
             private int n = 1;
             private String text;
-            
+
             @Override
             public void run() {
                 switch(n) {
@@ -2334,15 +2336,15 @@ public class ScraperFX extends Application {
                 });
             }
         };
-        
+
         private final String systemName;
-        
+
         private boolean cancelled;
-        
+
         public SingleGameDownloadDialog(String systemName, Window parentWindow) {
             super();
             this.systemName = systemName;
-            
+
             filterField.textProperty().addListener((observable, oldValue, newValue) -> {
                 filteredNamesList.setPredicate(name -> {
                     final String filterText = newValue.trim();
@@ -2383,24 +2385,24 @@ public class ScraperFX extends Application {
             });
 
             selectGameList.addEventHandler(KeyEvent.KEY_TYPED, e -> filterField.appendText(e.getCharacter()));
-        
+
             okButton.setDisable(true);
             okButton.setOnAction(e -> onOkButton());
             okButton.setPrefWidth(175);
-            
+
             cancelButton.setOnAction((ActionEvent e) -> {
                 cancelled = true;
                 hide();
             });
-            
+
             setOnShown(e -> onShown());
             setOnHidden(e -> workingTimer.cancel());
-            
+
             final HBox box = new HBox();
             box.setSpacing(7.);
             box.setPadding(STANDARD_INSETS);
             box.getChildren().addAll(okButton, cancelButton);
-            
+
             final VBox vbox = new VBox();
             vbox.setSpacing(7.);
             vbox.setPadding(STANDARD_INSETS);
@@ -2408,7 +2410,7 @@ public class ScraperFX extends Application {
             vbox.getChildren().add(filterField);
             vbox.getChildren().add(selectGameList);
             vbox.getChildren().add(box);
-            
+
             final Scene scene = new Scene(vbox);
 
             setTitle("Select Game");
@@ -2417,27 +2419,27 @@ public class ScraperFX extends Application {
             initOwner(parentWindow);
             setScene(scene);
         }
-        
+
         public boolean wasCancelled() {
             return cancelled;
         }
-        
+
         private void onOkButton() {
             okButton.setDisable(true);
             cancelButton.setDisable(true);
-            
+
             workingTimer.schedule(workingTask, 0, 250);
-            
+
             new Thread(() -> {
                 try {
                     currentGame.matchedName = selectGameList.getSelectionModel().getSelectedItem();
                     final MetaData newMetaData = DataSourceFactory.get(SourceAgent.THEGAMESDB).getMetaData(systemName, currentGame);
-                    
+
                     if(newMetaData != null) {
                         if(currentGame.metadata != null && currentGame.metadata.favorite) {
                             newMetaData.favorite = true;
                         }
-                        
+
                         getExtraMetaData(newMetaData, getCurrentSettings().scrapeAs, currentGame, true);
 
                         currentGame.updateMetaData(newMetaData);
@@ -2446,7 +2448,7 @@ public class ScraperFX extends Application {
                 }
                 catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-                    
+
                     Platform.runLater(() -> {
                         new Alert(Alert.AlertType.ERROR, "An error occured while accessing TheGamesDB.net database.", ButtonType.OK).showAndWait();
                     });
@@ -2459,13 +2461,13 @@ public class ScraperFX extends Application {
                 }
             }).start();
         }
-        
+
         private void onShown() {
             new Thread(() -> {
                 try {
                     final List<String> gameList = DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(systemName);
                     Collections.sort(gameList);
-                    
+
                     Platform.runLater(() -> {
                         namesList.clear();
                         namesList.addAll(gameList);
@@ -2474,23 +2476,23 @@ public class ScraperFX extends Application {
                 }
                 catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
-                    
+
                     Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "An error occured while accessing TheGamesDB.net database.", ButtonType.OK).showAndWait());
                 }
             }).start();
         }
     }
-    
+
     private class ScanProgressDialog extends Stage {
-        
-//        private final QueuedMessageBox  messageArea = new QueuedMessageBox();
-        private final TextArea          messageArea = new TextArea();
-        private final ProgressBar       progressBar = new ProgressBar();
-        private final Button            cancelButton = new Button("Cancel");
-        
+
+        //        private final QueuedMessageBox  messageArea = new QueuedMessageBox();
+        private final TextArea    messageArea  = new TextArea();
+        private final ProgressBar progressBar  = new ProgressBar();
+        private final Button      cancelButton = new Button("Cancel");
+
         public ScanProgressDialog(Path gamesPath, List<Game> selectedGames, Window parentWindow) {
             super();
-            
+
             cancelButton.setOnAction(e -> {
                 if(scanTask.isRunning()) {
                     scanTask.cancel();
@@ -2500,7 +2502,7 @@ public class ScraperFX extends Application {
                     hide();
                 }
             });
-            
+
             setOnShown(e -> {
 //                scanTask.setStatusUpdater(message -> messageArea.queueMessage(message));
                 scanTask.setOnSucceeded(ev -> {
@@ -2522,25 +2524,25 @@ public class ScraperFX extends Application {
                 t.setDaemon(true);
                 t.start();
             });
-            
+
             setOnHidden(e -> {
 //                messageArea.stop();
                 scanTask.cancel();
             });
-            
+
             scanTask.messageProperty().addListener((observable, oldValue, newValue) -> {
                 messageArea.appendText("\n" + newValue);
             });
 
             final FlowPane p = new FlowPane(7., 7., progressBar, cancelButton);
-            
+
             final VBox box = new VBox();
             box.setSpacing(7.);
             box.setPadding(STANDARD_INSETS);
             box.getChildren().addAll(messageArea, p);
-            
+
             final Scene scene = new Scene(box);
-            
+
             setTitle("Scanning in Progress");
             setResizable(false);
             initModality(Modality.WINDOW_MODAL);
@@ -2548,13 +2550,13 @@ public class ScraperFX extends Application {
             setScene(scene);
         }
     }
-    
+
     private class GameListCell extends ListCell<Game> {
-        
+
         @Override
         protected void updateItem(Game item, boolean empty) {
             super.updateItem(item, empty);
-            
+
             setText(item == null ? "" : item.toString());
             if(item == null) {
                 setStyle(null);
@@ -2576,11 +2578,13 @@ public class ScraperFX extends Application {
         public enum DialogType {
             SAVE,
             OPEN;
-        };
+        }
 
-        private static final FileChooser FILE_CHOOSER = new FileChooser();
-        private static final DirectoryChooser DIR_CHOOSER = new DirectoryChooser();
-        
+        ;
+
+        private static final FileChooser      FILE_CHOOSER = new FileChooser();
+        private static final DirectoryChooser DIR_CHOOSER  = new DirectoryChooser();
+
         private static void setup(String title, String[] fileExts) {
             FILE_CHOOSER.setTitle(title);
             FILE_CHOOSER.setInitialDirectory(new File(System.getProperty("user.home")));
@@ -2592,7 +2596,7 @@ public class ScraperFX extends Application {
                 }
             }
         }
-        
+
 //        public static List<File> openFiles(String title, Window parentWindow, String... fileExts) {
 //            setup(title, fileExts);
 //            return FILE_CHOOSER.showOpenMultipleDialog(parentWindow);
@@ -2600,7 +2604,7 @@ public class ScraperFX extends Application {
 
         public static File getFile(DialogType type, String title, Window parentWindow, String... fileExts) {
             setup(title, fileExts);
-            
+
             File f = null;
             switch(type) {
                 case SAVE:

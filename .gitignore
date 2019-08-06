@@ -1,8 +1,10 @@
-.gradle
-.idea
-.nb-gradle
-build
-out
+.gradle/
+.idea/
+out/
+.nb-gradle/
+build/
+.nb-gradle-properties
+gradle.properties
 
 # Ignore Gradle GUI config
 gradle-app.setting

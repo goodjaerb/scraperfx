@@ -49,14 +49,14 @@ public class MameDbSource extends HttpDataSource {
 
         try(final BufferedReader reader = getReader(url)) {
             if(reader != null) {
-                String result = "";
+                StringBuilder result = new StringBuilder();
                 String line;
                 while((line = reader.readLine()) != null) {
-                    result += line;
+                    result.append(line);
                 }
 
-                Pattern p = Pattern.compile("<title>Game Details:  (.*) - mamedb.com</title>");
-                Matcher m = p.matcher(result);
+                Pattern p = Pattern.compile("<title>Game Details: {2}(.*) - mamedb.com</title>");
+                Matcher m = p.matcher(result.toString());
                 if(!m.find()) {
                     return null;
                 }
@@ -65,13 +65,13 @@ public class MameDbSource extends HttpDataSource {
                     data.images = new ArrayList<>();
 
                     p = Pattern.compile("<img src='/(snap/.*\\.png)' alt='Snapshot:.*'/>");
-                    m = p.matcher(result);
+                    m = p.matcher(result.toString());
                     if(m.find()) {
                         data.images.add(new Image("game", BASE_URL + m.group(1), "png", true));
                     }
 
                     p = Pattern.compile("<img src='/(titles/.*\\.png)' alt='Title:.*'/>");
-                    m = p.matcher(result);
+                    m = p.matcher(result.toString());
                     if(m.find()) {
                         data.images.add(new Image("title", BASE_URL + m.group(1), "png", true));
                     }

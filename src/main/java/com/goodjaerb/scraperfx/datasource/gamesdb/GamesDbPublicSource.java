@@ -21,10 +21,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
     private static final Map<String, String> DEFAULT_PARAMS;
 
     static {
-        final Map<String, String> initialParams = new HashMap<>();
-        initialParams.put("apikey", ScraperFX.getKeysValue("GamesDb.Public"));
-
-        DEFAULT_PARAMS = Collections.unmodifiableMap(initialParams);
+        DEFAULT_PARAMS = Map.of("apikey", ScraperFX.getKeysValue("GamesDb.Public"));
     }
 
     @Override
@@ -82,9 +79,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
 
         if(CACHED_PLATFORMS_DATA.isDataAvailable()) {
             final List<String> systemNames = new ArrayList<>();
-            CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> {
-                systemNames.add(platform.name);
-            });
+            CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> systemNames.add(platform.name));
             return systemNames;
         }
         return null;
@@ -94,11 +89,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
         populatePlatformsData();
 
         if(CACHED_PLATFORMS_DATA.isDataAvailable()) {
-            final List<GamesDbPlatform> platforms = new ArrayList<>();
-            CACHED_PLATFORMS_DATA.data.platforms.values().forEach((platform) -> {
-                platforms.add(platform);//new GamesDbPlatform(platform));
-            });
-            return platforms;
+            return new ArrayList<>(CACHED_PLATFORMS_DATA.data.platforms.values());
         }
         return null;
     }
@@ -121,9 +112,7 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
             final GamesDbPaginatedResult<GamesDbGamesByPlatformData> cachedData = CACHED_GAMES_BY_PLATFORM_DATA.get(platformId);
             if(cachedData != null && cachedData.isDataAvailable()) {
                 final List<String> gameNames = new ArrayList<>();
-                cachedData.data.games.forEach((game) -> {
-                    gameNames.add(game.game_title);
-                });
+                cachedData.data.games.forEach((game) -> gameNames.add(game.game_title));
                 return gameNames;
             }
         }
@@ -213,14 +202,14 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
             populateGenresData();
 
             if(CACHED_GENRES_DATA.isDataAvailable()) {
-                String result = "";
+                StringBuilder result = new StringBuilder();
                 for(int i = 0; i < genres.size(); i++) {
-                    result += CACHED_GENRES_DATA.data.genres.get(genres.get(i).toString()).name;
+                    result.append(CACHED_GENRES_DATA.data.genres.get(genres.get(i).toString()).name);
                     if(i < genres.size() - 1) {
-                        result += ", ";
+                        result.append(", ");
                     }
                 }
-                return result;
+                return result.toString();
             }
         }
         return "";
@@ -231,14 +220,14 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
             populateDevelopersData();
 
             if(CACHED_DEVELOPERS_DATA.isDataAvailable()) {
-                String result = "";
+                StringBuilder result = new StringBuilder();
                 for(int i = 0; i < developers.size(); i++) {
-                    result += CACHED_DEVELOPERS_DATA.data.developers.get(developers.get(i).toString()).name;
+                    result.append(CACHED_DEVELOPERS_DATA.data.developers.get(developers.get(i).toString()).name);
                     if(i < developers.size() - 1) {
-                        result += ", ";
+                        result.append(", ");
                     }
                 }
-                return result;
+                return result.toString();
             }
         }
         return "";
@@ -249,14 +238,14 @@ public class GamesDbPublicSource extends GamesDbSourceBase {
             populatePublishersData();
 
             if(CACHED_PUBLISHERS_DATA.isDataAvailable()) {
-                String result = "";
+                StringBuilder result = new StringBuilder();
                 for(int i = 0; i < publishers.size(); i++) {
-                    result += CACHED_PUBLISHERS_DATA.data.publishers.get(publishers.get(i).toString()).name;
+                    result.append(CACHED_PUBLISHERS_DATA.data.publishers.get(publishers.get(i).toString()).name);
                     if(i < publishers.size() - 1) {
-                        result += ", ";
+                        result.append(", ");
                     }
                 }
-                return result;
+                return result.toString();
             }
         }
         return "";

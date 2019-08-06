@@ -13,15 +13,15 @@ import java.util.Objects;
  */
 public class Game {
 
-    private enum CompareType {GAME_NAME, FILE_NAME}
-
-    ;
+    private enum CompareType {
+        GAME_NAME, FILE_NAME
+    }
 
     private static class GameComparator implements Comparator<Game> {
 
         private final CompareType compareType;
 
-        public GameComparator(CompareType compareType) {
+        GameComparator(CompareType compareType) {
             this.compareType = compareType;
         }
 
@@ -45,12 +45,10 @@ public class Game {
 
         public final String cssBackground;
 
-        private MatchStrength(String cssBackground) {
+        MatchStrength(String cssBackground) {
             this.cssBackground = cssBackground;
         }
     }
-
-    ;
 
     public String        matchedName;
     public MatchStrength strength;

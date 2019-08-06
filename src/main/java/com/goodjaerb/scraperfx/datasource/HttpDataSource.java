@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
  * @author goodjaerb
  */
 public abstract class HttpDataSource implements DataSource {
-    public static final String USER_AGENT_PROPERTY = "User-Agent";
-    public static final String USER_AGENT_MOZILLA  = "Mozilla/5.0";
+    private static final String USER_AGENT_PROPERTY = "User-Agent";
+    private static final String USER_AGENT_MOZILLA  = "Mozilla/5.0";
 
     private String encodeParam(String value) {
         String encoded = null;
@@ -41,11 +41,11 @@ public abstract class HttpDataSource implements DataSource {
         return getReader(url, null, USER_AGENT_PROPERTY, USER_AGENT_MOZILLA);
     }
 
-    protected BufferedReader getReader(String url, Map<String, String> params) {
+    BufferedReader getReader(String url, Map<String, String> params) {
         return getReader(url, params, USER_AGENT_PROPERTY, USER_AGENT_MOZILLA);
     }
 
-    protected BufferedReader getReader(String urlStr, Map<String, String> params, String... httpProps) {
+    private BufferedReader getReader(String urlStr, Map<String, String> params, String... httpProps) {
         String encodedUrl = urlStr;
         if(params != null) {
             encodedUrl = params.keySet().stream().map(key -> key + "=" + encodeParam(params.get(key))).collect(Collectors.joining("&", urlStr + "?", ""));
@@ -89,7 +89,7 @@ public abstract class HttpDataSource implements DataSource {
 //                }
 
                 Logger.getLogger(HttpDataSource.class.getName()).log(Level.INFO, "{0} {1}", new Object[]{conn.getResponseCode(), conn.getResponseMessage()});
-                return new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                return new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
             }
             catch(SocketTimeoutException ex) {
                 if(++retryCount < 3) {

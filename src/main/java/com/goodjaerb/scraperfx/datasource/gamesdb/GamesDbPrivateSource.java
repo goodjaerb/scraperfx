@@ -25,10 +25,7 @@ public class GamesDbPrivateSource extends GamesDbSourceBase {
     private static final Map<String, String> DEFAULT_PARAMS;
 
     static {
-        final Map<String, String> initialParams = new HashMap<>();
-        initialParams.put("apikey", ScraperFX.getKeysValue("GamesDb.Private"));
-
-        DEFAULT_PARAMS = Collections.unmodifiableMap(initialParams);
+        DEFAULT_PARAMS = Map.of("apikey", ScraperFX.getKeysValue("GamesDb.Private"));
     }
 
     @Override
@@ -71,7 +68,7 @@ public class GamesDbPrivateSource extends GamesDbSourceBase {
         populateGamesImages(platformId);
     }
 
-    public void populateGamesImages(String platformId) {
+    private void populateGamesImages(String platformId) {
         loadGamesByPlatformCache(platformId);
 
         final GamesDbPaginatedResult<GamesDbGamesByPlatformData> cachedGameData = CACHED_GAMES_BY_PLATFORM_DATA.get(platformId);

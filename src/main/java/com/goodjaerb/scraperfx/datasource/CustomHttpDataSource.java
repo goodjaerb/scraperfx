@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public abstract class CustomHttpDataSource extends HttpDataSource {
 
-    public <T> T getData(DataSourcePlugin<T> plugin, String url, Map<String, String> params) throws IOException {
+    protected <T> T getData(DataSourcePlugin<T> plugin, String url, Map<String, String> params) throws IOException {
         try(final BufferedReader reader = getReader(url, params)) {
             if(reader != null) {
                 return plugin.convert(reader);
@@ -25,7 +25,7 @@ public abstract class CustomHttpDataSource extends HttpDataSource {
         return null;
     }
 
-    public <T> T getData(DataSourcePlugin<T> plugin, String url) throws IOException {
+    protected <T> T getData(DataSourcePlugin<T> plugin, String url) throws IOException {
         return getData(plugin, url, null);
     }
 }

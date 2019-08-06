@@ -28,31 +28,31 @@ import java.util.logging.Logger;
  * @author goodjaerb
  */
 public abstract class GamesDbSourceBase extends CustomHttpDataSource {
-    public static final String SOURCE_NAME = "TheGamesDB (thegamesdb.net)";
+    static final String SOURCE_NAME = "TheGamesDB (thegamesdb.net)";
 
     static final           String GAMESDB_LOCAL_DIR     = "thegamesdb.net";
-    protected static final String GAMES_BY_PLATFORM_DIR = "GamesByPlatformId";
-    protected static final String IMAGES_DIR            = "GamesImages";
-    protected static final String PLATFORMS_FILE        = "platforms.json";
-    protected static final String GENRES_FILE           = "genres.json";
-    protected static final String DEVELOPERS_FILE       = "developers.json";
-    protected static final String PUBLISHERS_FILE       = "publishers.json";
+    static final String GAMES_BY_PLATFORM_DIR = "GamesByPlatformId";
+    static final String IMAGES_DIR            = "GamesImages";
+    static final String PLATFORMS_FILE        = "platforms.json";
+    static final String GENRES_FILE           = "genres.json";
+    static final String DEVELOPERS_FILE       = "developers.json";
+    static final String PUBLISHERS_FILE       = "publishers.json";
 
-    protected static final String API_BASE_URL             = "https://api.thegamesdb.net/";
-    protected static final String API_GET_PLATFORMS_LIST   = "Platforms";
-    protected static final String API_GET_GENRES_LIST      = "Genres";
-    protected static final String API_GET_DEVELOPERS_LIST  = "Developers";
-    protected static final String API_GET_PUBLISHERS_LIST  = "Publishers";
-    protected static final String API_GAMES_BY_PLATFORM_ID = "Games/ByPlatformID";
-    protected static final String API_GAMES_IMAGES         = "Games/Images";
+    static final String API_BASE_URL             = "https://api.thegamesdb.net/";
+    static final String API_GET_PLATFORMS_LIST   = "Platforms";
+    static final String API_GET_GENRES_LIST      = "Genres";
+    static final String API_GET_DEVELOPERS_LIST  = "Developers";
+    static final String API_GET_PUBLISHERS_LIST  = "Publishers";
+    static final String API_GAMES_BY_PLATFORM_ID = "Games/ByPlatformID";
+    static final String API_GAMES_IMAGES         = "Games/Images";
 
-    protected static final GamesDbResult<GamesDbPlatformsData>  CACHED_PLATFORMS_DATA  = new GamesDbResult<>();
-    protected static final GamesDbResult<GamesDbGenresData>     CACHED_GENRES_DATA     = new GamesDbResult<>();
-    protected static final GamesDbResult<GamesDbDevelopersData> CACHED_DEVELOPERS_DATA = new GamesDbResult<>();
-    protected static final GamesDbResult<GamesDbPublishersData> CACHED_PUBLISHERS_DATA = new GamesDbResult<>();
+    static final GamesDbResult<GamesDbPlatformsData>  CACHED_PLATFORMS_DATA  = new GamesDbResult<>();
+    static final GamesDbResult<GamesDbGenresData>     CACHED_GENRES_DATA     = new GamesDbResult<>();
+    static final GamesDbResult<GamesDbDevelopersData> CACHED_DEVELOPERS_DATA = new GamesDbResult<>();
+    static final GamesDbResult<GamesDbPublishersData> CACHED_PUBLISHERS_DATA = new GamesDbResult<>();
 
-    protected static final Map<String, GamesDbPaginatedResult<GamesDbGamesByPlatformData>> CACHED_GAMES_BY_PLATFORM_DATA = new HashMap<>();
-    protected static final Map<String, GamesDbPaginatedResult<GamesDbImagesData>>          CACHED_GAMES_IMAGES_DATA      = new HashMap<>();
+    static final Map<String, GamesDbPaginatedResult<GamesDbGamesByPlatformData>> CACHED_GAMES_BY_PLATFORM_DATA = new HashMap<>();
+    static final Map<String, GamesDbPaginatedResult<GamesDbImagesData>>          CACHED_GAMES_IMAGES_DATA      = new HashMap<>();
 
     abstract Map<String, String> getDefaultParams();
 
@@ -65,7 +65,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         return new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
     }
 
-    protected <T> T getCachedData(Path cacheFilePath, Type typeOfT) throws IOException {
+    private <T> T getCachedData(Path cacheFilePath, Type typeOfT) throws IOException {
         if(!Files.exists(cacheFilePath)) {
             Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Creating local file ''{0}''...", cacheFilePath.toString());
             Files.createDirectories(cacheFilePath.getParent());
@@ -80,7 +80,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         return localData;
     }
 
-    protected <T> void writeCachedData(Path cacheFilePath, T dataHolder) throws IOException {
+    private <T> void writeCachedData(Path cacheFilePath, T dataHolder) throws IOException {
         try(final BufferedWriter writer = Files.newBufferedWriter(cacheFilePath, StandardCharsets.UTF_8)) {
             getGson().toJson(dataHolder, writer);
             writer.flush();
@@ -99,7 +99,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
      * @param url
      * @param params
      */
-    protected <D extends GamesDbData<?>, T extends GamesDbResult<D>> void populateCache(T cache, Type typeOfT, Class<D> dataClass, Path cachePath, String url, Map<String, String> params) {
+    <D extends GamesDbData<?>, T extends GamesDbResult<D>> void populateCache(T cache, Type typeOfT, Class<D> dataClass, Path cachePath, String url, Map<String, String> params) {
         if(!cache.isDataAvailable()) {
             Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Initializing local {0} cache...", dataClass.getName());
             try {
@@ -135,7 +135,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         }
     }
 
-    protected <E, D extends GamesDbPaginatedData<E>, T extends GamesDbPaginatedResult<D>> void populatePaginatedCache(T cache, Type typeOfT, Class<D> dataClass, Path cachePath, String url, Map<String, String> params) {
+    <E, D extends GamesDbPaginatedData<E>, T extends GamesDbPaginatedResult<D>> void populatePaginatedCache(T cache, Type typeOfT, Class<D> dataClass, Path cachePath, String url, Map<String, String> params) {
         if(!cache.isDataAvailable()) {
             Logger.getLogger(GamesDbSourceBase.class.getName()).log(Level.INFO, "Initializing local {0} cache...", dataClass.getName());
             try {
@@ -153,12 +153,12 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                         final List<String> gameIdList = Arrays.asList(gameIds.split(","));
 
                         int totalCount = 0;
-                        String shortenedGameIdParam = "";
+                        StringBuilder shortenedGameIdParam = new StringBuilder();
                         for(int i = 0; i < gameIdList.size(); i++) {
-                            shortenedGameIdParam += gameIdList.get(i) + ",";
+                            shortenedGameIdParam.append(gameIdList.get(i)).append(",");
 
                             if(i == gameIdList.size() - 1 || (i + 1) % 500 == 0) {
-                                localParams.put("games_id", shortenedGameIdParam);
+                                localParams.put("games_id", shortenedGameIdParam.toString());
                                 localData = getData(new JsonDataSourcePlugin<>(typeOfT), url, localParams);
 
                                 if(localData == null) {
@@ -195,7 +195,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
                                     }
                                 }
 
-                                shortenedGameIdParam = "";
+                                shortenedGameIdParam = new StringBuilder();
                             }
                         }
 
@@ -251,7 +251,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         }
     }
 
-    protected void loadGamesByPlatformCache(String platformId) {
+    void loadGamesByPlatformCache(String platformId) {
         GamesDbPaginatedResult<GamesDbGamesByPlatformData> cachedData = CACHED_GAMES_BY_PLATFORM_DATA.get(platformId);
         if(cachedData == null || !cachedData.isDataAvailable()) {
             try {
@@ -270,7 +270,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         }
     }
 
-    protected void loadGamesImagesCache(String platformId) {
+    void loadGamesImagesCache(String platformId) {
         GamesDbPaginatedResult<GamesDbImagesData> cachedData = CACHED_GAMES_IMAGES_DATA.get(platformId);
         if(cachedData == null || !cachedData.isDataAvailable()) {
             try {
@@ -289,15 +289,13 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
         }
     }
 
-    protected List<String> getGameIdsForPlatform(String platformId) {
+    List<String> getGameIdsForPlatform(String platformId) {
         loadGamesByPlatformCache(platformId);
 
         final GamesDbPaginatedResult<GamesDbGamesByPlatformData> cachedData = CACHED_GAMES_BY_PLATFORM_DATA.get(platformId);
         if(cachedData != null && cachedData.isDataAvailable()) {
             final List<String> ids = new ArrayList<>();
-            cachedData.data.values().forEach((game) -> {
-                ids.add(Integer.toString(game.id));
-            });
+            cachedData.data.values().forEach((game) -> ids.add(Integer.toString(game.id)));
             return ids;
         }
 

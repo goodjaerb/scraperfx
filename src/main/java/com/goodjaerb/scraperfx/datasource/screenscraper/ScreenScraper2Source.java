@@ -44,13 +44,11 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
 //    }
 
     static {
-        final Map<String, String> initialParams = new HashMap<>();
-        initialParams.put("devid", ScraperFX.getKeysValue("ScreenScraper.ID"));
-        initialParams.put("devpassword", ScraperFX.getKeysValue("ScreenScraper.KEY"));
-        initialParams.put("softname", "scraperfx");
-        initialParams.put("output", "json");
-
-        DEFAULT_PARAMS = Collections.unmodifiableMap(initialParams);
+        DEFAULT_PARAMS = Map.of(
+                "devid", ScraperFX.getKeysValue("ScreenScraper.ID"),
+                "devpassword", ScraperFX.getKeysValue("ScreenScraper.KEY"),
+                "softname", "scraperfx",
+                "output", "json");
     }
 
 //    private String crcCalc(Path filePath) throws IOException {

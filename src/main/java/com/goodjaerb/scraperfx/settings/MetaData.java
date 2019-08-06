@@ -5,16 +5,15 @@
  */
 package com.goodjaerb.scraperfx.settings;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * @author goodjaerb
  */
 public class MetaData {
-    public enum MetaDataId {NAME, SORTNAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, SCREEN_SCRAPER_ID, VIDEO_EMBED, VIDEO_DOWNLOAD, IMAGES}
-
-    ;
+    public enum MetaDataId {
+        NAME, SORTNAME, DESC, RATING, RELEASE_DATE, DEVELOPER, PUBLISHER, GENRE, PLAYERS, SCREEN_SCRAPER_ID, VIDEO_EMBED, VIDEO_DOWNLOAD, IMAGES
+    }
 
     public Boolean     favorite            = false;
     public String      metaName;
@@ -66,22 +65,14 @@ public class MetaData {
 //    }
 
     public void selectImage(Image image) {
-        images.stream().filter((i) -> (i.type.equals(image.type))).forEach((i) -> {
-            i.selected = i.url.equals(image.url);
-        });
+        images.stream().filter((i) -> (i.type.equals(image.type))).forEach((i) -> i.selected = i.url.equals(image.url));
     }
 
     public void removeImagesFromSource(String sourceName) {
-        final Iterator<Image> i = images.iterator();
-        while(i.hasNext()) {
-            final Image image = i.next();
-            if(sourceName.equals(image.source)) {
-                i.remove();
-            }
-        }
+        images.removeIf(image -> sourceName.equals(image.source));
     }
 
-    public void transferLocksFrom(MetaData other) {
+    private void transferLocksFrom(MetaData other) {
         this.lockDesc = other.lockDesc;
         this.lockDeveloper = other.lockDeveloper;
         this.lockGenre = other.lockGenre;
@@ -97,36 +88,36 @@ public class MetaData {
         this.lockVideoDownload = other.lockVideoDownload;
     }
 
-    public void reset() {
-        metaReleaseDate = null;
-        metaRating = null;
-        metaPublisher = null;
-        metaName = null;
-        metaSortName = null;
-        metaDeveloper = null;
-        metaDesc = null;
-        players = null;
-        metaGenre = null;
-        images = null;
-        screenScraperId = null;
-        videodownload = null;
-        videoembed = null;
-        favorite = false;
-
-        lockDesc = false;
-        lockDeveloper = false;
-        lockGenre = false;
-        lockImages = false;
-        lockName = false;
-        lockSortName = false;
-        lockPlayers = false;
-        lockPublisher = false;
-        lockRating = false;
-        lockReleasedate = false;
-        lockScreenScraperId = false;
-        lockVideoDownload = false;
-        lockVideoEmbed = false;
-    }
+//    public void reset() {
+//        metaReleaseDate = null;
+//        metaRating = null;
+//        metaPublisher = null;
+//        metaName = null;
+//        metaSortName = null;
+//        metaDeveloper = null;
+//        metaDesc = null;
+//        players = null;
+//        metaGenre = null;
+//        images = null;
+//        screenScraperId = null;
+//        videodownload = null;
+//        videoembed = null;
+//        favorite = false;
+//
+//        lockDesc = false;
+//        lockDeveloper = false;
+//        lockGenre = false;
+//        lockImages = false;
+//        lockName = false;
+//        lockSortName = false;
+//        lockPlayers = false;
+//        lockPublisher = false;
+//        lockRating = false;
+//        lockReleasedate = false;
+//        lockScreenScraperId = false;
+//        lockVideoDownload = false;
+//        lockVideoEmbed = false;
+//    }
 
     public void setMetaData(MetaData other) {
         if(other != null) {

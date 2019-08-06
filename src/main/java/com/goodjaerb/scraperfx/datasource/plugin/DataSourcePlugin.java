@@ -13,5 +13,5 @@ import java.io.BufferedReader;
  */
 public interface DataSourcePlugin<T> {
 
-    public abstract T convert(BufferedReader reader);
+    T convert(BufferedReader reader);
 }

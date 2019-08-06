@@ -15,11 +15,8 @@ import java.util.List;
  */
 public interface DataSource {
 
-    public String getSourceName();
-
-    public List<String> getSystemNames();
-
-    public List<String> getSystemGameNames(String systemName);
-
-    public MetaData getMetaData(String systemName, Game game);
+    String getSourceName();
+    List<String> getSystemNames();
+    List<String> getSystemGameNames(String systemName);
+    MetaData getMetaData(String systemName, Game game);
 }

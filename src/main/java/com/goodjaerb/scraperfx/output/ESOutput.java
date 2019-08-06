@@ -95,7 +95,7 @@ public class ESOutput {
         d.showAndWait();
     }
 
-    private class OutputDialog extends Stage {
+    private static class OutputDialog extends Stage {
 
         private final List<String>           esTags                 = new ArrayList<>();
         private final List<CheckBox>         enableTagCheckBoxes    = new ArrayList<>();
@@ -110,7 +110,7 @@ public class ESOutput {
         //        private final QueuedMessageBox  messageArea = new QueuedMessageBox("Press START to begin.\n");
         private final TextArea    messageArea  = new TextArea("Press START to begin.\n");
 
-        public OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
+        OutputDialog(List<Game> games, Path outputPath, Path imagesPath, Path videoPath, boolean arcade, Window parentWindow) {
             super();
 
             final VBox tagsBox = new VBox();
@@ -178,13 +178,8 @@ public class ESOutput {
 
             final OutputTask task = new OutputTask(games, outputPath, imagesPath, videoPath);
 
-            task.messageProperty().addListener((observable, oldValue, newValue) -> {
-                messageArea.appendText("\n" + newValue);
-            });
-
-            task.progressProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                progressBar.setProgress((double) newValue);
-            });
+            task.messageProperty().addListener((observable, oldValue, newValue) -> messageArea.appendText("\n" + newValue));
+            task.progressProperty().addListener((observable, oldValue, newValue) -> progressBar.setProgress((double) newValue));
 
             task.setOnSucceeded((e) -> {
 //                messageArea.queueMessage("Output complete!");
@@ -237,7 +232,7 @@ public class ESOutput {
 
 //            private final Consumer<String> messageConsumer;
 
-            public OutputTask(List<Game> games, Path outputPath, Path imagesPath, Path videoPath) {
+            OutputTask(List<Game> games, Path outputPath, Path imagesPath, Path videoPath) {
                 this.games = games;
                 this.outputPath = outputPath.resolve("gamelist.xml");
                 this.imagesPath = imagesPath;
@@ -271,8 +266,8 @@ public class ESOutput {
                                 Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Beginning output of ''{0}''.", g);
                                 writer.append("\t<game>\n");
 
-                                writer.append("\t\t<path>./" + g.fileName + "</path>\n");
-                                writer.append("\t\t<filename>" + g.fileName + "</filename>\n");
+                                writer.append("\t\t<path>./").append(g.fileName).append("</path>\n");
+                                writer.append("\t\t<filename>").append(g.fileName).append("</filename>\n");
                                 if(g.metadata == null) {
                                     String noMatchMetaName = g.fileName;
                                     if(ScraperFX.getCurrentSettings().substringRegex != null && !"".equals(ScraperFX.getCurrentSettings().substringRegex)) {
@@ -286,41 +281,41 @@ public class ESOutput {
                                     }
                                     noMatchMetaName = noMatchMetaName.replaceAll("(\\(.*\\)|\\[.*\\])", "");
                                     noMatchMetaName = noMatchMetaName.substring(0, noMatchMetaName.lastIndexOf(".")).trim();
-                                    writer.append("\t\t<name>" + noMatchMetaName + "</name>\n");
+                                    writer.append("\t\t<name>").append(noMatchMetaName).append("</name>\n");
                                 }
                                 else {
                                     Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Outputting metadata ''{0}''.", g);
                                     if(g.metadata.metaName != null) {
-                                        writer.append("\t\t<name>" + g.metadata.metaName + "</name>\n");
+                                        writer.append("\t\t<name>").append(g.metadata.metaName).append("</name>\n");
                                     }
                                     if(g.metadata.metaSortName != null && !g.metadata.metaSortName.isEmpty()) {
-                                        writer.append("\t\t<sortname>" + g.metadata.metaSortName + "</sortname>\n");
+                                        writer.append("\t\t<sortname>").append(g.metadata.metaSortName).append("</sortname>\n");
                                     }
                                     if(g.metadata.metaDesc != null && !g.metadata.metaDesc.isEmpty()) {
-                                        writer.append("\t\t<desc>" + g.metadata.metaDesc + "</desc>\n");
+                                        writer.append("\t\t<desc>").append(g.metadata.metaDesc).append("</desc>\n");
                                     }
                                     if(g.metadata.metaReleaseDate != null && !g.metadata.metaReleaseDate.isEmpty()) {
                                         final int dateLength = g.metadata.metaReleaseDate.length();
                                         if(dateLength == 4 || dateLength == 5) {
                                             //arcadeitalia tends to just have a year for a release date but often times will add a '?' to the end so
                                             //this will take care of that.
-                                            writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate.replaceAll("\\p{Punct}", "") + "0101T000000</releasedate>\n");
+                                            writer.append("\t\t<releasedate>").append(g.metadata.metaReleaseDate.replaceAll("\\p{Punct}", "")).append("0101T000000</releasedate>\n");
                                         }
                                         else {
-                                            writer.append("\t\t<releasedate>" + g.metadata.metaReleaseDate.substring(6) + g.metadata.metaReleaseDate.substring(0, 2) + g.metadata.metaReleaseDate.substring(3, 5) + "T000000</releasedate>\n");
+                                            writer.append("\t\t<releasedate>").append(g.metadata.metaReleaseDate.substring(6)).append(g.metadata.metaReleaseDate.substring(0, 2)).append(g.metadata.metaReleaseDate.substring(3, 5)).append("T000000</releasedate>\n");
                                         }
                                     }
                                     if(g.metadata.metaDeveloper != null && !g.metadata.metaDeveloper.isEmpty() && !"<generic>".equals(g.metadata.metaDeveloper)) {
-                                        writer.append("\t\t<developer>" + g.metadata.metaDeveloper.replace("<unknown> / ", "") + "</developer>\n");
+                                        writer.append("\t\t<developer>").append(g.metadata.metaDeveloper.replace("<unknown> / ", "")).append("</developer>\n");
                                     }
                                     if(g.metadata.metaPublisher != null && !g.metadata.metaPublisher.isEmpty()) {
-                                        writer.append("\t\t<publisher>" + g.metadata.metaPublisher + "</publisher>\n");
+                                        writer.append("\t\t<publisher>").append(g.metadata.metaPublisher).append("</publisher>\n");
                                     }
                                     if(g.metadata.metaGenre != null && !g.metadata.metaGenre.isEmpty()) {
-                                        writer.append("\t\t<genre>" + g.metadata.metaGenre + "</genre>\n");
+                                        writer.append("\t\t<genre>").append(g.metadata.metaGenre).append("</genre>\n");
                                     }
                                     if(g.metadata.players != null && !g.metadata.players.isEmpty()) {
-                                        writer.append("\t\t<players>" + g.metadata.players + "</players>\n");
+                                        writer.append("\t\t<players>").append(g.metadata.players).append("</players>\n");
                                     }
                                     if(g.metadata.favorite) {
                                         writer.append("\t\t<favorite>true</favorite>\n");
@@ -330,12 +325,12 @@ public class ESOutput {
                                         Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Downloading video for ''{0}''.", g);
                                         if(ScraperFX.saveVideo(videoPath, g.fileName + "_video.mp4", g.metadata.videodownload)) {
                                             Logger.getLogger(ESOutput.class.getName()).log(Level.INFO, "Video downloaded.");
-                                            writer.append("\t\t<video>./videos/" + g.fileName + "_video.mp4</video>\n");
+                                            writer.append("\t\t<video>./videos/").append(g.fileName).append("_video.mp4</video>\n");
                                         }
                                     }
 
                                     if(g.metadata.videoembed != null && !g.metadata.videoembed.isEmpty()) {
-                                        writer.append("\t\t<videoEmbed>" + g.metadata.videoembed + "</videoEmbed>\n");
+                                        writer.append("\t\t<videoEmbed>").append(g.metadata.videoembed).append("</videoEmbed>\n");
                                     }
 
                                     if(g.metadata.images != null && !g.metadata.images.isEmpty()) {
@@ -353,11 +348,11 @@ public class ESOutput {
                                                 final String primaryImageType = "png";
                                                 final String secondaryImageType = "png";
                                                 if(!primary.equals("") && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-" + primary, primaryImageType, primaryPath)) {
-                                                    writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-" + primary + "." + primaryImageType + "</" + esTags.get(i) + ">\n");
+                                                    writer.append("\t\t<").append(esTags.get(i)).append(">./images/").append(g.fileName).append("-").append(primary).append(".").append(primaryImageType).append("</").append(esTags.get(i)).append(">\n");
                                                     continue;
                                                 }
                                                 if(!secondary.equals("") && ScraperFX.writeImageToFile(imagesPath, g.fileName + "-" + secondary, secondaryImageType, secondaryPath)) {
-                                                    writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-" + secondary + "." + secondaryImageType + "</" + esTags.get(i) + ">\n");
+                                                    writer.append("\t\t<").append(esTags.get(i)).append(">./images/").append(g.fileName).append("-").append(secondary).append(".").append(secondaryImageType).append("</").append(esTags.get(i)).append(">\n");
                                                     continue;
                                                 }
 
@@ -368,14 +363,14 @@ public class ESOutput {
                                                 if(flyerPath != null && "image".equals(esTags.get(i))) {
                                                     final String flyerImageType = "png";//flyerPath.substring(flyerPath.lastIndexOf(".") + 1);
                                                     if(ScraperFX.writeImageToFile(imagesPath, g.fileName + "-flyer", flyerImageType, flyerPath)) {
-                                                        writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-flyer" + "." + flyerImageType + "</" + esTags.get(i) + ">\n");
+                                                        writer.append("\t\t<").append(esTags.get(i)).append(">./images/").append(g.fileName).append("-flyer").append(".").append(flyerImageType).append("</").append(esTags.get(i)).append(">\n");
                                                         continue;
                                                     }
                                                 }
                                                 if(marqueePath != null && "bgImage".equals(esTags.get(i))) {
                                                     final String marqueeImageType = "png";//marqueePath.substring(marqueePath.lastIndexOf(".") + 1);
                                                     if(ScraperFX.writeImageToFile(imagesPath, g.fileName + "-marquee", marqueeImageType, marqueePath)) {
-                                                        writer.append("\t\t<" + esTags.get(i) + ">./images/" + g.fileName + "-marquee" + "." + marqueeImageType + "</" + esTags.get(i) + ">\n");
+                                                        writer.append("\t\t<").append(esTags.get(i)).append(">./images/").append(g.fileName).append("-marquee").append(".").append(marqueeImageType).append("</").append(esTags.get(i)).append(">\n");
                                                     }
                                                 }
                                             }

@@ -29,11 +29,7 @@ public class ArcadeItaliaSource extends CustomHttpDataSource {
     private static final String              GAME_NAME_PARAM = "game_name";
 
     static {
-        final Map<String, String> initialMap = new HashMap<>();
-        initialMap.put("ajax", "query_mame");
-        initialMap.put("lang", "en");
-
-        DEFAULT_PARAMS = Collections.unmodifiableMap(initialMap);
+        DEFAULT_PARAMS = Map.of("ajax", "query_mame", "lang", "en");
     }
 
 

@@ -788,9 +788,9 @@ public class ScraperFX extends Application {
                     if(result.isPresent()) {
                         // use SourceAgent.THEGAMESDB_PRIVATE to download GamesByPlatform
                         DataSourceFactory.get(SourceAgent.THEGAMESDB_PRIVATE, GamesDbPrivateSource.class).populateGamesByPlatform(Integer.toString(result.get().id));
-                        System.out.println("FROM ScraperFX!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        System.out.println(DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(result.get().name));
-                        System.out.println("END FROM ScraperFX!!!!!!!!!!!!!!!!!!!!!!!!!");
+//                        System.out.println("FROM ScraperFX!!!!!!!!!!!!!!!!!!!!!!!!!");
+//                        System.out.println(DataSourceFactory.get(SourceAgent.THEGAMESDB).getSystemGameNames(result.get().name));
+//                        System.out.println("END FROM ScraperFX!!!!!!!!!!!!!!!!!!!!!!!!!");
                     }
                 }
                 catch(ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
@@ -1050,19 +1050,25 @@ public class ScraperFX extends Application {
 //                    connection.setConnectTimeout(3000);
 //                    connection.setReadTimeout(3000);
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-                    Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "{0} {1}", new Object[]{connection.getResponseCode(), connection.getResponseMessage()});
-                    final BufferedImage img = ImageIO.read(connection.getInputStream());
+                    Logger.getLogger(ScraperFX.class.getName()).log(Level.INFO, "{0} {1} Content-type: {2}", new Object[]{connection.getResponseCode(), connection.getResponseMessage(), connection.getContentType()});
+                    if(connection.getContentType().startsWith("image")) {
+                        final BufferedImage img = ImageIO.read(connection.getInputStream());
 
-                    int width = 640;
-                    if(img.getWidth() <= 640) {
-                        width = img.getWidth();
+                        int width = 640;
+                        if(img.getWidth() <= 640) {
+                            width = img.getWidth();
+                        }
+
+                        final java.awt.Image scaled = img.getScaledInstance(width, -1, java.awt.Image.SCALE_SMOOTH);
+                        final BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                        scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
+                        ImageIO.write(scaledBuff, imageOutputType, outputFile);
+                        return true;
                     }
-
-                    final java.awt.Image scaled = img.getScaledInstance(width, -1, java.awt.Image.SCALE_SMOOTH);
-                    final BufferedImage scaledBuff = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
-                    scaledBuff.getGraphics().drawImage(scaled, 0, 0, null);
-                    ImageIO.write(scaledBuff, imageOutputType, outputFile);
-                    return true;
+                    else {
+                        Logger.getLogger(ScraperFX.class.getName()).log(Level.WARNING, "URL content returned was not an image.");
+                        return false;
+                    }
                 }
                 catch(MalformedURLException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);

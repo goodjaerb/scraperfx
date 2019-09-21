@@ -95,7 +95,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         try {
 //            lastCheckTime = System.nanoTime();
             final ScreenScraperSearchResults results = getData(new JsonDataSourcePlugin<>(ScreenScraperSearchResults.class), API_BASE_URL + API_V2 + API_SEARCH, params);
-            System.out.println("Received result.");
+//            System.out.println("Received result.");
             if(results != null && results.response.jeux != null && !results.response.jeux.isEmpty()) {
                 final List<ScreenScraperGame> resultsList = results.response.jeux;
                 final List<ScreenScraperGame> returnList = new ArrayList<>();
@@ -164,7 +164,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
 
         try {
             final ScreenScraperInfoV1 info = getData(new JsonDataSourcePlugin<>(ScreenScraperInfoV1.class), API_BASE_URL + API_V1 + API_INFO, params);
-            System.out.println("Received result. " + info);
+//            System.out.println("Received result. " + info);
             if(info != null && info.response != null && info.response.jeu != null) {
                 return new ScreenScraperGame(info.response.jeu);
 //                return Collections.singletonList(new ScreenScraperGame(info.response.jeu));

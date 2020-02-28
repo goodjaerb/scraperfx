@@ -46,10 +46,12 @@ public abstract class HttpDataSource implements DataSource {
     }
 
     private BufferedReader getReader(String urlStr, Map<String, String> params, String... httpProps) {
+        Logger.getLogger(HttpDataSource.class.getName()).log(Level.INFO, "url=" + urlStr + ", params=" + params + ", httpProps=" + httpProps);
         String encodedUrl = urlStr;
         if(params != null) {
             encodedUrl = params.keySet().stream().map(key -> key + "=" + encodeParam(params.get(key))).collect(Collectors.joining("&", urlStr + "?", ""));
         }
+        Logger.getLogger(HttpDataSource.class.getName()).log(Level.INFO, encodedUrl);
 
         HttpURLConnection conn;
         int retryCount = 0;

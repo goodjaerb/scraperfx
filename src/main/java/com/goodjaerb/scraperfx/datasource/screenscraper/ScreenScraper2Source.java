@@ -105,22 +105,22 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
                         return null;
                     }
 
-                    final ScreenScraperGame ssGame = getInfo(resultsList.get(0).systemeid, resultsList.get(0).id, resultsList.get(0).noms.get(0).text);
+                    final ScreenScraperGame ssGame = getInfo(resultsList.get(0).systeme.id, resultsList.get(0).id, resultsList.get(0).noms.get(0).text);
 //                    final ScreenScraperGame ssGame = resultsList.get(0);
-                    if(ssGame == null || ssGame.systemeid == null) {
+                    if(ssGame == null || ssGame.systeme.id == null) {
                         return null;
                     }
 
-                    if(sysId == Integer.parseInt(ssGame.systemeid)) {
+                    if(sysId == Integer.parseInt(ssGame.systeme.id)) {
                         return Collections.singletonList(ssGame);
 //                        return resultsList;
                     }
                 }
                 else {
                     for(final ScreenScraperGame ssGame : resultsList) {
-                        final ScreenScraperGame fromInfosGame = getInfo(ssGame.systemeid, ssGame.id, ssGame.noms.get(0).text);
+                        final ScreenScraperGame fromInfosGame = getInfo(ssGame.systeme.id, ssGame.id, ssGame.noms.get(0).text);
 
-                        if(fromInfosGame != null && sysId == Integer.parseInt(fromInfosGame.systemeid)) {
+                        if(fromInfosGame != null && sysId == Integer.parseInt(fromInfosGame.systeme.id)) {
                             if(!forceUpdate
                                     && game.metadata != null
                                     && game.metadata.screenScraperId != null
@@ -154,7 +154,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
         final Map<String, String> params = new HashMap<>(DEFAULT_PARAMS);
         params.put("romnom", gameName);
         params.put("systemeid", systemId);
-        params.put("gameid", gameId);
+        //params.put("gameid", gameId);
 //        try {
 //            params.put("crc", crcCalc(filePath));
 //        }
@@ -177,6 +177,7 @@ public class ScreenScraper2Source extends CustomHttpDataSource {
     }
 
     private ScreenScraperGame getInfo(String systemName, Game game) {//, String gameId, Path filePath) {
+
         final Integer sysId = ScreenScraperSystemIdMap.getId(systemName);
         if(sysId == null) {
             return null;

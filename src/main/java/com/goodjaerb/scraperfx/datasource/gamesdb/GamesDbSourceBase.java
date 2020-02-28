@@ -38,7 +38,7 @@ public abstract class GamesDbSourceBase extends CustomHttpDataSource {
     static final String DEVELOPERS_FILE       = "developers.json";
     static final String PUBLISHERS_FILE       = "publishers.json";
 
-    static final String API_BASE_URL             = "https://api.thegamesdb.net/";
+    static final String API_BASE_URL             = "https://api.thegamesdb.net/v1/";
     static final String API_GET_PLATFORMS_LIST   = "Platforms";
     static final String API_GET_GENRES_LIST      = "Genres";
     static final String API_GET_DEVELOPERS_LIST  = "Developers";

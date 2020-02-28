@@ -14,7 +14,8 @@ import java.util.List;
 public class ScreenScraperGame {
     public String         id;
     public List<NameData> noms;
-    public String         systemeid;
+//    public String         systemeid;
+    public Systeme systeme;
     public String         systemenom;
     public List<Media>    medias;
 
@@ -29,6 +30,14 @@ public class ScreenScraperGame {
         public NameData(String region, String text) {
             this.region = region;
             this.text = text;
+        }
+    }
+
+    public static class Systeme {
+        public String id;
+
+        public Systeme(String id) {
+            this.id = id;
         }
     }
 
@@ -59,7 +68,7 @@ public class ScreenScraperGame {
 
     public ScreenScraperGame(ScreenScraperGameV1 game) {
         this.id = game.id;
-        this.systemeid = game.systemeid;
+        this.systeme = new Systeme(game.systemeid);
         this.systemenom = game.systemenom;
 
         if(game.noms != null) {

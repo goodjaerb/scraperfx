@@ -1973,7 +1973,6 @@ public class ScraperFX extends Application {
 //                        status.accept("Matched '" + filename + "' to game '" + localGame.matchedName + "'.");
                     }
                 }
-
                 if(localGame.matchedName != null) {
                     if(!skipMatching || refreshMatchedGame || startedUnmatched) {
                         //matched a game, get the rest of the data.
@@ -2107,7 +2106,7 @@ public class ScraperFX extends Application {
                         switch(media.type) {
                             case "video":
                                 newMetaData.videodownload = media.url;
-                                newMetaData.videoembed = "https://www.screenscraper.fr/medias/" + theGame.systemeid + "/" + theGame.id + "/video.mp4";
+                                newMetaData.videoembed = "https://www.screenscraper.fr/medias/" + theGame.systeme.id + "/" + theGame.id + "/video.mp4";
                                 break;
                             case "ss":
                                 com.goodjaerb.scraperfx.settings.Image ssImage = new com.goodjaerb.scraperfx.settings.Image("screenshot", ScreenScraper2Source.SOURCE_NAME, media.url, false);

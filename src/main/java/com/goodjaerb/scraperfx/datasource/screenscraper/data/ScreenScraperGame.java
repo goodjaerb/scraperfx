@@ -89,8 +89,8 @@ public class ScreenScraperGame {
             if(game.medias.media_screenshot != null) {
                 this.medias.add(new Media("ss", game.medias.media_screenshot));
             }
-            if(game.medias.media_boxs != null && game.medias.media_boxs.media_box2d_us != null) {
-                this.medias.add(new Media("box-2D", game.medias.media_boxs.media_box2d_us));
+            if(game.medias.media_boxs != null && game.medias.media_boxs.media_boxs2d != null && game.medias.media_boxs.media_boxs2d.media_box2d_ss != null) {
+                this.medias.add(new Media("box-2D", game.medias.media_boxs.media_boxs2d.media_box2d_ss));
             }
         }
     }

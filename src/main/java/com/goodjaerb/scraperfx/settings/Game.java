@@ -71,23 +71,23 @@ public class Game {
         this.metadata = g.metadata;
     }
 
-    public void updateMetaData(MetaData newMetaData) {
+    public void updateMetaData(MetaData newMetaData, boolean onlyIfBlank) {
         if(metadata == null) {
             metadata = new MetaData();
         }
-        metadata.metaReleaseDate = metadata.lockReleasedate ? metadata.metaReleaseDate : newMetaData.metaReleaseDate;
-        metadata.metaRating = metadata.lockRating ? metadata.metaRating : newMetaData.metaRating;
-        metadata.metaPublisher = metadata.lockPublisher ? metadata.metaPublisher : newMetaData.metaPublisher;
-        metadata.metaName = metadata.lockName ? metadata.metaName : newMetaData.metaName;
-        metadata.metaDeveloper = metadata.lockDeveloper ? metadata.metaDeveloper : newMetaData.metaDeveloper;
-        metadata.metaDesc = metadata.lockDesc ? metadata.metaDesc : newMetaData.metaDesc;
-        metadata.players = metadata.lockPlayers ? metadata.players : newMetaData.players;
-        metadata.metaGenre = metadata.lockGenre ? metadata.metaGenre : newMetaData.metaGenre;
-        metadata.images = metadata.lockImages ? metadata.images : newMetaData.images;
-        metadata.screenScraperId = metadata.lockScreenScraperId ? metadata.screenScraperId : newMetaData.screenScraperId;
-        metadata.videodownload = metadata.lockVideoDownload ? metadata.videodownload : newMetaData.videodownload;
-        metadata.videoembed = metadata.lockVideoEmbed ? metadata.videoembed : newMetaData.videoembed;
-        metadata.favorite = newMetaData.favorite;
+        metadata.metaReleaseDate    = metadata.lockReleasedate      ? metadata.metaReleaseDate  : (!onlyIfBlank || (onlyIfBlank && metadata.metaReleaseDate != null && metadata.metaReleaseDate.isBlank())) ? newMetaData.metaReleaseDate : metadata.metaReleaseDate;
+        metadata.metaRating         = metadata.lockRating           ? metadata.metaRating       : (!onlyIfBlank || (onlyIfBlank && metadata.metaRating != null && metadata.metaRating.isBlank())) ? newMetaData.metaRating : metadata.metaRating;
+        metadata.metaPublisher      = metadata.lockPublisher        ? metadata.metaPublisher    : (!onlyIfBlank || (onlyIfBlank && metadata.metaPublisher != null && metadata.metaPublisher.isBlank())) ? newMetaData.metaPublisher : metadata.metaPublisher;
+        metadata.metaName           = metadata.lockName             ? metadata.metaName         : (!onlyIfBlank || (onlyIfBlank && metadata.metaName != null && metadata.metaName.isBlank())) ? newMetaData.metaName : metadata.metaName;
+        metadata.metaDeveloper      = metadata.lockDeveloper        ? metadata.metaDeveloper    : (!onlyIfBlank || (onlyIfBlank && metadata.metaDeveloper != null && metadata.metaDeveloper.isBlank())) ? newMetaData.metaDeveloper : metadata.metaDeveloper;
+        metadata.metaDesc           = metadata.lockDesc             ? metadata.metaDesc         : (!onlyIfBlank || (onlyIfBlank && metadata.metaDesc != null && metadata.metaDesc.isBlank())) ? newMetaData.metaDesc : metadata.metaDesc;
+        metadata.players            = metadata.lockPlayers          ? metadata.players          : (!onlyIfBlank || (onlyIfBlank && metadata.players != null && metadata.players.isBlank())) ? newMetaData.players : metadata.players;
+        metadata.metaGenre          = metadata.lockGenre            ? metadata.metaGenre        : (!onlyIfBlank || (onlyIfBlank && metadata.metaGenre != null && metadata.metaGenre.isBlank())) ? newMetaData.metaGenre : metadata.metaGenre;
+        metadata.images             = metadata.lockImages           ? metadata.images           : (!onlyIfBlank || (onlyIfBlank && metadata.images != null && metadata.images.isEmpty())) ? newMetaData.images : metadata.images;
+        metadata.screenScraperId    = metadata.lockScreenScraperId  ? metadata.screenScraperId  : (!onlyIfBlank || (onlyIfBlank && metadata.screenScraperId != null && metadata.screenScraperId.isBlank())) ? newMetaData.screenScraperId : metadata.screenScraperId;
+        metadata.videodownload      = metadata.lockVideoDownload    ? metadata.videodownload    : (!onlyIfBlank || (onlyIfBlank && metadata.videodownload != null && metadata.videodownload.isBlank())) ? newMetaData.videodownload : metadata.videodownload;
+        metadata.videoembed         = metadata.lockVideoEmbed       ? metadata.videoembed       : (!onlyIfBlank || (onlyIfBlank && metadata.videoembed != null && metadata.videoembed.isBlank())) ? newMetaData.videoembed : metadata.videoembed;
+        metadata.favorite           = newMetaData.favorite;
     }
 
     public String getImageUrlByType(String type) {

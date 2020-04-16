@@ -23,11 +23,6 @@ public class ScreenScraperGameV1 {
         public NameData() {
 
         }
-
-        @Override
-        public String toString() {
-            return "NameData{" + "nom_ss=" + nom_ss + ", nom_us=" + nom_us + '}';
-        }
     }
 
     public static class Medias {
@@ -35,22 +30,18 @@ public class ScreenScraperGameV1 {
         public String    media_video;
         public MediaBoxs media_boxs;
 
-        @Override
-        public String toString() {
-            return "Medias{" + "media_screenshot=" + media_screenshot + ", media_video=" + media_video + ", media_boxs=" + media_boxs + '}';
-        }
     }
 
     public static class MediaBoxs {
-        public String media_box2d_us;
+        public MediaBoxs2d media_boxs2d;
+    }
+
+    public static class MediaBoxs2d {
+        public String media_box2d_ss;
     }
 
     public ScreenScraperGameV1() {
 
     }
 
-    @Override
-    public String toString() {
-        return "ScreenScraperGameV1{" + "id=" + id + ", nom=" + nom + ", noms=" + noms + ", systemeid=" + systemeid + ", systemenom=" + systemenom + ", medias=" + medias + '}';
-    }
 }

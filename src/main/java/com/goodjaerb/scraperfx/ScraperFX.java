@@ -665,7 +665,7 @@ public class ScraperFX extends Application {
         saveButton.setOnAction((e) -> saveAll());
 
         applyDatFileButton.setOnAction((e) -> {
-            final File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
+            final File datFile = Chooser.getFile(Chooser.DialogType.OPEN, "Select DAT File", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat", "XML FILE", "*.xml");
 //            final List<File> files = Chooser.openFiles("Select DAT File(s)", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
             if(datFile != null) {
                 try {

@@ -17,6 +17,9 @@ import java.util.Collection;
 @RootElement(name = "datafile")
 public class Datafile {
 
+    @Element(name = "mame")
+    public Collection<GameElement> mame;
+
     @Element(name = "game")
     public Collection<GameElement> games;
 
@@ -24,11 +27,15 @@ public class Datafile {
     public Collection<MachineElement> machines;
 
     public Datafile() {
+        mame = new ArrayList<>();
         games = new ArrayList<>();
         machines = new ArrayList<>();
     }
 
     public Collection<DatElement> getElements() {
+        if(!mame.isEmpty()) {
+            return new ArrayList<>(mame);
+        }
         if(!games.isEmpty()) {
             return new ArrayList<>(games);
         }
@@ -40,6 +47,6 @@ public class Datafile {
 
     @Override
     public String toString() {
-        return "Datafile{" + "games=" + games + ", machines=" + machines + '}';
+        return "Datafile{" + "mame=" + mame + ", games=" + games + ", machines=" + machines + '}';
     }
 }

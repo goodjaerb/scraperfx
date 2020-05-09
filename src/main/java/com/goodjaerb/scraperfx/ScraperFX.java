@@ -5,7 +5,9 @@
  */
 package com.goodjaerb.scraperfx;
 
+import com.goodjaerb.scraperfx.dat.DataHolder;
 import com.goodjaerb.scraperfx.dat.Datafile;
+import com.goodjaerb.scraperfx.dat.Mame;
 import com.goodjaerb.scraperfx.datasource.DataSourceFactory;
 import com.goodjaerb.scraperfx.datasource.DataSourceFactory.SourceAgent;
 import com.goodjaerb.scraperfx.datasource.gamesdb.GamesDbPrivateSource;
@@ -669,25 +671,31 @@ public class ScraperFX extends Application {
 //            final List<File> files = Chooser.openFiles("Select DAT File(s)", applyDatFileButton.getScene().getWindow(), "DAT FILE", "*.dat");
             if(datFile != null) {
                 try {
-                    final Datafile dat = readDatFile(datFile.toPath());
+                    final DataHolder dat = readDatFile(datFile.toPath());
                     //            if(files != null) {
                     //                for(final File datFile : files) {
-                    final String datFilter = getCurrentSettings().datFilter;
-                    observableGamesList.forEach((game) -> {
-                        final String filename = game.fileName;
+                    if(dat == null) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Problem with DAT file.", ButtonType.OK);
+                        alert.showAndWait();
+                    }
+                    else {
+                        final String datFilter = getCurrentSettings().datFilter;
+                        observableGamesList.forEach((game) -> {
+                            final String filename = game.fileName;
 
-                        if(dat.getElements().stream().filter((element) -> {
-                            if(datFilter == null || datFilter.isEmpty()) {
-                                return true;
+                            if (dat.getElements().stream().filter((element) -> {
+                                if (datFilter == null || datFilter.isEmpty()) {
+                                    return true;
+                                }
+                                return !element.getRomof().isEmpty() && datFilter.contains(element.getRomof());
+                            }).noneMatch((element) -> filename.equals(element.getName() + ".zip"))) {
+                                game.strength = Game.MatchStrength.IGNORE;
                             }
-                            return !element.getRomof().isEmpty() && datFilter.contains(element.getRomof());
-                        }).noneMatch((element) -> filename.equals(element.getName() + ".zip"))) {
-                            game.strength = Game.MatchStrength.IGNORE;
-                        }
-                    });
-                    gamesListView.refresh();
+                        });
+                        gamesListView.refresh();
+                    }
                 }
-                catch(IOException ex) {
+                catch(IOException | ClassNotFoundException ex) {
                     Logger.getLogger(ScraperFX.class.getName()).log(Level.SEVERE, null, ex);
                 }
 //                }
@@ -1422,17 +1430,32 @@ public class ScraperFX extends Application {
         }
     }
 
-    private Datafile readDatFile(Path path) throws IOException {
-        final Xmappr xm = new Xmappr(Datafile.class);
+    private DataHolder readDatFile(Path path) throws IOException, ClassNotFoundException {
+        ChoiceDialog<String> datTypeDialog = new ChoiceDialog<>("No", "Yes");
+        datTypeDialog.setTitle("Dat File Type");
+        datTypeDialog.setContentText("Is this from Libretro MAME2003-Plus?");
+        Optional<String> choice = datTypeDialog.showAndWait();
+        if(choice.isPresent()) {
+            Class dataClass = null;
+            if (choice.get().equals("No")) {
+                dataClass = Class.forName("com.goodjaerb.scraperfx.dat.Datafile");
+            }
+            else {
+                dataClass = Class.forName("com.goodjaerb.scraperfx.dat.Mame");
+            }
+            final Xmappr xm = new Xmappr(dataClass);
 
-        final BufferedInputStream in = new BufferedInputStream(new FileInputStream(path.toFile()));
-        final CharsetDecoder charsetDecoder = StandardCharsets.UTF_8.newDecoder();
-        charsetDecoder.onMalformedInput(CodingErrorAction.REPLACE);
-        charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+            final BufferedInputStream in = new BufferedInputStream(new FileInputStream(path.toFile()));
+            final CharsetDecoder charsetDecoder = StandardCharsets.UTF_8.newDecoder();
+            charsetDecoder.onMalformedInput(CodingErrorAction.REPLACE);
+            charsetDecoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
 
-        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
-            return (Datafile) xm.fromXML(reader);
+            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(in, charsetDecoder))) {
+                //return (Datafile) xm.fromXML(reader);
+                return (DataHolder)xm.fromXML(reader);
+            }
         }
+        return null;
     }
 
     private void readSettings() throws IOException {

@@ -64,6 +64,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.time.Duration;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,6 +126,7 @@ public class ScraperFX extends Application {
     private final CheckBox             showOnlyMissingScreenScraperIdCheckBox = new CheckBox("Missing ScreenScraper ID");
     private final CheckBox             showOnlyFavoritesCheckBox              = new CheckBox("Show Only Favorites");
     private final TextField            filterField                            = new TextField();
+    private final ComboBox<FilterFunction>     filterMetadataDropdown                 = new ComboBox<>();
     private final Label                itemCountLabel                         = new Label();
     private final Label                displayCountLabel                      = new Label();
     private final ObservableList<Game> observableGamesList                    = FXCollections.observableArrayList();
@@ -540,6 +542,51 @@ public class ScraperFX extends Application {
             }
         });
 
+        final ObservableList<FilterFunction> filterFunctions = FXCollections.observableArrayList(
+                new FilterFunction("Name/Filename") {
+                    @Override
+                    public boolean checkText(Game g, String filterText) {
+                        return g.fileName.toLowerCase().contains(filterText);
+                    }
+
+                    @Override
+                    public boolean checkMetadata(Game g, String filterText) {
+                        return g.metadata.metaName != null && g.metadata.metaName.toLowerCase().contains(filterText);
+                    }
+                },
+                new FilterFunction("Description") {
+                    @Override
+                    public boolean checkMetadata(Game g, String filterText) {
+                        return g.metadata.metaDesc != null && g.metadata.metaDesc.toLowerCase().contains(filterText);
+                    }
+                },
+                new FilterFunction("Developer") {
+                    @Override
+                    public boolean checkMetadata(Game g, String filterText) {
+                        return g.metadata.metaDeveloper != null && g.metadata.metaDeveloper.toLowerCase().contains(filterText);
+                    }
+                },
+                new FilterFunction("Publisher") {
+                    @Override
+                    public boolean checkMetadata(Game g, String filterText) {
+                        return g.metadata.metaPublisher != null && g.metadata.metaPublisher.toLowerCase().contains(filterText);
+                    }
+                },
+                new FilterFunction("Genre") {
+                    @Override
+                    public boolean checkMetadata(Game g, String filterText) {
+                        return g.metadata.metaGenre != null && g.metadata.metaGenre.toLowerCase().contains(filterText);
+                    }
+                });
+        filterMetadataDropdown.setItems(filterFunctions);
+        filterMetadataDropdown.getSelectionModel().select(0);
+        filterMetadataDropdown.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<FilterFunction>() {
+            @Override
+            public void changed(ObservableValue<? extends FilterFunction> observable, FilterFunction oldValue, FilterFunction newValue) {
+                filteredGamesList.setPredicate(buildFilterPredicate());
+            }
+        });
+
         matchedNameClearButton.setOnAction((e) -> {
             clearCurrentGameFields();
             currentGame.matchedName = null;
@@ -625,7 +672,7 @@ public class ScraperFX extends Application {
 
         final VBox sortByBox = new VBox();
         sortByBox.setSpacing(7.);
-        sortByBox.getChildren().addAll(sortByMetaNameRadioButton, sortByFileNameRadioButton, filterField, itemCountLabel, displayCountLabel);
+        sortByBox.getChildren().addAll(sortByMetaNameRadioButton, sortByFileNameRadioButton, filterField, filterMetadataDropdown, itemCountLabel, displayCountLabel);
 
         final VBox filterBox = new VBox();
         filterBox.setSpacing(7.);
@@ -990,10 +1037,7 @@ public class ScraperFX extends Application {
 
     private Predicate<Game> getFilterTextPredicate(String filterText) {
         return (game) -> {
-            if(filterText.trim().isEmpty()) {
-                return true;
-            }
-            return game.fileName.toLowerCase().contains(filterText.toLowerCase()) || (game.metadata != null && game.metadata.metaName != null && game.metadata.metaName.toLowerCase().contains(filterText.toLowerCase()));
+            return filterMetadataDropdown.getSelectionModel().getSelectedItem().apply(game, filterText);
         };
     }
 
@@ -2554,6 +2598,37 @@ public class ScraperFX extends Application {
             initModality(Modality.WINDOW_MODAL);
             initOwner(parentWindow);
             setScene(scene);
+        }
+    }
+
+    private abstract class FilterFunction {
+        private String label;
+
+        public FilterFunction(String label) {
+            this.label = label;
+        }
+
+        public final boolean apply(Game g, String filterText) {
+            if(filterText.trim().isEmpty()) {
+                return true;
+            }
+            boolean textResult = checkText(g, filterText);
+            boolean metadataResult = false;
+            if(g.metadata == null) {
+                return textResult;
+            }
+            return textResult || checkMetadata(g, filterText.toLowerCase());
+        }
+
+        public boolean checkText(Game g, String filterText) {
+            return false;
+        }
+        public boolean checkMetadata(Game g, String filterText) {
+            return false;
+        }
+
+        public String toString() {
+            return label;
         }
     }
 
